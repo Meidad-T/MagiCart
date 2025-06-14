@@ -57,7 +57,8 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            'Oranges': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&fit=crop&auto=format', // Bright oranges in a pile
+            // Flat orange SVG for oranges:
+            'Oranges': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="orange"/><circle cx="200" cy="150" r="110" fill="orange" stroke="darkorange" stroke-width="10"/></svg>',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
             'Onions': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=400&h=300&fit=crop&auto=format',
@@ -70,10 +71,12 @@ export const useProducts = () => {
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
-            'Brown Rice': 'https://www.pexels.com/photo/close-up-photo-of-brown-rice-4110257/',
+            // Brown Rice as a black rice pile SVG
+            'Brown Rice': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><ellipse cx="200" cy="210" rx="150" ry="60" fill="black"/><ellipse cx="200" cy="180" rx="120" ry="40" fill="brown" opacity="0.7"/><ellipse cx="230" cy="160" rx="70" ry="20" fill="#3c1c06" opacity="0.6"/></svg>',
             'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
             'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
-            'White Sugar': 'https://pixabay.com/photos/sugar-sugar-cubes-sugar-lumps-cute-4085174/',
+            // White Sugar as a white sugar box SVG image
+            'White Sugar': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect x="120" y="90" width="160" height="120" rx="20" fill="white" stroke="gray" stroke-width="4"/><rect x="140" y="180" width="120" height="30" fill="#ececec"/><text x="200" y="155" font-size="28" font-family="Arial" fill="gray" text-anchor="middle">SUGAR</text></svg>',
             'Brown Sugar': 'https://pixabay.com/photos/brown-sugar-sugar-food-sugar-cubes-5847979/',
             'Peanut Butter 16 ounce': 'https://www.pexels.com/photo/close-up-photo-of-creamy-peanut-butter-6659881/',
             'Grape Jelly 18 ounce': 'https://www.pexels.com/photo/jar-with-red-jam-on-white-sauer-1051849/',
