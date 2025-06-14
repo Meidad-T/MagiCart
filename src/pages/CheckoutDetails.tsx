@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import PickupMap from "@/components/PickupMap"; // NEW
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -40,6 +41,10 @@ export default function CheckoutDetails() {
   const [pickupTime, setPickupTime] = useState(state?.pickupTime || "");
   const [notes, setNotes] = useState("");
 
+  // Map geocoding and geolocation
+  const [userLoc, setUserLoc] = useState<[number, number] | null>(null);
+  const [storeLoc, setStoreLoc] = useState<[number, number] | null>(null);
+
   // Parse existing store address if coming from order summary
   useEffect(() => {
     if (fromOrderSummary && state?.storeAddress) {
@@ -55,6 +60,47 @@ export default function CheckoutDetails() {
       }
     }
   }, [fromOrderSummary, state?.storeAddress]);
+
+  // Geolocate user for map on mount
+  useEffect(() => {
+    if (shoppingType === "pickup" || shoppingType === "instore") {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => setUserLoc([pos.coords.latitude, pos.coords.longitude]),
+          () => setUserLoc([30.2672, -97.7431]) // fallback: Austin, TX
+        );
+      } else {
+        setUserLoc([30.2672, -97.7431]);
+      }
+    }
+  }, [shoppingType]);
+
+  // Geocode store address (using simple fetch to Nominatim)
+  useEffect(() => {
+    async function geocodeAddress() {
+      if (shoppingType === "pickup" || shoppingType === "instore") {
+        const address = `${storeStreet}, ${storeCity}, ${storeState} ${storeZip}`;
+        if (storeStreet && storeCity && storeState && storeZip) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+            );
+            const results = await res.json();
+            if (Array.isArray(results) && results.length > 0) {
+              setStoreLoc([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
+            }
+          } catch {
+            setStoreLoc(null);
+          }
+        } else {
+          setStoreLoc(null);
+        }
+      }
+    }
+    geocodeAddress();
+    // Only rerun if address changes and only for pickup/instore types
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storeStreet, storeCity, storeState, storeZip, shoppingType]);
 
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
@@ -169,6 +215,13 @@ export default function CheckoutDetails() {
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               />
+              {/* Cute pickup map below notes */}
+              <div>
+                <PickupMap start={userLoc} dest={storeLoc} />
+                <p className="text-xs text-gray-400 text-center mt-1">
+                  <span role="img" aria-label="info">🗺️</span> Fun overview: your starting point and store!
+                </p>
+              </div>
             </>
           )}
 
