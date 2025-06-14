@@ -43,7 +43,7 @@ export const useProducts = () => {
         });
 
         // Generate specific image for each product based on product name
-        const getProductSpecificImage = async (productName: string) => {
+        const getProductSpecificImage = (productName: string) => {
           const imageMap: Record<string, string> = {
             // Dairy products
             '1 Gallon Whole Milk': 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop&auto=format',
@@ -57,7 +57,7 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            'Oranges': 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop&auto=format',
+            'Oranges': 'https://www.peakpx.com/20906/3-oranges',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
             'Onions': 'https://www.pexels.com/photo/brown-onions-144206/',
@@ -121,20 +121,6 @@ export const useProducts = () => {
             'Great Value Onion Rings': 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400&h=300&fit=crop&auto=format',
             'State Fair Classic Corn Dogs': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format'
           };
-          
-          // Special handling for Oranges - generate AI image
-          if (productName === 'Oranges') {
-            try {
-              const response = await supabase.functions.invoke('generate-orange-image');
-              if (response.data?.success && response.data?.imageUrl) {
-                return response.data.imageUrl;
-              }
-            } catch (error) {
-              console.error('Failed to generate orange image:', error);
-            }
-            // Fallback to default orange image
-            return 'https://images.unsplash.com/photo-1618160702438-9b02ab6515c9?w=400&h=300&fit=crop&auto=format';
-          }
           
           return imageMap[productName] || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format';
         };
