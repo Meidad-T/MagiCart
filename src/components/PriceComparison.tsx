@@ -33,7 +33,12 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
 
   // Define which items are unavailable at which stores and their substitutes
   const getUnavailableItems = (storeKey: string) => {
-    const unavailableItems: Record<string, string[]> = {
+    // Get all Great Value items from cart (these are Walmart exclusive)
+    const greatValueItems = cart
+      .filter(item => item.name.toLowerCase().includes('great value'))
+      .map(item => item.name);
+
+    const storeSpecificUnavailable: Record<string, string[]> = {
       'aldi': [
         'DiGiorno Rising Crust Three Meat Pizza', 
         'Stouffers Lasagna with Meat & Sauce',
@@ -49,10 +54,7 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
       'heb': [
         'DiGiorno Rising Crust Four Cheese Pizza', 
         'Farm Rich Mozzarella Sticks', 
-        'Hungry-Man Boneless Fried Chicken',
-        'Great Value Chicken Alfredo Pasta',
-        'Great Value Enchiladas & Spanish Rice',
-        'Great Value Onion Rings'
+        'Hungry-Man Boneless Fried Chicken'
       ],
       'kroger': [
         'DiGiorno Rising Crust Four Cheese Pizza',
@@ -63,15 +65,31 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
         'Red Baron Four Meat Classic Crust Pizza',
         'Devour Sweet & Smoky BBQ Meatballs'
       ],
-      'walmart': []
+      'walmart': [] // Walmart has everything including Great Value
     };
     
-    return unavailableItems[storeKey] || [];
+    // For non-Walmart stores, add Great Value items to unavailable list
+    if (storeKey !== 'walmart') {
+      return [...(storeSpecificUnavailable[storeKey] || []), ...greatValueItems];
+    }
+    
+    return storeSpecificUnavailable[storeKey] || [];
   };
 
   // Define substitution mappings for items that are unavailable
   const getSubstituteItem = (originalItem: string, storeKey: string) => {
-    // Store-specific substitution mappings
+    // Handle Great Value substitutions first (for non-Walmart stores)
+    if (originalItem.toLowerCase().includes('great value') && storeKey !== 'walmart') {
+      const greatValueSubstitutions: Record<string, string> = {
+        'Great Value Chicken Alfredo Pasta': 'Stouffers Lasagna with Meat & Sauce',
+        'Great Value Enchiladas & Spanish Rice': 'Amys Mexican Casserole Bowl',
+        'Great Value Onion Rings': 'Ore-Ida Golden Crinkles French Fries'
+      };
+      
+      return greatValueSubstitutions[originalItem] || 'Stouffers Lasagna with Meat & Sauce';
+    }
+
+    // Store-specific substitution mappings for non-Great Value items
     const substituteMappings: Record<string, Record<string, string>> = {
       'aldi': {
         'DiGiorno Rising Crust Three Meat Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
@@ -88,10 +106,7 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
       'heb': {
         'DiGiorno Rising Crust Four Cheese Pizza': 'DiGiorno Rising Crust Three Meat Pizza',
         'Farm Rich Mozzarella Sticks': 'TGI Fridays Loaded Potato Skins',
-        'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese',
-        'Great Value Chicken Alfredo Pasta': 'Stouffers Lasagna with Meat & Sauce',
-        'Great Value Enchiladas & Spanish Rice': 'Amys Mexican Casserole Bowl',
-        'Great Value Onion Rings': 'Ore-Ida Golden Crinkles French Fries'
+        'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese'
       },
       'kroger': {
         'DiGiorno Rising Crust Four Cheese Pizza': 'Red Baron Four Cheese Classic Crust Pizza',
