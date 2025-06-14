@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import MapboxMap from "@/components/MapboxMap";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -29,10 +28,7 @@ export default function CheckoutDetails() {
   const [storeZip, setStoreZip] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
-  const [routeInfo, setRouteInfo] = useState({ distance: "", duration: "" });
 
-  // Mock user location for the map
-  const userAddress = "Your Home, Austin, TX";
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
     : !!(storeStreet && storeCity && storeState && storeZip && pickupTime);
@@ -128,27 +124,6 @@ export default function CheckoutDetails() {
               />
             </>
           )}
-
-          {/* Interactive Map */}
-          <div>
-            <MapboxMap
-              origin={userAddress}
-              destination={
-                shoppingType === "delivery" 
-                  ? deliveryAddress || "Austin, TX"
-                  : (storeStreet && storeCity ? `${storeStreet}, ${storeCity}` : "Austin, TX")
-              }
-              onRouteCalculated={(distance, duration) => {
-                setRouteInfo({ distance, duration });
-              }}
-            />
-            {routeInfo.distance && (
-              <div className="text-sm text-gray-700 pt-2 text-center">
-                Distance: <span className="font-medium">{routeInfo.distance}</span> • 
-                Duration: <span className="font-medium">{routeInfo.duration}</span>
-              </div>
-            )}
-          </div>
 
           <Button
             className="w-full bg-blue-500 hover:bg-blue-600"
