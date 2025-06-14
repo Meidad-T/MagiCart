@@ -2,6 +2,7 @@
 import { MapContainer, TileLayer, Polyline, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
+import "leaflet/dist/leaflet.css";
 
 // Cute custom icons
 const startIcon = L.divIcon({
@@ -38,26 +39,39 @@ type PickupMapProps = {
 };
 
 export default function PickupMap({ start, dest }: PickupMapProps) {
-  if (!start || !dest) return <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">Map loading…</div>;
+  if (!start || !dest)
+    return (
+      <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
+        Map loading…
+      </div>
+    );
 
-  // Curve points for cute squiggle
-  const curve = [
+  // Explicitly type as [number, number][]
+  const curve: [number, number][] = [
     start,
     [
-      start[0] + (dest[0] - start[0]) * 0.33 + 0.002, 
-      start[1] + (dest[1] - start[1]) * 0.33 - 0.002
+      start[0] + (dest[0] - start[0]) * 0.33 + 0.002,
+      start[1] + (dest[1] - start[1]) * 0.33 - 0.002,
     ],
     [
-      start[0] + (dest[0] - start[0]) * 0.66 - 0.002, 
-      start[1] + (dest[1] - start[1]) * 0.66 + 0.002
+      start[0] + (dest[0] - start[0]) * 0.66 - 0.002,
+      start[1] + (dest[1] - start[1]) * 0.66 + 0.002,
     ],
-    dest
+    dest,
   ];
 
   return (
-    <div className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2" style={{ height: 180 }}>
+    <div
+      className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2"
+      style={{ height: 180 }}
+    >
       <MapContainer
-        style={{ width: "100%", height: "100%", pointerEvents: "none", filter: "contrast(1.13) saturate(1.1) brightness(1.05)" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          pointerEvents: "none",
+          filter: "contrast(1.13) saturate(1.1) brightness(1.05)",
+        }}
         zoom={15}
         center={[(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]}
         dragging={false}
@@ -66,11 +80,17 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
         zoomControl={false}
         attributionControl={false}
       >
-        {/* Minimal cartoonish map tile style */}
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
+        <Polyline
+          positions={curve}
+          pathOptions={{
+            color: "#2563eb",
+            weight: 5,
+            opacity: 0.85,
+            dashArray: "10 14",
+            lineCap: "round",
+          }}
         />
-        <Polyline positions={curve} pathOptions={{ color: "#2563eb", weight: 5, opacity: 0.85, dashArray: "10 14", lineCap: "round" }} />
         <Marker position={start} icon={startIcon} />
         <Marker position={dest} icon={storeIcon} />
         <MapFitter points={[start, dest]} />
