@@ -31,7 +31,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 border-b border-blue-300 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -39,9 +39,14 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             <Button 
               variant="ghost" 
               onClick={() => navigate('/')}
-              className="text-2xl font-bold text-gray-900 hover:bg-transparent"
+              className="flex items-center space-x-3 text-white hover:bg-blue-400/20 transition-colors"
             >
-              Smart Cart
+              <img 
+                src="/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png" 
+                alt="MagiCart Logo" 
+                className="h-8 w-8"
+              />
+              <span className="text-2xl font-bold">MagiCart</span>
             </Button>
           </div>
 
@@ -59,7 +64,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative">
+                  <Button variant="ghost" className="relative text-white hover:bg-blue-400/20">
                     <User className="h-6 w-6" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -74,7 +79,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button variant="ghost" onClick={handleSignIn}>
+              <Button variant="ghost" onClick={handleSignIn} className="text-white hover:bg-blue-400/20">
                 <User className="h-6 w-6 mr-2" />
                 Sign In
               </Button>
@@ -83,12 +88,12 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {/* Cart Button */}
             <Button 
               variant="ghost" 
-              className="relative"
+              className="relative text-white hover:bg-blue-400/20"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-6 w-6" />
               {cart.length > 0 && (
-                <Badge className="absolute -top-2 -right-2 bg-blue-500 text-white min-w-5 h-5 flex items-center justify-center text-xs">
+                <Badge className="absolute -top-2 -right-2 bg-orange-500 text-white min-w-5 h-5 flex items-center justify-center text-xs">
                   {cart.reduce((sum, item) => sum + item.quantity, 0)}
                 </Badge>
               )}
