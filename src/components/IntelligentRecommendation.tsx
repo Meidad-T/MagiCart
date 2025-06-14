@@ -1,6 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Star, TrendingUp, Shield, Clock } from "lucide-react";
+
 interface StoreTotalData {
   store: string;
   storeKey: string;
@@ -8,15 +10,18 @@ interface StoreTotalData {
   taxesAndFees: string;
   total: string;
 }
+
 interface IntelligentRecommendationProps {
   storeTotals: StoreTotalData[];
   shoppingType: 'pickup' | 'delivery' | 'instore';
 }
+
 export const IntelligentRecommendation = ({
   storeTotals,
   shoppingType
 }: IntelligentRecommendationProps) => {
   const [recommendation, setRecommendation] = useState<any>(null);
+
   useEffect(() => {
     if (storeTotals.length === 0) return;
 
@@ -65,6 +70,7 @@ export const IntelligentRecommendation = ({
           service: 3.9
         }
       };
+
       const metrics = storeMetrics[store.store as keyof typeof storeMetrics] || {
         reviewScore: 4.0,
         freshness: 4.0,
@@ -102,6 +108,7 @@ export const IntelligentRecommendation = ({
 
       // Random factor to add variety (small influence)
       score += Math.random() * 5;
+
       return {
         store,
         score,
@@ -120,6 +127,7 @@ export const IntelligentRecommendation = ({
     let reason = "";
     const isChepeast = bestStore.store === storeTotals[0];
     const metrics = bestStore.metrics;
+
     if (isChepeast && bestStore.score > 85) {
       reason = `offers the best overall value with ${metrics.reviewScore}★ reviews and competitive pricing`;
     } else if (!isChepeast && metrics.reviewScore >= 4.4) {
@@ -133,6 +141,7 @@ export const IntelligentRecommendation = ({
     } else {
       reason = `provides optimal balance of price, quality (${metrics.reviewScore}★), and ${shoppingType} convenience`;
     }
+
     setRecommendation({
       store: bestStore.store,
       reason,
@@ -141,8 +150,11 @@ export const IntelligentRecommendation = ({
       savings: isChepeast ? null : `$${(parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total)).toFixed(2)} more than cheapest`
     });
   }, [storeTotals, shoppingType]);
+
   if (!recommendation || storeTotals.length === 0) return null;
-  return <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-blue-200">
+
+  return (
+    <Card className="border-blue-200 bg-blue-50">
       <CardContent className="pt-4">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
@@ -158,7 +170,7 @@ export const IntelligentRecommendation = ({
             </div>
             
             <div className="space-y-3">
-              <p className="text-sm text-gray-700 leading-relaxed">
+              <p className="text-sm text-gray-700">
                 We recommend{' '}
                 <span className="font-semibold text-blue-600">
                   {recommendation.store.store}
@@ -166,9 +178,11 @@ export const IntelligentRecommendation = ({
                 because it {recommendation.reason}.
               </p>
               
-              {recommendation.savings && <p className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
+              {recommendation.savings && (
+                <p className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
                   {recommendation.savings} • Quality justifies the premium
-                </p>}
+                </p>
+              )}
               
               {/* Key metrics */}
               <div className="grid grid-cols-2 gap-3 pt-3 border-t border-blue-100">
@@ -193,5 +207,6 @@ export const IntelligentRecommendation = ({
           </div>
         </div>
       </CardContent>
-    </Card>;
+    </Card>
+  );
 };
