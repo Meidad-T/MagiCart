@@ -110,8 +110,8 @@ const mockStoreMetrics: StoreMetrics[] = [
 ];
 
 export const fetchProductReviews = async (productNames: string[]): Promise<ProductReview[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 400));
+  // Faster simulated API delay
+  await new Promise(resolve => setTimeout(resolve, 200 + Math.random() * 100));
   
   return mockProductReviews.filter(review => 
     productNames.some(name => name.toLowerCase().includes(review.productName.toLowerCase()))
@@ -119,8 +119,8 @@ export const fetchProductReviews = async (productNames: string[]): Promise<Produ
 };
 
 export const fetchStoreMetrics = async (): Promise<StoreMetrics[]> => {
-  // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 600 + Math.random() * 300));
+  // Faster simulated API delay
+  await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 100));
   
   return mockStoreMetrics;
 };
@@ -130,8 +130,8 @@ export const analyzeMarketTrends = async (storeNames: string[]): Promise<{
   priceVolatility: Record<string, number>;
   demandScore: Record<string, number>;
 }> => {
-  // Simulate complex market analysis
-  await new Promise(resolve => setTimeout(resolve, 1200 + Math.random() * 600));
+  // Faster simulated complex market analysis
+  await new Promise(resolve => setTimeout(resolve, 300 + Math.random() * 200));
   
   return {
     trending: ["H-E-B", "Target"],

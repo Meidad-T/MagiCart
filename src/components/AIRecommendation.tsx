@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, TrendingUp, Shield, Clock, DollarSign } from "lucide-react";
 import { performAdvancedStoreAnalysis } from "@/services/aiAnalysisService";
 import { AIThinkingAnimation } from "./AIThinkingAnimation";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface StoreTotalData {
   store: string;
@@ -23,7 +22,7 @@ interface AIRecommendationProps {
 
 const thinkingSteps = [
   "Analyzing product reviews and ratings",
-  "Fetching store performance metrics",
+  "Fetching store performance metrics", 
   "Processing market trends and demand data",
   "Calculating multi-factor optimization scores",
   "Generating personalized recommendation"
@@ -33,14 +32,17 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [recommendation, setRecommendation] = useState<any>(null);
-  const [hasAnalyzed, setHasAnalyzed] = useState(false);
+  const [showTypingEffect, setShowTypingEffect] = useState(false);
+  const [typedText, setTypedText] = useState("");
 
   useEffect(() => {
-    if (storeTotals.length === 0 || hasAnalyzed) return;
+    if (storeTotals.length === 0) return;
     
     const runAnalysis = async () => {
+      console.log("Starting AI analysis...");
       setIsAnalyzing(true);
       setCurrentStep(0);
+      setRecommendation(null);
       
       try {
         const result = await performAdvancedStoreAnalysis(
@@ -48,15 +50,38 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
           substitutionCounts,
           shoppingType,
           cart,
-          (step) => setCurrentStep(step)
+          (step) => {
+            console.log("Analysis step:", step);
+            setCurrentStep(step);
+          }
         );
         
+        console.log("Analysis complete:", result);
         setRecommendation(result);
-        setHasAnalyzed(true);
+        setIsAnalyzing(false);
+        
+        // Start typing effect after analysis
+        setTimeout(() => {
+          setShowTypingEffect(true);
+          const fullText = `Based on advanced analysis, we recommend ${result.recommendedStore.store} since it ${result.reason}.`;
+          let index = 0;
+          
+          const typeInterval = setInterval(() => {
+            if (index < fullText.length) {
+              setTypedText(fullText.slice(0, index + 1));
+              index++;
+            } else {
+              clearInterval(typeInterval);
+            }
+          }, 30); // Fast typing - 30ms per character
+          
+          return () => clearInterval(typeInterval);
+        }, 200);
+        
       } catch (error) {
         console.error('Analysis failed:', error);
-        // Fallback to simple recommendation
-        setRecommendation({
+        // Fallback recommendation
+        const fallbackResult = {
           recommendedStore: storeTotals[0],
           reason: "offers the best overall value for your shopping list",
           confidence: 85,
@@ -67,17 +92,33 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
             convenienceScore: 70,
             overallScore: 85
           }
-        });
-        setHasAnalyzed(true);
-      } finally {
+        };
+        
+        setRecommendation(fallbackResult);
         setIsAnalyzing(false);
+        
+        setTimeout(() => {
+          setShowTypingEffect(true);
+          const fullText = `Based on advanced analysis, we recommend ${fallbackResult.recommendedStore.store} since it ${fallbackResult.reason}.`;
+          let index = 0;
+          
+          const typeInterval = setInterval(() => {
+            if (index < fullText.length) {
+              setTypedText(fullText.slice(0, index + 1));
+              index++;
+            } else {
+              clearInterval(typeInterval);
+            }
+          }, 30);
+          
+          return () => clearInterval(typeInterval);
+        }, 200);
       }
     };
 
-    // Add a small delay to make it feel more natural
-    const timer = setTimeout(runAnalysis, 500);
-    return () => clearTimeout(timer);
-  }, [storeTotals, substitutionCounts, shoppingType, cart, hasAnalyzed]);
+    // Start analysis immediately
+    runAnalysis();
+  }, [storeTotals, substitutionCounts, shoppingType, cart]);
 
   if (storeTotals.length === 0) return null;
 
@@ -100,7 +141,7 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
           <div className="flex-1 space-y-3">
             <div className="flex items-center space-x-2">
               <h3 className="font-semibold text-gray-800">AI-Powered Recommendation</h3>
-              {recommendation && (
+              {recommendation && !isAnalyzing && (
                 <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
                   {recommendation.confidence}% confidence
                 </span>
@@ -114,45 +155,49 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
                   steps={thinkingSteps}
                   currentStep={currentStep}
                 />
-                <div className="space-y-2">
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-3/4" />
-                </div>
               </div>
             ) : recommendation ? (
               <div className="space-y-3">
-                <p className="text-sm text-gray-700 leading-relaxed">
-                  Based on advanced analysis, we recommend{' '}
-                  <span className="font-semibold text-blue-600">
-                    {recommendation.recommendedStore.store}
-                  </span>{' '}
-                  since it {recommendation.reason}.
-                </p>
+                {showTypingEffect ? (
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    {typedText}
+                    <span className="animate-pulse">|</span>
+                  </p>
+                ) : (
+                  <p className="text-sm text-gray-700 leading-relaxed">
+                    Based on advanced analysis, we recommend{' '}
+                    <span className="font-semibold text-blue-600">
+                      {recommendation.recommendedStore.store}
+                    </span>{' '}
+                    since it {recommendation.reason}.
+                  </p>
+                )}
                 
-                {/* Performance metrics */}
-                <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-100">
-                  <div className="flex items-center space-x-2 text-sm">
-                    <DollarSign className="h-4 w-4 text-green-500" />
-                    <span className="text-gray-600">Price: {recommendation.factors.priceScore}%</span>
+                {/* Performance metrics - only show after typing is done */}
+                {showTypingEffect && typedText.length > 50 && (
+                  <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-blue-100 animate-fade-in">
+                    <div className="flex items-center space-x-2 text-sm">
+                      <DollarSign className="h-4 w-4 text-green-500" />
+                      <span className="text-gray-600">Price: {recommendation.factors.priceScore}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm">
+                      <Shield className="h-4 w-4 text-blue-500" />
+                      <span className="text-gray-600">Quality: {recommendation.factors.qualityScore}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm">
+                      <Clock className="h-4 w-4 text-purple-500" />
+                      <span className="text-gray-600">Reliability: {recommendation.factors.reliabilityScore}%</span>
+                    </div>
+                    <div className="flex items-center space-x-2 text-sm">
+                      <TrendingUp className="h-4 w-4 text-orange-500" />
+                      <span className="text-gray-600">Convenience: {recommendation.factors.convenienceScore}%</span>
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Shield className="h-4 w-4 text-blue-500" />
-                    <span className="text-gray-600">Quality: {recommendation.factors.qualityScore}%</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <Clock className="h-4 w-4 text-purple-500" />
-                    <span className="text-gray-600">Reliability: {recommendation.factors.reliabilityScore}%</span>
-                  </div>
-                  <div className="flex items-center space-x-2 text-sm">
-                    <TrendingUp className="h-4 w-4 text-orange-500" />
-                    <span className="text-gray-600">Convenience: {recommendation.factors.convenienceScore}%</span>
-                  </div>
-                </div>
+                )}
               </div>
             ) : (
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
+              <div className="text-sm text-gray-600">
+                Preparing analysis...
               </div>
             )}
           </div>
