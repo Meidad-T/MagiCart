@@ -15,36 +15,33 @@ type PickupMapProps = {
 export default function PickupMap({ start, dest }: PickupMapProps) {
   const googleMapsApiKey = import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
+  // All hooks MUST be called unconditionally, before any early returns
   const { isLoaded } = useLoadScript({
     googleMapsApiKey,
     mapIds: undefined,
   });
 
-  if (!isLoaded || !start || !dest) {
-    return (
-      <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
-        Map loading…
-      </div>
-    );
-  }
+  // Fallbacks if start/dest are not provided yet
+  // Default to Austin, TX center if missing
+  const safeStart = start ?? [30.2672, -97.7431];
+  const safeDest = dest ?? [30.2672, -97.7431];
 
   const center = useMemo(
     () => ({
-      lat: (start[0] + dest[0]) / 2,
-      lng: (start[1] + dest[1]) / 2,
+      lat: (safeStart[0] + safeDest[0]) / 2,
+      lng: (safeStart[1] + safeDest[1]) / 2,
     }),
-    [start, dest]
+    [safeStart, safeDest]
   );
 
   const routePath = useMemo(
     () => [
-      { lat: start[0], lng: start[1] },
-      { lat: dest[0], lng: dest[1] }
+      { lat: safeStart[0], lng: safeStart[1] },
+      { lat: safeDest[0], lng: safeDest[1] }
     ],
-    [start, dest]
+    [safeStart, safeDest]
   );
 
-  // Highly zoom in
   const mapOptions = useMemo(
     () => ({
       disableDefaultUI: true,
@@ -54,10 +51,10 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       fullscreenControl: false,
       restriction: {
         latLngBounds: {
-          north: Math.max(start[0], dest[0]) + 0.003,
-          south: Math.min(start[0], dest[0]) - 0.003,
-          east: Math.max(start[1], dest[1]) + 0.003,
-          west: Math.min(start[1], dest[1]) - 0.003
+          north: Math.max(safeStart[0], safeDest[0]) + 0.003,
+          south: Math.min(safeStart[0], safeDest[0]) - 0.003,
+          east: Math.max(safeStart[1], safeDest[1]) + 0.003,
+          west: Math.min(safeStart[1], safeDest[1]) - 0.003
         },
         strictBounds: true
       },
@@ -67,9 +64,9 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       maxZoom: 21,
       gestureHandling: "none"
     }),
-    [start, dest]
+    [safeStart, safeDest]
   );
-  
+
   // Utility to safely create Google Maps objects for marker icons
   function getHouseIcon() {
     if (
@@ -101,6 +98,15 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     return undefined;
   }
 
+  // Now it's safe to conditionally render
+  if (!isLoaded || !start || !dest) {
+    return (
+      <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
+        Map loading…
+      </div>
+    );
+  }
+
   return (
     <div
       className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2 relative"
@@ -125,7 +131,7 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
         />
         {/* Start marker - emoji as label */}
         <Marker
-          position={{ lat: start[0], lng: start[1] }}
+          position={{ lat: safeStart[0], lng: safeStart[1] }}
           label={{
             text: houseEmoji,
             fontSize: "24px",
@@ -135,7 +141,7 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
         />
         {/* Dest marker - store icon */}
         <Marker
-          position={{ lat: dest[0], lng: dest[1] }}
+          position={{ lat: safeDest[0], lng: safeDest[1] }}
           icon={getStoreIcon()}
         />
       </GoogleMap>
