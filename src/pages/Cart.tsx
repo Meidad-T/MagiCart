@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -79,12 +80,50 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
       const taxesAndFees = subtotal * 0.0875; // 8.75% tax rate
 
+      // Calculate store-specific fees based on shopping type
+      let storeFee = 0;
+      
+      if (shoppingType === 'pickup') {
+        switch (store) {
+          case 'walmart':
+            storeFee = 1.99;
+            break;
+          case 'sams':
+            storeFee = subtotal >= 50 ? 0 : 4.99;
+            break;
+          case 'heb':
+            storeFee = 0; // Free pickup
+            break;
+          // Aldi, Target, Kroger have no pickup fees mentioned
+        }
+      } else if (shoppingType === 'delivery') {
+        switch (store) {
+          case 'walmart':
+            storeFee = subtotal >= 35 ? 0 : 7.95;
+            break;
+          case 'heb':
+            storeFee = 4.95;
+            break;
+          case 'aldi':
+            storeFee = subtotal >= 35 ? 0 : 3.99;
+            break;
+          case 'kroger':
+            storeFee = subtotal >= 35 ? 0 : 4.95;
+            break;
+          // Target and Sam's Club delivery fees not specified
+        }
+      }
+      // In-store shopping has no additional fees
+
+      const totalFeesAndTaxes = taxesAndFees + storeFee;
+      const total = subtotal + totalFeesAndTaxes;
+
       return {
         store: storeNames[store as keyof typeof storeNames],
         storeKey: store,
         subtotal: subtotal.toFixed(2),
-        taxesAndFees: taxesAndFees.toFixed(2),
-        total: (subtotal + taxesAndFees).toFixed(2)
+        taxesAndFees: totalFeesAndTaxes.toFixed(2),
+        total: total.toFixed(2)
       };
     });
 
