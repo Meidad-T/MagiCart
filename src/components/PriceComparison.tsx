@@ -1,9 +1,10 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { CheckCircle, RefreshCw } from "lucide-react";
+import { CheckCircle, RefreshCw, Check, X } from "lucide-react";
 
 interface StoreTotalData {
   store: string;
@@ -15,12 +16,94 @@ interface StoreTotalData {
 
 interface PriceComparisonProps {
   storeTotals: StoreTotalData[];
+  cart: Array<any>;
+  onUpdateCart: (updatedCart: Array<any>) => void;
 }
 
-export const PriceComparison = ({ storeTotals }: PriceComparisonProps) => {
-  // Generate random substitution counts for demo purposes
-  const getRandomSubstitutions = () => Math.floor(Math.random() * 3);
-  
+interface SubstitutionItem {
+  originalItem: string;
+  substituteItem: string;
+  status: 'pending' | 'accepted' | 'rejected';
+}
+
+export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceComparisonProps) => {
+  const [expandedStore, setExpandedStore] = useState<string | null>(null);
+  const [showRejectWarning, setShowRejectWarning] = useState<string | null>(null);
+  const [substitutions, setSubstitutions] = useState<Record<string, SubstitutionItem[]>>({});
+
+  // Generate substitutions for stores that need them
+  const generateSubstitutions = (storeKey: string): SubstitutionItem[] => {
+    if (substitutions[storeKey]) return substitutions[storeKey];
+
+    const mockSubstitutions: SubstitutionItem[] = [];
+    
+    // Some example substitutions based on cart items
+    if (Math.random() > 0.7) {
+      mockSubstitutions.push({
+        originalItem: "DiGiorno Rising Crust Three Meat Pizza",
+        substituteItem: "DiGiorno Rising Crust Pepperoni Pizza", 
+        status: 'pending'
+      });
+    }
+    
+    if (Math.random() > 0.8) {
+      mockSubstitutions.push({
+        originalItem: "Farm Rich Mozzarella Sticks",
+        substituteItem: "Great Value Mozzarella Sticks",
+        status: 'pending'
+      });
+    }
+
+    setSubstitutions(prev => ({ ...prev, [storeKey]: mockSubstitutions }));
+    return mockSubstitutions;
+  };
+
+  const getRandomSubstitutions = (storeKey: string) => {
+    const subs = generateSubstitutions(storeKey);
+    return subs.filter(sub => sub.status === 'pending').length;
+  };
+
+  const handleSubstitutionAction = (storeKey: string, index: number, action: 'accept' | 'reject') => {
+    if (action === 'reject') {
+      setShowRejectWarning(`${storeKey}-${index}`);
+      return;
+    }
+
+    setSubstitutions(prev => ({
+      ...prev,
+      [storeKey]: prev[storeKey].map((sub, i) => 
+        i === index ? { ...sub, status: 'accepted' as const } : sub
+      )
+    }));
+  };
+
+  const handleRejectConfirm = (storeKey: string, index: number, confirm: boolean) => {
+    if (confirm) {
+      const substitution = substitutions[storeKey][index];
+      
+      // Remove item from cart
+      const updatedCart = cart.filter(item => item.name !== substitution.originalItem);
+      onUpdateCart(updatedCart);
+      
+      // Mark substitution as rejected
+      setSubstitutions(prev => ({
+        ...prev,
+        [storeKey]: prev[storeKey].map((sub, i) => 
+          i === index ? { ...sub, status: 'rejected' as const } : sub
+        )
+      }));
+    }
+    
+    setShowRejectWarning(null);
+  };
+
+  const handleStoreExpand = (storeKey: string) => {
+    const subs = getRandomSubstitutions(storeKey);
+    if (subs > 0) {
+      setExpandedStore(expandedStore === storeKey ? null : storeKey);
+    }
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -38,49 +121,143 @@ export const PriceComparison = ({ storeTotals }: PriceComparisonProps) => {
           </TableHeader>
           <TableBody>
             {storeTotals.map((store, index) => {
-              const substitutions = getRandomSubstitutions();
-              const hasSubstitutions = substitutions > 0;
+              const substitutionCount = getRandomSubstitutions(store.storeKey);
+              const hasSubstitutions = substitutionCount > 0;
+              const storeSubstitutions = substitutions[store.storeKey] || [];
+              const isExpanded = expandedStore === store.storeKey;
               
               return (
-                <TableRow key={store.storeKey} className={index === 0 ? "bg-green-50" : ""}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center">
-                      {store.store}
-                      {index === 0 && (
-                        <Badge className="ml-2 bg-green-500 text-white text-xs">
-                          Best Price!
-                        </Badge>
+                <>
+                  <TableRow key={store.storeKey} className={index === 0 ? "bg-green-50" : ""}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center">
+                        {store.store}
+                        {index === 0 && (
+                          <Badge className="ml-2 bg-green-500 text-white text-xs">
+                            Best Price!
+                          </Badge>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="font-semibold text-lg">
+                      ${store.subtotal}
+                    </TableCell>
+                    <TableCell className="text-gray-600">
+                      ${store.taxesAndFees}
+                    </TableCell>
+                    <TableCell>
+                      {hasSubstitutions ? (
+                        <div className="flex items-center">
+                          <RefreshCw className="h-4 w-4 text-yellow-500 mr-2" />
+                          <Badge 
+                            variant="outline" 
+                            className="text-yellow-600 border-yellow-300 cursor-pointer hover:bg-yellow-50"
+                            onClick={() => handleStoreExpand(store.storeKey)}
+                          >
+                            {substitutionCount} Sub{substitutionCount > 1 ? 's' : ''}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <div className="flex items-center">
+                          <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
+                          <Badge className="bg-green-100 text-green-700 border-green-300">
+                            In Stock
+                          </Badge>
+                        </div>
                       )}
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-semibold text-lg">
-                    ${store.subtotal}
-                  </TableCell>
-                  <TableCell className="text-gray-600">
-                    ${store.taxesAndFees}
-                  </TableCell>
-                  <TableCell>
-                    {hasSubstitutions ? (
-                      <div className="flex items-center">
-                        <RefreshCw className="h-4 w-4 text-yellow-500 mr-2" />
-                        <Badge variant="outline" className="text-yellow-600 border-yellow-300">
-                          {substitutions} Sub{substitutions > 1 ? 's' : ''}
-                        </Badge>
-                      </div>
-                    ) : (
-                      <div className="flex items-center">
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-2" />
-                        <Badge className="bg-green-100 text-green-700 border-green-300">
-                          In Stock
-                        </Badge>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
+                    </TableCell>
+                  </TableRow>
+                  
+                  {/* Expanded substitution details */}
+                  {isExpanded && hasSubstitutions && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="bg-gray-50 p-4">
+                        <div className="space-y-3">
+                          <h4 className="font-medium text-gray-800 mb-3">Substitution Details:</h4>
+                          {storeSubstitutions.map((sub, subIndex) => (
+                            <div key={subIndex} className="flex items-center justify-between p-3 bg-white rounded border">
+                              <div className="flex-1">
+                                <div className="text-sm">
+                                  <span className="text-red-600 line-through">{sub.originalItem}</span>
+                                  <span className="mx-2">→</span>
+                                  <span className="text-green-600">{sub.substituteItem}</span>
+                                </div>
+                              </div>
+                              
+                              {sub.status === 'pending' && (
+                                <div className="flex items-center space-x-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-green-600 border-green-300 hover:bg-green-50"
+                                    onClick={() => handleSubstitutionAction(store.storeKey, subIndex, 'accept')}
+                                  >
+                                    <Check className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-red-600 border-red-300 hover:bg-red-50"
+                                    onClick={() => handleSubstitutionAction(store.storeKey, subIndex, 'reject')}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              )}
+                              
+                              {sub.status === 'accepted' && (
+                                <span className="text-sm text-green-600 font-medium">Substitution Accepted</span>
+                              )}
+                              
+                              {sub.status === 'rejected' && (
+                                <span className="text-sm text-red-600 font-medium">Item Removed</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </>
               );
             })}
           </TableBody>
         </Table>
+        
+        {/* Reject Warning Modal */}
+        {showRejectWarning && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-6 rounded-lg max-w-md mx-4">
+              <h3 className="text-lg font-semibold text-red-600 mb-4">Warning!</h3>
+              <p className="text-gray-700 mb-6">
+                If you reject this substitution, the item will be removed from your cart.
+              </p>
+              <div className="flex space-x-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    const [storeKey, index] = showRejectWarning.split('-');
+                    handleSubstitutionAction(storeKey, parseInt(index), 'accept');
+                    setShowRejectWarning(null);
+                  }}
+                  className="flex-1"
+                >
+                  Accept Substitution
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    const [storeKey, index] = showRejectWarning.split('-');
+                    handleRejectConfirm(storeKey, parseInt(index), true);
+                  }}
+                  className="flex-1"
+                >
+                  Reject Anyway
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
         
         <div className="mt-6 flex justify-center">
           <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg text-lg">

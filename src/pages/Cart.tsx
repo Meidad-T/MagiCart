@@ -327,7 +327,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
         {/* Price Comparison Component */}
         <div className="mt-8">
-          <PriceComparison storeTotals={storeTotals} />
+          <PriceComparison 
+            storeTotals={storeTotals} 
+            cart={cart}
+            onUpdateCart={onUpdateCart}
+          />
         </div>
       </div>
     </div>
