@@ -31,7 +31,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600/95 via-blue-700/95 to-blue-800/95 backdrop-blur-sm border-b border-blue-400/30 shadow-lg">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500/80 via-blue-600/80 to-blue-800/80 backdrop-blur border-b border-blue-400/20 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
