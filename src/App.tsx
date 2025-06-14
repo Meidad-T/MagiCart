@@ -27,7 +27,7 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Index cart={cart} onUpdateCart={updateCart} />} />
             <Route path="/cart" element={<Cart cart={cart} onUpdateCart={updateCart} />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

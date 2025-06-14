@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
-import type { User } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -19,7 +19,7 @@ interface CartPageProps {
 const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const navigate = useNavigate();
   const [shoppingType, setShoppingType] = useState<'pickup' | 'delivery' | 'instore'>('pickup');
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<SupabaseUser | null>(null);
 
   useEffect(() => {
     // Get current user

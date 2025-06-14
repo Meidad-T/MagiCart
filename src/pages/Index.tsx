@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,22 +10,26 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
 
-const Index = () => {
+interface IndexProps {
+  cart: Array<ProductWithPrices & { quantity: number }>;
+  onUpdateCart: (updatedCart: Array<ProductWithPrices & { quantity: number }>) => void;
+}
+
+const Index = ({ cart, onUpdateCart }: IndexProps) => {
   const { data: items = [], isLoading: productsLoading, error } = useProducts();
-  const [cart, setCart] = useState<Array<ProductWithPrices & { quantity: number }>>([]);
   const { user } = useAuth();
   const navigate = useNavigate();
 
   const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
     if (existingItem) {
-      setCart(cart.map(cartItem =>
+      onUpdateCart(cart.map(cartItem =>
         cartItem.id === item.id
           ? { ...cartItem, quantity: cartItem.quantity + 1 }
           : cartItem
       ));
     } else {
-      setCart([...cart, { ...item, quantity: 1 }]);
+      onUpdateCart([...cart, { ...item, quantity: 1 }]);
     }
     toast({
       title: "Added to cart!",
