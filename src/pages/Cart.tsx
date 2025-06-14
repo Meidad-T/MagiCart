@@ -1,11 +1,13 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Clock, Store, User } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
@@ -20,16 +22,48 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const navigate = useNavigate();
   const [shoppingType, setShoppingType] = useState<'pickup' | 'delivery' | 'instore'>('pickup');
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
+  const [expandedStores, setExpandedStores] = useState<Record<string, boolean>>({});
+  const [deliveryAddress, setDeliveryAddress] = useState({
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    instructions: ''
+  });
 
   useEffect(() => {
     // Get current user
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user);
+      if (user) {
+        // Fetch user profile
+        supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single()
+          .then(({ data }) => {
+            setUserProfile(data);
+          });
+      }
     });
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setUser(session?.user ?? null);
+      if (session?.user) {
+        supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .single()
+          .then(({ data }) => {
+            setUserProfile(data);
+          });
+      } else {
+        setUserProfile(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -52,13 +86,29 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
         return sum + (price * cartItem.quantity);
       }, 0);
 
+      const items = cart.map(cartItem => ({
+        name: cartItem.name,
+        quantity: cartItem.quantity,
+        price: cartItem[`${store}_price` as keyof ProductWithPrices] as number,
+        total: (cartItem[`${store}_price` as keyof ProductWithPrices] as number) * cartItem.quantity
+      }));
+
       return {
         store: storeNames[store as keyof typeof storeNames],
-        total: total.toFixed(2)
+        storeKey: store,
+        total: total.toFixed(2),
+        items
       };
     });
 
     return storeTotals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+  };
+
+  const toggleStoreExpansion = (storeKey: string) => {
+    setExpandedStores(prev => ({
+      ...prev,
+      [storeKey]: !prev[storeKey]
+    }));
   };
 
   const removeFromCart = (itemId: string) => {
@@ -113,6 +163,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     );
   }
 
+  const getUserFirstName = () => {
+    if (!userProfile?.full_name) return '';
+    return userProfile.full_name.split(' ')[0];
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -128,6 +183,15 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           </Button>
           <h1 className="text-2xl font-bold">Your Cart</h1>
         </div>
+
+        {/* Welcome Message */}
+        {user && userProfile && (
+          <div className="mb-6">
+            <h2 className="text-xl text-gray-700">
+              Welcome, {getUserFirstName()}!
+            </h2>
+          </div>
+        )}
 
         <div className="grid md:grid-cols-3 gap-6">
           {/* Cart Items */}
@@ -183,6 +247,67 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                 ))}
               </CardContent>
             </Card>
+
+            {/* Delivery Address Form - only show when delivery is selected */}
+            {shoppingType === 'delivery' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Delivery Address</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 gap-4">
+                    <div>
+                      <Label htmlFor="street">Street Address</Label>
+                      <Input
+                        id="street"
+                        value={deliveryAddress.street}
+                        onChange={(e) => setDeliveryAddress(prev => ({ ...prev, street: e.target.value }))}
+                        placeholder="123 Main St"
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={deliveryAddress.city}
+                          onChange={(e) => setDeliveryAddress(prev => ({ ...prev, city: e.target.value }))}
+                          placeholder="Austin"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          value={deliveryAddress.state}
+                          onChange={(e) => setDeliveryAddress(prev => ({ ...prev, state: e.target.value }))}
+                          placeholder="TX"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="zipCode">ZIP Code</Label>
+                        <Input
+                          id="zipCode"
+                          value={deliveryAddress.zipCode}
+                          onChange={(e) => setDeliveryAddress(prev => ({ ...prev, zipCode: e.target.value }))}
+                          placeholder="78701"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="instructions">Special Delivery Instructions (Optional)</Label>
+                      <Textarea
+                        id="instructions"
+                        value={deliveryAddress.instructions}
+                        onChange={(e) => setDeliveryAddress(prev => ({ ...prev, instructions: e.target.value }))}
+                        placeholder="Leave at front door, ring doorbell, etc."
+                        rows={3}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
           {/* Shopping Options & Summary */}
@@ -239,29 +364,60 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* Store Totals */}
+            {/* Store Totals with Expandable Items */}
             <Card>
               <CardHeader>
                 <CardTitle>Price Comparison</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 {storeTotals.map((store, index) => (
-                  <div 
-                    key={store.store}
-                    className={`flex justify-between items-center p-3 rounded-lg ${
-                      index === 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <span className="font-medium">{store.store}</span>
-                      {index === 0 && (
-                        <Badge className="ml-2 bg-green-500 text-white text-xs">
-                          Best Price!
-                        </Badge>
-                      )}
+                  <Collapsible key={store.store}>
+                    <div 
+                      className={`rounded-lg ${
+                        index === 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-50'
+                      }`}
+                    >
+                      <CollapsibleTrigger 
+                        className="w-full p-3 flex justify-between items-center hover:bg-opacity-80 transition-colors"
+                        onClick={() => toggleStoreExpansion(store.storeKey)}
+                      >
+                        <div className="flex items-center">
+                          <span className="font-medium">{store.store}</span>
+                          {index === 0 && (
+                            <Badge className="ml-2 bg-green-500 text-white text-xs">
+                              Best Price!
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <span className="text-lg font-semibold">${store.total}</span>
+                          {expandedStores[store.storeKey] ? (
+                            <ChevronUp className="h-4 w-4" />
+                          ) : (
+                            <ChevronDown className="h-4 w-4" />
+                          )}
+                        </div>
+                      </CollapsibleTrigger>
+                      
+                      <CollapsibleContent>
+                        <div className="px-3 pb-3 border-t border-gray-200 mt-2 pt-2">
+                          <div className="space-y-2">
+                            {store.items.map((item, itemIndex) => (
+                              <div key={itemIndex} className="flex justify-between items-center text-sm">
+                                <span className="text-gray-600">
+                                  {item.name} x{item.quantity}
+                                </span>
+                                <div className="text-right">
+                                  <div className="text-gray-500">${item.price.toFixed(2)} each</div>
+                                  <div className="font-medium">${item.total.toFixed(2)}</div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </CollapsibleContent>
                     </div>
-                    <span className="text-lg font-semibold">${store.total}</span>
-                  </div>
+                  </Collapsible>
                 ))}
               </CardContent>
             </Card>
