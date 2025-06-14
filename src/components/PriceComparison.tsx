@@ -34,11 +34,35 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
   // Define which items are unavailable at which stores and their substitutes
   const getUnavailableItems = (storeKey: string) => {
     const unavailableItems: Record<string, string[]> = {
-      'aldi': ['DiGiorno Rising Crust Three Meat Pizza', 'Stouffers Lasagna with Meat & Sauce'],
-      'sams': ['DiGiorno Rising Crust Three Meat Pizza', 'Farm Rich Mozzarella Sticks'],
-      'heb': ['DiGiorno Rising Crust Four Cheese Pizza', 'Farm Rich Mozzarella Sticks', 'Hungry-Man Boneless Fried Chicken'],
-      'kroger': ['DiGiorno Rising Crust Four Cheese Pizza'],
-      'target': [],
+      'aldi': [
+        'DiGiorno Rising Crust Three Meat Pizza', 
+        'Stouffers Lasagna with Meat & Sauce',
+        'Hungry-Man Boneless Fried Chicken',
+        'Marie Callenders Chicken Pot Pie'
+      ],
+      'sams': [
+        'DiGiorno Rising Crust Three Meat Pizza', 
+        'Farm Rich Mozzarella Sticks',
+        'Lean Cuisine Chicken Fettuccine Alfredo',
+        'Healthy Choice Cafe Steamers Grilled Chicken Marinara'
+      ],
+      'heb': [
+        'DiGiorno Rising Crust Four Cheese Pizza', 
+        'Farm Rich Mozzarella Sticks', 
+        'Hungry-Man Boneless Fried Chicken',
+        'Great Value Chicken Alfredo Pasta',
+        'Great Value Enchiladas & Spanish Rice',
+        'Great Value Onion Rings'
+      ],
+      'kroger': [
+        'DiGiorno Rising Crust Four Cheese Pizza',
+        'DiGiorno Stuffed Crust Pepperoni Pizza',
+        'Amys Mexican Casserole Bowl'
+      ],
+      'target': [
+        'Red Baron Four Meat Classic Crust Pizza',
+        'Devour Sweet & Smoky BBQ Meatballs'
+      ],
       'walmart': []
     };
     
@@ -46,16 +70,42 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
   };
 
   // Define substitution mappings for items that are unavailable
-  const getSubstituteItem = (originalItem: string) => {
-    const substituteMappings: Record<string, string> = {
-      'DiGiorno Rising Crust Three Meat Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
-      'DiGiorno Rising Crust Four Cheese Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
-      'Stouffers Lasagna with Meat & Sauce': 'Great Value Chicken Alfredo Pasta',
-      'Farm Rich Mozzarella Sticks': 'Great Value Onion Rings',
-      'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese'
+  const getSubstituteItem = (originalItem: string, storeKey: string) => {
+    // Store-specific substitution mappings
+    const substituteMappings: Record<string, Record<string, string>> = {
+      'aldi': {
+        'DiGiorno Rising Crust Three Meat Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
+        'Stouffers Lasagna with Meat & Sauce': 'Lean Cuisine Chicken Fettuccine Alfredo',
+        'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese',
+        'Marie Callenders Chicken Pot Pie': 'Healthy Choice Cafe Steamers Grilled Chicken Marinara'
+      },
+      'sams': {
+        'DiGiorno Rising Crust Three Meat Pizza': 'DiGiorno Rising Crust Four Cheese Pizza',
+        'Farm Rich Mozzarella Sticks': 'TGI Fridays Loaded Potato Skins',
+        'Lean Cuisine Chicken Fettuccine Alfredo': 'Stouffers Lasagna with Meat & Sauce',
+        'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'Marie Callenders Chicken Pot Pie'
+      },
+      'heb': {
+        'DiGiorno Rising Crust Four Cheese Pizza': 'DiGiorno Rising Crust Three Meat Pizza',
+        'Farm Rich Mozzarella Sticks': 'TGI Fridays Loaded Potato Skins',
+        'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese',
+        'Great Value Chicken Alfredo Pasta': 'Stouffers Lasagna with Meat & Sauce',
+        'Great Value Enchiladas & Spanish Rice': 'Amys Mexican Casserole Bowl',
+        'Great Value Onion Rings': 'Ore-Ida Golden Crinkles French Fries'
+      },
+      'kroger': {
+        'DiGiorno Rising Crust Four Cheese Pizza': 'Red Baron Four Cheese Classic Crust Pizza',
+        'DiGiorno Stuffed Crust Pepperoni Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
+        'Amys Mexican Casserole Bowl': 'Devour Sweet & Smoky BBQ Meatballs'
+      },
+      'target': {
+        'Red Baron Four Meat Classic Crust Pizza': 'Red Baron Four Cheese Classic Crust Pizza',
+        'Devour Sweet & Smoky BBQ Meatballs': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese'
+      },
+      'walmart': {}
     };
     
-    return substituteMappings[originalItem] || originalItem;
+    return substituteMappings[storeKey]?.[originalItem] || originalItem;
   };
 
   // Generate substitutions for stores based on actual cart items
@@ -70,7 +120,7 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
     // Only create substitutions for items that are both in the cart AND unavailable at this store
     unavailableAtStore.forEach(unavailableItem => {
       if (cartItemNames.includes(unavailableItem)) {
-        const substitute = getSubstituteItem(unavailableItem);
+        const substitute = getSubstituteItem(unavailableItem, storeKey);
         storeSubstitutions.push({
           originalItem: unavailableItem,
           substituteItem: substitute,
