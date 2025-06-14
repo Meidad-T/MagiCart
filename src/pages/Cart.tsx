@@ -5,11 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
+import { PriceComparison } from "@/components/PriceComparison";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -21,7 +21,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [shoppingType, setShoppingType] = useState<'pickup' | 'delivery' | 'instore'>('pickup');
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
-  const [expandedStores, setExpandedStores] = useState<Record<string, boolean>>({});
   const [cartExpanded, setCartExpanded] = useState(false);
 
   useEffect(() => {
@@ -73,34 +72,23 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     };
 
     const storeTotals = stores.map(store => {
-      const total = cart.reduce((sum, cartItem) => {
+      const subtotal = cart.reduce((sum, cartItem) => {
         const price = cartItem[`${store}_price` as keyof ProductWithPrices] as number;
         return sum + (price * cartItem.quantity);
       }, 0);
 
-      const items = cart.map(cartItem => ({
-        name: cartItem.name,
-        quantity: cartItem.quantity,
-        price: cartItem[`${store}_price` as keyof ProductWithPrices] as number,
-        total: (cartItem[`${store}_price` as keyof ProductWithPrices] as number) * cartItem.quantity
-      }));
+      const taxesAndFees = subtotal * 0.0875; // 8.75% tax rate
 
       return {
         store: storeNames[store as keyof typeof storeNames],
         storeKey: store,
-        total: total.toFixed(2),
-        items
+        subtotal: subtotal.toFixed(2),
+        taxesAndFees: taxesAndFees.toFixed(2),
+        total: (subtotal + taxesAndFees).toFixed(2)
       };
     });
 
     return storeTotals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
-  };
-
-  const toggleStoreExpansion = (storeKey: string) => {
-    setExpandedStores(prev => ({
-      ...prev,
-      [storeKey]: !prev[storeKey]
-    }));
   };
 
   const removeFromCart = (itemId: string) => {
@@ -128,7 +116,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   // Determine which items to show
   const shouldCollapse = cart.length > 8;
-  const itemsToShow = shouldCollapse && !cartExpanded ? cart.slice(0, 5) : cart;
+  const itemsToShow = shouldCollapse && !cartExpanded ? cart.slice(0, 4) : cart;
 
   if (cart.length === 0) {
     return (
@@ -194,7 +182,20 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           <div className="md:col-span-2 space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Cart Items ({cart.length})</CardTitle>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Cart Items ({cart.length})</CardTitle>
+                  {/* Expand Button at Top */}
+                  {shouldCollapse && !cartExpanded && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => setCartExpanded(true)}
+                      className="text-gray-600 hover:text-gray-800"
+                    >
+                      <ChevronDown className="h-4 w-4 mr-2" />
+                      Show {cart.length - 4} More
+                    </Button>
+                  )}
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 {itemsToShow.map((item) => (
@@ -242,25 +243,16 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   </div>
                 ))}
 
-                {/* Expand/Collapse Button */}
-                {shouldCollapse && (
+                {/* Collapse Button at Bottom */}
+                {shouldCollapse && cartExpanded && (
                   <div className="text-center pt-4">
                     <Button
                       variant="ghost"
-                      onClick={() => setCartExpanded(!cartExpanded)}
+                      onClick={() => setCartExpanded(false)}
                       className="text-gray-600 hover:text-gray-800"
                     >
-                      {cartExpanded ? (
-                        <>
-                          <ChevronUp className="h-4 w-4 mr-2" />
-                          Show Less
-                        </>
-                      ) : (
-                        <>
-                          <ChevronDown className="h-4 w-4 mr-2" />
-                          Show {cart.length - 5} More Items
-                        </>
-                      )}
+                      <ChevronUp className="h-4 w-4 mr-2" />
+                      Show Less
                     </Button>
                   </div>
                 )}
@@ -333,71 +325,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           </div>
         </div>
 
-        {/* Horizontal Price Comparison Panel */}
+        {/* Price Comparison Component */}
         <div className="mt-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Comparison</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {storeTotals.map((store, index) => (
-                  <Collapsible key={store.store}>
-                    <div 
-                      className={`rounded-lg p-4 ${
-                        index === 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-50 border border-gray-200'
-                      }`}
-                    >
-                      <CollapsibleTrigger 
-                        className="w-full flex justify-between items-center hover:bg-opacity-80 transition-colors"
-                        onClick={() => toggleStoreExpansion(store.storeKey)}
-                      >
-                        <div className="flex items-center">
-                          <span className="font-medium text-lg">{store.store}</span>
-                          {index === 0 && (
-                            <Badge className="ml-2 bg-green-500 text-white text-xs">
-                              Best Price!
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xl font-bold">${store.total}</span>
-                          {expandedStores[store.storeKey] ? (
-                            <ChevronUp className="h-4 w-4" />
-                          ) : (
-                            <ChevronDown className="h-4 w-4" />
-                          )}
-                        </div>
-                      </CollapsibleTrigger>
-                      
-                      <CollapsibleContent>
-                        <div className="mt-4 pt-4 border-t border-gray-200">
-                          <div className="space-y-3">
-                            {store.items.map((item, itemIndex) => (
-                              <div key={itemIndex} className="flex justify-between items-center">
-                                <div className="flex-1">
-                                  <span className="text-sm text-gray-700 font-medium">
-                                    {item.name}
-                                  </span>
-                                  <div className="text-xs text-gray-500">
-                                    Quantity: {item.quantity}
-                                  </div>
-                                </div>
-                                <div className="text-right ml-4">
-                                  <div className="text-sm text-gray-500">${item.price.toFixed(2)} each</div>
-                                  <div className="font-semibold text-gray-900">${item.total.toFixed(2)}</div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      </CollapsibleContent>
-                    </div>
-                  </Collapsible>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <PriceComparison storeTotals={storeTotals} />
         </div>
       </div>
     </div>
