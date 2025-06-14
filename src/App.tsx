@@ -15,6 +15,7 @@ const queryClient = new QueryClient();
 
 // Lazy load the CheckoutDetails page
 const CheckoutDetails = lazy(() => import("./pages/CheckoutDetails"));
+const OrderSummary = lazy(() => import("./pages/OrderSummary"));
 
 const App = () => {
   const [cart, setCart] = useState<Array<ProductWithPrices & { quantity: number }>>([]);
@@ -34,6 +35,7 @@ const App = () => {
               <Route path="/" element={<Index cart={cart} onUpdateCart={updateCart} />} />
               <Route path="/cart" element={<Cart cart={cart} onUpdateCart={updateCart} />} />
               <Route path="/checkout-details" element={<CheckoutDetails />} />
+              <Route path="/order-summary" element={<OrderSummary />} />
               <Route path="/auth" element={<Auth />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

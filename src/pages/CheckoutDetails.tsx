@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CalendarDays, Map } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import MapboxMap from "@/components/MapboxMap";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -14,12 +14,6 @@ interface LocationState {
   shoppingType?: ShoppingType;
   // Optionally pass cart/other stuff if wanted
 }
-
-const mockStoreAddresses = [
-  "1234 Main St, Austin, TX",
-  "2000 Helpful Ave, H-E-B City, TX",
-  "8900 Superstore Blvd, Retail Park, TX"
-];
 
 export default function CheckoutDetails() {
   const navigate = useNavigate();
@@ -35,12 +29,29 @@ export default function CheckoutDetails() {
   const [storeZip, setStoreZip] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [routeInfo, setRouteInfo] = useState({ distance: "", duration: "" });
 
-  // Mock user location for the map (static for now)
-  const userAddress = "Your Home, TX";
+  // Mock user location for the map
+  const userAddress = "Your Home, Austin, TX";
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
     : !!(storeStreet && storeCity && storeState && storeZip && pickupTime);
+
+  const handlePlaceOrder = () => {
+    const storeAddress = `${storeStreet}, ${storeCity}, ${storeState} ${storeZip}`;
+    
+    navigate("/order-summary", {
+      state: {
+        shoppingType,
+        storeName: "H-E-B", // This could be dynamic based on selection
+        storeAddress: shoppingType === "delivery" ? undefined : storeAddress,
+        deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
+        pickupTime,
+        orderTotal: 45.67, // This would come from cart
+        itemCount: 8 // This would come from cart
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
@@ -118,39 +129,33 @@ export default function CheckoutDetails() {
             </>
           )}
 
-          {/* Simple Map with Route Visualization */}
+          {/* Interactive Map */}
           <div>
-            <Label>Map Preview</Label>
-            <div className="rounded-xl overflow-hidden border bg-white p-3 my-2 flex flex-col items-center">
-              {/* For demonstration, we use a static placeholder image for the map.
-                  You can later swap in a Mapbox or Google Maps widget easily. */}
-              <div className="relative w-full h-48 flex items-center justify-center bg-blue-50">
-                <img
-                  src="https://maps.googleapis.com/maps/api/staticmap?center=Downtown+Austin,TX&zoom=11&size=600x200&maptype=roadmap&markers=color:blue%7Clabel:H%7C30.2672,-97.7431&markers=color:green%7Clabel:S%7C30.3136,-97.7431&key=AIzaSyD-PLACEHOLDER"
-                  alt="Route Map"
-                  className="w-full h-48 object-cover"
-                  style={{ filter: "saturate(1.1) blur(0.5px)" }}
-                  draggable={false}
-                />
-                <Map className="absolute left-3 top-3 h-6 w-6 text-blue-500 bg-white rounded-full p-1 shadow" />
+            <MapboxMap
+              origin={userAddress}
+              destination={
+                shoppingType === "delivery" 
+                  ? deliveryAddress || "Austin, TX"
+                  : (storeStreet && storeCity ? `${storeStreet}, ${storeCity}` : "Austin, TX")
+              }
+              onRouteCalculated={(distance, duration) => {
+                setRouteInfo({ distance, duration });
+              }}
+            />
+            {routeInfo.distance && (
+              <div className="text-sm text-gray-700 pt-2 text-center">
+                Distance: <span className="font-medium">{routeInfo.distance}</span> • 
+                Duration: <span className="font-medium">{routeInfo.duration}</span>
               </div>
-              <div className="text-sm text-gray-700 pt-2">
-                Route from <span className="font-medium">{userAddress}</span> to{" "}
-                <span className="font-medium">
-                  {shoppingType === "delivery" 
-                    ? "Your Address" 
-                    : (storeStreet && storeCity ? `${storeStreet}, ${storeCity}` : "Selected Store")}
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
           <Button
             className="w-full bg-blue-500 hover:bg-blue-600"
             disabled={!canProceed}
-            onClick={() => navigate("/")}
+            onClick={handlePlaceOrder}
           >
-            Place Order
+            Continue to Order Summary
           </Button>
         </CardContent>
       </Card>
