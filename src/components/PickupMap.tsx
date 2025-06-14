@@ -20,7 +20,12 @@ const storeIcon = L.divIcon({
 function fitRoute(map: any, points: [number, number][]) {
   if (map && points.length > 1) {
     const bounds = L.latLngBounds(points);
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 18 });
+    // Heavily pad the bounds to keep everything tight and cute
+    map.fitBounds(bounds, { padding: [90, 90], maxZoom: 19, animate: false });
+    // Lock bounds and zoom tight, so user can't move out
+    map.setMinZoom(18);
+    map.setMaxZoom(20);
+    map.setMaxBounds(bounds.pad(0.7));
   }
 }
 
@@ -45,55 +50,50 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       </div>
     );
 
-  // Draw only a straight line
   const straightLine: [number, number][] = [start, dest];
 
   return (
     <div
       className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2 relative"
-      style={{ height: 180 }}
+      style={{ height: 220, background: "#eaf3ff" }}
     >
       <MapContainer
         style={{
           width: "100%",
           height: "100%",
-          pointerEvents: "none",
-          filter: "contrast(1.08) saturate(0.88) brightness(1.08) grayscale(0.3)",
+          transition: "filter 0.2s",
         }}
-        zoom={18}
+        zoom={19}
+        minZoom={18}
+        maxZoom={20}
         center={[(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]}
         dragging={false}
         scrollWheelZoom={false}
         doubleClickZoom={false}
         zoomControl={false}
         attributionControl={false}
+        closePopupOnClick={false}
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
         <Polyline
           positions={straightLine}
           pathOptions={{
-            color: "#2563eb",
-            weight: 7,
-            opacity: 0.95,
-            dashArray: "", // solid line
+            color: "#3786F1",
+            weight: 13,
+            opacity: 0.94,
+            dashArray: "",
             lineCap: "round",
+            className: "pickup-cute-route"
           }}
         />
         <Marker position={start} icon={startIcon} />
         <Marker position={dest} icon={storeIcon} />
         <MapFitter points={straightLine} />
       </MapContainer>
-      {/* Soft white overlay for cartoon look */}
-      <div
-        className="pointer-events-none absolute inset-0 rounded-xl"
-        style={{
-          background: "rgba(255,255,255,0.82)",
-          backdropFilter: "blur(1.5px)",
-          zIndex: 20,
-        }}
-      />
-      {/* Keep markers above overlay (by raising pointerEvents) */}
-      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 30 }} />
+      {/* Remove white overlay for a more vibrant, Waze-like view */}
+      {/* marker layer is already prominent */}
+      {/* Border for nice modern look */}
+      <div className="absolute inset-0 border-[3px] border-blue-300 pointer-events-none rounded-xl" style={{ zIndex: 20, opacity: 0.23 }} />
     </div>
   );
 }
