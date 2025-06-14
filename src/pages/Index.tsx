@@ -1,11 +1,11 @@
-
 import { useState } from "react";
-import { ShoppingCart, Loader } from "lucide-react";
+import { Loader } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import SearchDropdown from "@/components/SearchDropdown";
+import Header from "@/components/Header";
+import ProductFeed from "@/components/ProductFeed";
 
 // Real data from your Excel file
 const mockItems = [
@@ -450,46 +450,21 @@ const Index = () => {
   const storeTotals = calculateStoreTotals();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Google-style clean header */}
-      <div className="flex items-center justify-between p-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Smart Cart</h1>
-        
-        {/* Cart button */}
-        <Button 
-          variant="ghost" 
-          className="relative"
-          onClick={handleCartClick}
-          disabled={isLoading}
-        >
-          {isLoading ? (
-            <Loader className="h-6 w-6 animate-spin" />
-          ) : (
-            <ShoppingCart className="h-6 w-6" />
-          )}
-          {cart.length > 0 && !isLoading && (
-            <Badge className="absolute -top-2 -right-2 bg-blue-500 text-white min-w-5 h-5 flex items-center justify-center text-xs">
-              {cart.reduce((sum, item) => sum + item.quantity, 0)}
-            </Badge>
-          )}
-        </Button>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with search */}
+      <Header 
+        items={mockItems}
+        cart={cart}
+        onAddToCart={addToCart}
+        onCartClick={handleCartClick}
+        isLoading={isLoading}
+      />
 
-      {/* Main content - Google style */}
-      <div className="flex flex-col items-center justify-center min-h-[60vh] px-6">
-        <div className="text-center mb-12">
-          <h2 className="text-6xl font-normal text-gray-900 mb-8">Smart Cart</h2>
-          <p className="text-xl text-gray-600 mb-12">Find the best grocery prices across all stores</p>
-        </div>
-
-        {/* Big search bar */}
-        <div className="w-full max-w-2xl">
-          <SearchDropdown 
-            items={mockItems}
-            onAddToCart={addToCart}
-          />
-        </div>
-      </div>
+      {/* Product Feed */}
+      <ProductFeed 
+        items={mockItems}
+        onAddToCart={addToCart}
+      />
 
       {/* Cart Summary Modal */}
       {showCartSummary && (

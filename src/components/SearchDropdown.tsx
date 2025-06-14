@@ -58,9 +58,10 @@ const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
   const handleAddToCart = (item: Item, event: React.MouseEvent) => {
     event.stopPropagation();
     onAddToCart(item);
+    setSearchTerm("");
+    setIsOpen(false);
   };
 
-  // Find the best price for each item
   const getBestPrice = (item: Item) => {
     const prices = [
       item.walmart_price,
@@ -76,17 +77,17 @@ const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
   return (
     <div className="relative w-full" ref={dropdownRef}>
       <div className="relative">
-        <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
+        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
         <Input
           placeholder="Search for groceries..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-16 pr-6 py-6 text-lg h-16 rounded-full border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-lg bg-white"
+          className="pl-12 pr-4 py-2 h-10 rounded-full border border-gray-300 focus:border-blue-500 focus:ring-blue-500 bg-white"
         />
       </div>
 
       {isOpen && filteredItems.length > 0 && (
-        <Card className="absolute top-full left-0 right-0 mt-4 max-h-96 overflow-y-auto z-50 shadow-2xl border-2 bg-white">
+        <Card className="absolute top-full left-0 right-0 mt-2 max-h-96 overflow-y-auto z-50 shadow-2xl border bg-white">
           <CardContent className="p-0">
             {filteredItems.map(item => {
               const bestPrice = getBestPrice(item);
@@ -94,30 +95,30 @@ const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 border-b last:border-b-0"
+                  className="flex items-center justify-between p-3 hover:bg-gray-50 border-b last:border-b-0"
                 >
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-medium text-gray-900">{item.item}</h3>
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="font-medium text-gray-900 text-sm">{item.item}</h3>
                       <Badge variant="secondary" className="text-xs">
                         {item.category}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-semibold text-green-600">
+                      <span className="text-sm font-semibold text-green-600">
                         From ${bestPrice.toFixed(2)}
                       </span>
-                      <span className="text-sm text-gray-500">
+                      <span className="text-xs text-gray-500">
                         • {item.unit}
                       </span>
                     </div>
                   </div>
                   <Button
                     size="sm"
-                    className="bg-blue-500 hover:bg-blue-600 ml-4 rounded-full"
+                    className="bg-blue-500 hover:bg-blue-600 ml-3 text-xs px-2 py-1 h-7"
                     onClick={(e) => handleAddToCart(item, e)}
                   >
-                    <ShoppingCart className="h-4 w-4 mr-1" />
+                    <ShoppingCart className="h-3 w-3 mr-1" />
                     Add
                   </Button>
                 </div>
