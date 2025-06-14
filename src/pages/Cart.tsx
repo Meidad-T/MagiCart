@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { PriceComparison } from "@/components/PriceComparison";
+import { IntelligentRecommendation } from "@/components/IntelligentRecommendation";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -393,6 +394,14 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </CardContent>
             </Card>
           </div>
+        </div>
+
+        {/* Intelligent Recommendation */}
+        <div className="mt-8">
+          <IntelligentRecommendation 
+            storeTotals={storeTotals}
+            shoppingType={shoppingType}
+          />
         </div>
 
         {/* Price Comparison Component */}
