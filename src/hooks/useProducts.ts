@@ -48,47 +48,47 @@ export const useProducts = () => {
           const imageMap: Record<string, string> = {
             // Dairy products
             '1 Gallon Whole Milk': 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=300&h=200&fit=crop',
-            'Eggs 12 count': 'https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?w=300&h=200&fit=crop',
-            'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=300&h=200&fit=crop',
-            'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=300&h=200&fit=crop',
+            'Eggs 12 count': 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=300&h=200&fit=crop',
+            'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=300&h=200&fit=crop',
+            'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=300&h=200&fit=crop',
             'Salted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=300&h=200&fit=crop',
-            'Unsalted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=300&h=200&fit=crop',
+            'Unsalted Butter': 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=300&h=200&fit=crop',
             
             // Produce
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=300&h=200&fit=crop',
-            'Tomatoes': 'https://images.unsplash.com/photo-1546470427-e5ac89c8ba8b?w=300&h=200&fit=crop',
+            'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=300&h=200&fit=crop',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=300&h=200&fit=crop',
             'Oranges': 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=300&h=200&fit=crop',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=300&h=200&fit=crop',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=300&h=200&fit=crop',
-            'Onions': 'https://images.unsplash.com/photo-1518322444705-f661f0d6954d?w=300&h=200&fit=crop',
+            'Onions': 'https://images.unsplash.com/photo-1508747702303-7e6e190ed8b3?w=300&h=200&fit=crop',
             
             // Bakery
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=300&h=200&fit=crop',
             
             // Meat
-            'Bacon': 'https://images.unsplash.com/photo-1528607929212-2636ec44b982?w=300&h=200&fit=crop',
+            'Bacon': 'https://images.unsplash.com/photo-1608877906550-1d57c9d1b9fc?w=300&h=200&fit=crop',
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=300&h=200&fit=crop',
             'Brown Rice': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=300&h=200&fit=crop',
-            'Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=300&h=200&fit=crop',
+            'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=300&h=200&fit=crop',
             'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=300&h=200&fit=crop',
             'White Sugar': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=300&h=200&fit=crop',
-            'Brown Sugar': 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=300&h=200&fit=crop',
-            'Peanut Butter 16 ounce': 'https://images.unsplash.com/photo-1560180980-23c49cb050ce?w=300&h=200&fit=crop',
-            'Grape Jelly 18 ounce': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
-            'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300&h=200&fit=crop',
+            'Brown Sugar': 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=300&h=200&fit=crop',
+            'Peanut Butter 16 ounce': 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=300&h=200&fit=crop',
+            'Grape Jelly 18 ounce': 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=300&h=200&fit=crop',
+            'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=300&h=200&fit=crop',
             
-            // Drinks
+            // Drinks - each with unique bottles/containers
             '3 Liter Coke Bottle': 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&h=200&fit=crop',
-            '3 Liter Sprite Bottle': 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&h=200&fit=crop',
-            '3 Liter Dr Pepper Bottle': 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=300&h=200&fit=crop',
-            'Bottled water 1 Gallon': 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=200&fit=crop',
+            '3 Liter Sprite Bottle': 'https://images.unsplash.com/photo-1594971475674-6a97f8fe8c2d?w=300&h=200&fit=crop',
+            '3 Liter Dr Pepper Bottle': 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=300&h=200&fit=crop',
+            'Bottled water 1 Gallon': 'https://images.unsplash.com/photo-1622618338451-9b6b1b5e58a2?w=300&h=200&fit=crop',
             
-            // Chips
-            'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300&h=200&fit=crop',
-            'Dortios BBQ 14.5 Oz Bag': 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300&h=200&fit=crop',
+            // Chips - each with different flavors/bags
+            'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1613743983303-b3e89f8a2b80?w=300&h=200&fit=crop',
+            'Dortios BBQ 14.5 Oz Bag': 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=300&h=200&fit=crop',
             'Dortios Nacho Cheese 14.5 Oz Bag': 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=300&h=200&fit=crop'
           };
           
