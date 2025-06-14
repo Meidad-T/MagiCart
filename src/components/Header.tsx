@@ -42,9 +42,9 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
               className="flex items-center space-x-3 text-white hover:bg-blue-400/20 transition-colors"
             >
               <img 
-                src="/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png" 
+                src="/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png" 
                 alt="MagiCart Logo" 
-                className="h-8 w-8"
+                className="h-8 w-8 scale-115"
               />
               <span className="text-2xl font-bold">MagiCart</span>
             </Button>
