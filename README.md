@@ -5,7 +5,7 @@
 
 ## About the Creators
 
-**Meidad Troper** & **Kelvin Mathew**  
+**Meidad Troper** | **Kelvin Mathew & Vaidic Soni**  
 Computer Science Students at Texas State University (TXST)
 
 ## Our Story
@@ -165,7 +165,7 @@ Special thanks to:
 *Built with ❤️ by international students, for students everywhere*
 
 **Contact Us:**
-- GitHub: [Your GitHub profiles]
+- GitHub: Meidad-T
 - University: Texas State University
 - Program: Computer Science
 
