@@ -5,36 +5,24 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-
-interface Item {
-  id: number;
-  item: string;
-  category: string;
-  walmart_price: number;
-  heb_price: number;
-  aldi_price: number;
-  target_price: number;
-  kroger_price: number;
-  sams_price: number;
-  unit: string;
-}
+import type { ProductWithPrices } from "@/types/database";
 
 interface SearchDropdownProps {
-  items: Item[];
-  onAddToCart: (item: Item) => void;
+  items: ProductWithPrices[];
+  onAddToCart: (item: ProductWithPrices) => void;
 }
 
 const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [filteredItems, setFilteredItems] = useState<ProductWithPrices[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (searchTerm.length > 0) {
       const filtered = items.filter(item =>
-        item.item.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchTerm.toLowerCase())
+        item.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.category.name.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setFilteredItems(filtered);
       setIsOpen(filtered.length > 0);
@@ -55,14 +43,14 @@ const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleAddToCart = (item: Item, event: React.MouseEvent) => {
+  const handleAddToCart = (item: ProductWithPrices, event: React.MouseEvent) => {
     event.stopPropagation();
     onAddToCart(item);
     setSearchTerm("");
     setIsOpen(false);
   };
 
-  const getBestPrice = (item: Item) => {
+  const getBestPrice = (item: ProductWithPrices) => {
     const prices = [
       item.walmart_price,
       item.heb_price,
@@ -99,9 +87,9 @@ const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-medium text-gray-900 text-sm">{item.item}</h3>
+                      <h3 className="font-medium text-gray-900 text-sm">{item.name}</h3>
                       <Badge variant="secondary" className="text-xs">
-                        {item.category}
+                        {item.category.name}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">

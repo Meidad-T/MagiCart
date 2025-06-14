@@ -1,0 +1,44 @@
+
+export interface Store {
+  id: string;
+  name: string;
+  display_name: string;
+  created_at: string;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  category_id: string;
+  unit: string;
+  image_url?: string;
+  description?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductPrice {
+  id: string;
+  product_id: string;
+  store_id: string;
+  price: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ProductWithPrices extends Product {
+  category: Category;
+  prices: Record<string, number>; // store name -> price
+  walmart_price: number;
+  heb_price: number;
+  aldi_price: number;
+  target_price: number;
+  kroger_price: number;
+  sams_price: number;
+}

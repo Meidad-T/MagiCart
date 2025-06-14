@@ -7,389 +7,16 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import ProductFeed from "@/components/ProductFeed";
-
-// Real data from your Excel file
-const mockItems = [
-  {
-    id: 1,
-    item: "1 Gallon Whole Milk",
-    category: "dairy",
-    walmart_price: 2.62,
-    heb_price: 3.19,
-    aldi_price: 2.59,
-    target_price: 3.59,
-    kroger_price: 3.09,
-    sams_price: 3.52,
-    unit: "each"
-  },
-  {
-    id: 2,
-    item: "Eggs 12 count",
-    category: "dairy",
-    walmart_price: 2.72,
-    heb_price: 3.56,
-    aldi_price: 5.29,
-    target_price: 3.49,
-    kroger_price: 2.99,
-    sams_price: 5.94,
-    unit: "each"
-  },
-  {
-    id: 3,
-    item: "White Bread Loaf",
-    category: "bakery",
-    walmart_price: 1.42,
-    heb_price: 1.3,
-    aldi_price: 1.55,
-    target_price: 1.49,
-    kroger_price: 1.99,
-    sams_price: 2.38,
-    unit: "each"
-  },
-  {
-    id: 4,
-    item: "Bananas",
-    category: "produce",
-    walmart_price: 0.54,
-    heb_price: 0.56,
-    aldi_price: 0.33,
-    target_price: 0.32,
-    kroger_price: 0.59,
-    sams_price: 0.66,
-    unit: "lb"
-  },
-  {
-    id: 5,
-    item: "Tomatoes",
-    category: "produce",
-    walmart_price: 0.98,
-    heb_price: 0.8,
-    aldi_price: 2.19,
-    target_price: 0.44,
-    kroger_price: 0.3,
-    sams_price: 1.37,
-    unit: "lb"
-  },
-  {
-    id: 6,
-    item: "Apples",
-    category: "produce",
-    walmart_price: 0.82,
-    heb_price: 0.7,
-    aldi_price: 0.67,
-    target_price: 1.59,
-    kroger_price: 1.5,
-    sams_price: 0.7,
-    unit: "each"
-  },
-  {
-    id: 7,
-    item: "Oranges",
-    category: "produce",
-    walmart_price: 0.79,
-    heb_price: 0.52,
-    aldi_price: 0.67,
-    target_price: 0.89,
-    kroger_price: 0.99,
-    sams_price: 0.89,
-    unit: "each"
-  },
-  {
-    id: 8,
-    item: "Lettuce",
-    category: "produce",
-    walmart_price: 1.58,
-    heb_price: 1.61,
-    aldi_price: 1.89,
-    target_price: 1.3,
-    kroger_price: 1.69,
-    sams_price: 1.09,
-    unit: "each"
-  },
-  {
-    id: 9,
-    item: "Potatoes",
-    category: "produce",
-    walmart_price: 0.83,
-    heb_price: 1.01,
-    aldi_price: 0.8,
-    target_price: 0.89,
-    kroger_price: 0.74,
-    sams_price: 0.77,
-    unit: "each"
-  },
-  {
-    id: 10,
-    item: "Onions",
-    category: "produce",
-    walmart_price: 0.94,
-    heb_price: 1.54,
-    aldi_price: 1.1,
-    target_price: 1.19,
-    kroger_price: 0.8,
-    sams_price: 0.7,
-    unit: "each"
-  },
-  {
-    id: 11,
-    item: "Mozzarella Cheese 8 oz",
-    category: "dairy",
-    walmart_price: 1.97,
-    heb_price: 2.05,
-    aldi_price: 2.05,
-    target_price: 1.99,
-    kroger_price: 2.29,
-    sams_price: 2.05,
-    unit: "each"
-  },
-  {
-    id: 12,
-    item: "Chedder Cheese 8 oz",
-    category: "dairy",
-    walmart_price: 1.97,
-    heb_price: 2.05,
-    aldi_price: 2.05,
-    target_price: 1.99,
-    kroger_price: 2.29,
-    sams_price: 2.05,
-    unit: "each"
-  },
-  {
-    id: 13,
-    item: "Salted Butter",
-    category: "dairy",
-    walmart_price: 3.96,
-    heb_price: 5.08,
-    aldi_price: 4.15,
-    target_price: 5.39,
-    kroger_price: 4.29,
-    sams_price: 4.4,
-    unit: "pack of 4 sticks"
-  },
-  {
-    id: 14,
-    item: "Unsalted Butter",
-    category: "dairy",
-    walmart_price: 3.96,
-    heb_price: 5.08,
-    aldi_price: 4.15,
-    target_price: 5.39,
-    kroger_price: 4.29,
-    sams_price: 4.4,
-    unit: "pack of 4 sticks"
-  },
-  {
-    id: 15,
-    item: "Bacon",
-    category: "meat",
-    walmart_price: 3.97,
-    heb_price: 4.49,
-    aldi_price: 4.75,
-    target_price: 5.49,
-    kroger_price: 4.99,
-    sams_price: 4.99,
-    unit: "12 Oz"
-  },
-  {
-    id: 16,
-    item: "White Rice",
-    category: "pantry",
-    walmart_price: 1.77,
-    heb_price: 1.85,
-    aldi_price: 4.15,
-    target_price: 3.49,
-    kroger_price: 2.39,
-    sams_price: 3.56,
-    unit: "32 Oz"
-  },
-  {
-    id: 17,
-    item: "Brown Rice",
-    category: "pantry",
-    walmart_price: 1.87,
-    heb_price: 1.97,
-    aldi_price: 4.15,
-    target_price: 3.49,
-    kroger_price: 2.49,
-    sams_price: 3.56,
-    unit: "32 Oz"
-  },
-  {
-    id: 18,
-    item: "Pasta",
-    category: "pantry",
-    walmart_price: 0.98,
-    heb_price: 1.02,
-    aldi_price: 1.09,
-    target_price: 1.89,
-    kroger_price: 1.25,
-    sams_price: 1.2,
-    unit: "16 Oz"
-  },
-  {
-    id: 19,
-    item: "Flour",
-    category: "pantry",
-    walmart_price: 1.32,
-    heb_price: 1.37,
-    aldi_price: 2.59,
-    target_price: 3.99,
-    kroger_price: 1.49,
-    sams_price: 2.1,
-    unit: "2 lb"
-  },
-  {
-    id: 20,
-    item: "White Sugar",
-    category: "pantry",
-    walmart_price: 3.14,
-    heb_price: 3.27,
-    aldi_price: 3.65,
-    target_price: 4.89,
-    kroger_price: 3.19,
-    sams_price: 3.3,
-    unit: "4 lb"
-  },
-  {
-    id: 21,
-    item: "Brown Sugar",
-    category: "pantry",
-    walmart_price: 3.14,
-    heb_price: 3.27,
-    aldi_price: 3.65,
-    target_price: 4.89,
-    kroger_price: 3.19,
-    sams_price: 3.3,
-    unit: "4 lb"
-  },
-  {
-    id: 22,
-    item: "Peanut Butter 16 ounce",
-    category: "pantry",
-    walmart_price: 3.12,
-    heb_price: 3.24,
-    aldi_price: 2.99,
-    target_price: 3.29,
-    kroger_price: 3.19,
-    sams_price: 3.99,
-    unit: "each"
-  },
-  {
-    id: 23,
-    item: "Grape Jelly 18 ounce",
-    category: "pantry",
-    walmart_price: 1.98,
-    heb_price: 2.06,
-    aldi_price: 2.45,
-    target_price: 1.99,
-    kroger_price: 3.69,
-    sams_price: 3.2,
-    unit: "each"
-  },
-  {
-    id: 24,
-    item: "Strawberry Jelly 18 ounce",
-    category: "pantry",
-    walmart_price: 1.98,
-    heb_price: 2.06,
-    aldi_price: 2.45,
-    target_price: 1.99,
-    kroger_price: 3.69,
-    sams_price: 3.2,
-    unit: "each"
-  },
-  {
-    id: 25,
-    item: "3 Liter Coke Bottle",
-    category: "drink",
-    walmart_price: 2.97,
-    heb_price: 3.24,
-    aldi_price: 2.5,
-    target_price: 3.25,
-    kroger_price: 2.99,
-    sams_price: 2.99,
-    unit: "each"
-  },
-  {
-    id: 26,
-    item: "3 Liter Sprite Bottle",
-    category: "drink",
-    walmart_price: 2.97,
-    heb_price: 3.24,
-    aldi_price: 2.5,
-    target_price: 3.25,
-    kroger_price: 2.99,
-    sams_price: 2.99,
-    unit: "each"
-  },
-  {
-    id: 27,
-    item: "3 Liter Dr Pepper Bottle",
-    category: "drink",
-    walmart_price: 2.97,
-    heb_price: 3.24,
-    aldi_price: 2.5,
-    target_price: 3.25,
-    kroger_price: 2.99,
-    sams_price: 2.99,
-    unit: "each"
-  },
-  {
-    id: 28,
-    item: "Bottled water 1 Gallon",
-    category: "drink",
-    walmart_price: 1.23,
-    heb_price: 1.28,
-    aldi_price: 1.49,
-    target_price: 2.49,
-    kroger_price: 1.49,
-    sams_price: 1.55,
-    unit: "each"
-  },
-  {
-    id: 29,
-    item: "Dortios Cool Ranch 14.5 Oz Bag",
-    category: "chips",
-    walmart_price: 6.99,
-    heb_price: 5.2,
-    aldi_price: 5.25,
-    target_price: 6.69,
-    kroger_price: 6.49,
-    sams_price: 6.3,
-    unit: "each"
-  },
-  {
-    id: 30,
-    item: "Dortios BBQ 14.5 Oz Bag",
-    category: "chips",
-    walmart_price: 6.99,
-    heb_price: 5.2,
-    aldi_price: 5.25,
-    target_price: 6.69,
-    kroger_price: 6.49,
-    sams_price: 6.3,
-    unit: "each"
-  },
-  {
-    id: 31,
-    item: "Dortios Nacho Cheese 14.5 Oz Bag",
-    category: "chips",
-    walmart_price: 6.99,
-    heb_price: 5.2,
-    aldi_price: 5.25,
-    target_price: 6.69,
-    kroger_price: 6.49,
-    sams_price: 6.3,
-    unit: "each"
-  }
-];
+import { useProducts } from "@/hooks/useProducts";
+import type { ProductWithPrices } from "@/types/database";
 
 const Index = () => {
-  const [cart, setCart] = useState([]);
+  const { data: items = [], isLoading: productsLoading, error } = useProducts();
+  const [cart, setCart] = useState<Array<ProductWithPrices & { quantity: number }>>([]);
   const [showCartSummary, setShowCartSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const addToCart = (item) => {
+  const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
     if (existingItem) {
       setCart(cart.map(cartItem =>
@@ -402,7 +29,7 @@ const Index = () => {
     }
     toast({
       title: "Added to cart!",
-      description: `${item.item} has been added to your cart`,
+      description: `${item.name} has been added to your cart`,
     });
   };
 
@@ -419,12 +46,12 @@ const Index = () => {
 
     const storeTotals = stores.map(store => {
       const total = cart.reduce((sum, cartItem) => {
-        const price = cartItem[`${store}_price`];
+        const price = cartItem[`${store}_price` as keyof ProductWithPrices] as number;
         return sum + (price * cartItem.quantity);
       }, 0);
 
       return {
-        store: storeNames[store],
+        store: storeNames[store as keyof typeof storeNames],
         total: total.toFixed(2)
       };
     });
@@ -448,13 +75,34 @@ const Index = () => {
     }, 2000);
   };
 
+  if (productsLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600">Error loading products. Please try again.</p>
+        </div>
+      </div>
+    );
+  }
+
   const storeTotals = calculateStoreTotals();
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header with search */}
       <Header 
-        items={mockItems}
+        items={items}
         cart={cart}
         onAddToCart={addToCart}
         onCartClick={handleCartClick}
@@ -463,7 +111,7 @@ const Index = () => {
 
       {/* Product Feed */}
       <ProductFeed 
-        items={mockItems}
+        items={items}
         onAddToCart={addToCart}
       />
 
@@ -490,7 +138,7 @@ const Index = () => {
                 {cart.map((item) => (
                   <div key={item.id} className="flex justify-between items-center py-2 border-b">
                     <div>
-                      <span className="text-sm">{item.item}</span>
+                      <span className="text-sm">{item.name}</span>
                       <span className="text-gray-500 ml-2">×{item.quantity}</span>
                     </div>
                   </div>

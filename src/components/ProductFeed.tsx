@@ -1,22 +1,10 @@
 
 import ProductCard from "./ProductCard";
-
-interface Item {
-  id: number;
-  item: string;
-  category: string;
-  walmart_price: number;
-  heb_price: number;
-  aldi_price: number;
-  target_price: number;
-  kroger_price: number;
-  sams_price: number;
-  unit: string;
-}
+import type { ProductWithPrices } from "@/types/database";
 
 interface ProductFeedProps {
-  items: Item[];
-  onAddToCart: (item: Item) => void;
+  items: ProductWithPrices[];
+  onAddToCart: (item: ProductWithPrices) => void;
 }
 
 const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {

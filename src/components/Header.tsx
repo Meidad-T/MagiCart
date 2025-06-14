@@ -3,24 +3,12 @@ import { ShoppingCart, Loader } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import SearchDropdown from "./SearchDropdown";
-
-interface Item {
-  id: number;
-  item: string;
-  category: string;
-  walmart_price: number;
-  heb_price: number;
-  aldi_price: number;
-  target_price: number;
-  kroger_price: number;
-  sams_price: number;
-  unit: string;
-}
+import type { ProductWithPrices } from "@/types/database";
 
 interface HeaderProps {
-  items: Item[];
-  cart: Array<Item & { quantity: number }>;
-  onAddToCart: (item: Item) => void;
+  items: ProductWithPrices[];
+  cart: Array<ProductWithPrices & { quantity: number }>;
+  onAddToCart: (item: ProductWithPrices) => void;
   onCartClick: () => void;
   isLoading: boolean;
 }
