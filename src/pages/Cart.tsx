@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { PriceComparison } from "@/components/PriceComparison";
+import { AIRecommendation } from "@/components/AIRecommendation";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -23,6 +23,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
   const [cartExpanded, setCartExpanded] = useState(false);
+  const [substitutionCounts, setSubstitutionCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     // Get current user
@@ -366,6 +367,13 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
+            {/* AI Recommendation */}
+            <AIRecommendation 
+              storeTotals={storeTotals}
+              substitutionCounts={substitutionCounts}
+              shoppingType={shoppingType}
+            />
+
             {/* Continue with Cheapest Store Button */}
             <Card>
               <CardContent className="pt-6">
@@ -401,6 +409,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             storeTotals={storeTotals} 
             cart={cart}
             onUpdateCart={onUpdateCart}
+            onSubstitutionCountsChange={setSubstitutionCounts}
           />
         </div>
       </div>

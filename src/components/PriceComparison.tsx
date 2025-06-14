@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +17,7 @@ interface PriceComparisonProps {
   storeTotals: StoreTotalData[];
   cart: Array<any>;
   onUpdateCart: (updatedCart: Array<any>) => void;
+  onSubstitutionCountsChange: (counts: Record<string, number>) => void;
 }
 
 interface SubstitutionItem {
@@ -26,7 +26,7 @@ interface SubstitutionItem {
   status: 'pending' | 'accepted' | 'rejected';
 }
 
-export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceComparisonProps) => {
+export const PriceComparison = ({ storeTotals, cart, onUpdateCart, onSubstitutionCountsChange }: PriceComparisonProps) => {
   const [expandedStore, setExpandedStore] = useState<string | null>(null);
   const [showRejectWarning, setShowRejectWarning] = useState<string | null>(null);
   const [substitutions, setSubstitutions] = useState<Record<string, SubstitutionItem[]>>({});
@@ -152,6 +152,15 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
     const subs = generateSubstitutions(storeKey);
     return subs.filter(sub => sub.status === 'pending').length;
   };
+
+  // Update parent component with substitution counts
+  React.useEffect(() => {
+    const counts: Record<string, number> = {};
+    storeTotals.forEach(store => {
+      counts[store.storeKey] = getSubstitutionCount(store.storeKey);
+    });
+    onSubstitutionCountsChange(counts);
+  }, [substitutions, storeTotals, onSubstitutionCountsChange]);
 
   const handleSubstitutionAction = (storeKey: string, index: number, action: 'accept' | 'reject') => {
     if (action === 'reject') {
