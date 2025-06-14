@@ -1,7 +1,7 @@
 
-import { GoogleMap, Marker, Polyline, useLoadScript } from "@react-google-maps/api";
+import { GoogleMap, Marker, DirectionsRenderer, useLoadScript } from "@react-google-maps/api";
 import mapStyle from "./mapStyle.json";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 
 // Put your emoji or custom marker images here
 const houseEmoji = "🏠";
@@ -14,11 +14,12 @@ type PickupMapProps = {
 
 export default function PickupMap({ start, dest }: PickupMapProps) {
   const googleMapsApiKey = import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
 
   // All hooks MUST be called unconditionally, before any early returns
   const { isLoaded } = useLoadScript({
     googleMapsApiKey,
-    mapIds: undefined,
+    libraries: ["routes"],
   });
 
   // Fallbacks if start/dest are not provided yet
@@ -34,14 +35,6 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     [safeStart, safeDest]
   );
 
-  const routePath = useMemo(
-    () => [
-      { lat: safeStart[0], lng: safeStart[1] },
-      { lat: safeDest[0], lng: safeDest[1] }
-    ],
-    [safeStart, safeDest]
-  );
-
   const mapOptions = useMemo(
     () => ({
       disableDefaultUI: true,
@@ -49,23 +42,35 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       mapTypeControl: false,
       streetViewControl: false,
       fullscreenControl: false,
-      restriction: {
-        latLngBounds: {
-          north: Math.max(safeStart[0], safeDest[0]) + 0.003,
-          south: Math.min(safeStart[0], safeDest[0]) - 0.003,
-          east: Math.max(safeStart[1], safeDest[1]) + 0.003,
-          west: Math.min(safeStart[1], safeDest[1]) - 0.003
-        },
-        strictBounds: true
-      },
       clickableIcons: false,
       styles: mapStyle,
-      minZoom: 17,
-      maxZoom: 21,
       gestureHandling: "none"
     }),
-    [safeStart, safeDest]
+    []
   );
+
+  // Calculate directions when start/dest change
+  useEffect(() => {
+    if (isLoaded && start && dest && window.google) {
+      const directionsService = new window.google.maps.DirectionsService();
+      
+      directionsService.route(
+        {
+          origin: { lat: start[0], lng: start[1] },
+          destination: { lat: dest[0], lng: dest[1] },
+          travelMode: window.google.maps.TravelMode.DRIVING,
+        },
+        (result, status) => {
+          if (status === window.google.maps.DirectionsStatus.OK && result) {
+            setDirectionsResult(result);
+          } else {
+            console.error("Directions request failed:", status);
+            setDirectionsResult(null);
+          }
+        }
+      );
+    }
+  }, [isLoaded, start, dest]);
 
   // Utility to safely create Google Maps objects for marker icons
   function getHouseIcon() {
@@ -83,6 +88,7 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     }
     return undefined;
   }
+
   function getStoreIcon() {
     if (
       typeof window !== "undefined" &&
@@ -115,20 +121,24 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
         options={mapOptions}
-        zoom={19}
+        zoom={13}
         center={center}
       >
-        {/* Route */}
-        <Polyline
-          path={routePath}
-          options={{
-            strokeColor: "#3786F1",
-            strokeWeight: 11,
-            strokeOpacity: 0.98,
-            zIndex: 2,
-            icons: [],
-          }}
-        />
+        {/* Show directions route if available */}
+        {directionsResult && (
+          <DirectionsRenderer
+            directions={directionsResult}
+            options={{
+              suppressMarkers: true, // We'll use custom markers
+              polylineOptions: {
+                strokeColor: "#3786F1",
+                strokeWeight: 5,
+                strokeOpacity: 0.8,
+              },
+            }}
+          />
+        )}
+        
         {/* Start marker - emoji as label */}
         <Marker
           position={{ lat: safeStart[0], lng: safeStart[1] }}
@@ -139,6 +149,7 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
           }}
           icon={getHouseIcon()}
         />
+        
         {/* Dest marker - store icon */}
         <Marker
           position={{ lat: safeDest[0], lng: safeDest[1] }}
