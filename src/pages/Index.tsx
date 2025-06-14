@@ -1,5 +1,6 @@
+
 import { useState } from "react";
-import { ShoppingCart } from "lucide-react";
+import { ShoppingCart, Loader } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -384,6 +385,8 @@ const mockItems = [
 
 const Index = () => {
   const [cart, setCart] = useState([]);
+  const [showCartSummary, setShowCartSummary] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const addToCart = (item) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -402,6 +405,50 @@ const Index = () => {
     });
   };
 
+  const calculateStoreTotals = () => {
+    const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
+    const storeNames = {
+      walmart: 'Walmart',
+      heb: 'H-E-B',
+      aldi: 'Aldi',
+      target: 'Target',
+      kroger: 'Kroger',
+      sams: "Sam's Club"
+    };
+
+    const storeTotals = stores.map(store => {
+      const total = cart.reduce((sum, cartItem) => {
+        const price = cartItem[`${store}_price`];
+        return sum + (price * cartItem.quantity);
+      }, 0);
+
+      return {
+        store: storeNames[store],
+        total: total.toFixed(2)
+      };
+    });
+
+    return storeTotals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+  };
+
+  const handleCartClick = () => {
+    if (cart.length === 0) {
+      toast({
+        title: "Empty cart",
+        description: "Add some items to your cart first!",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+      setShowCartSummary(true);
+    }, 2000);
+  };
+
+  const storeTotals = calculateStoreTotals();
+
   return (
     <div className="min-h-screen bg-white">
       {/* Google-style clean header */}
@@ -409,9 +456,18 @@ const Index = () => {
         <h1 className="text-2xl font-semibold text-gray-900">Smart Cart</h1>
         
         {/* Cart button */}
-        <Button variant="ghost" className="relative">
-          <ShoppingCart className="h-6 w-6" />
-          {cart.length > 0 && (
+        <Button 
+          variant="ghost" 
+          className="relative"
+          onClick={handleCartClick}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader className="h-6 w-6 animate-spin" />
+          ) : (
+            <ShoppingCart className="h-6 w-6" />
+          )}
+          {cart.length > 0 && !isLoading && (
             <Badge className="absolute -top-2 -right-2 bg-blue-500 text-white min-w-5 h-5 flex items-center justify-center text-xs">
               {cart.reduce((sum, item) => sum + item.quantity, 0)}
             </Badge>
@@ -435,16 +491,84 @@ const Index = () => {
         </div>
       </div>
 
+      {/* Cart Summary Modal */}
+      {showCartSummary && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-md max-h-[80vh] overflow-y-auto">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-semibold">Cart Summary</h3>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setShowCartSummary(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  ✕
+                </Button>
+              </div>
+              
+              {/* Cart Items */}
+              <div className="mb-6">
+                <h4 className="font-medium mb-3 text-gray-700">Items in your cart:</h4>
+                {cart.map((item) => (
+                  <div key={item.id} className="flex justify-between items-center py-2 border-b">
+                    <div>
+                      <span className="text-sm">{item.item}</span>
+                      <span className="text-gray-500 ml-2">×{item.quantity}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Store Totals */}
+              <div>
+                <h4 className="font-medium mb-3 text-gray-700">Total cost by store:</h4>
+                <div className="space-y-3">
+                  {storeTotals.map((store, index) => (
+                    <div 
+                      key={store.store}
+                      className={`flex justify-between items-center p-3 rounded-lg ${
+                        index === 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-50'
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <span className="font-medium">{store.store}</span>
+                        {index === 0 && (
+                          <Badge className="ml-2 bg-green-500 text-white text-xs">
+                            Best Price!
+                          </Badge>
+                        )}
+                      </div>
+                      <span className="text-lg font-semibold">${store.total}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Cart summary at bottom if there are items */}
-      {cart.length > 0 && (
+      {cart.length > 0 && !showCartSummary && (
         <div className="fixed bottom-6 right-6">
           <Card className="shadow-lg">
             <CardContent className="p-4">
               <div className="flex items-center gap-3">
                 <ShoppingCart className="h-5 w-5" />
                 <span className="font-medium">{cart.length} items in cart</span>
-                <Button size="sm" className="bg-blue-500 hover:bg-blue-600">
-                  View Cart
+                <Button 
+                  size="sm" 
+                  className="bg-blue-500 hover:bg-blue-600"
+                  onClick={handleCartClick}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "View Cart"
+                  )}
                 </Button>
               </div>
             </CardContent>
