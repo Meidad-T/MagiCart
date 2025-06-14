@@ -57,7 +57,7 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            'Oranges': 'https://images.unsplash.com/photo-1580053441293-be05b6a7a026?w=400&h=300&fit=crop&auto=format',
+            'Oranges': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&fit=crop&auto=format', // Bright oranges in a pile
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
             'Onions': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=400&h=300&fit=crop&auto=format',
@@ -66,7 +66,7 @@ export const useProducts = () => {
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
             
             // Meat
-            'Bacon': 'https://www.pexels.com/photo/food-photography-of-sliced-bacon-on-top-of-brown-chopping-board-1927377/',
+            'Bacon': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format', // Strips of bacon cooked and appetizing
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
