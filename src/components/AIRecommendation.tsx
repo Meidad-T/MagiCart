@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Sparkles, TrendingUp, Shield, Clock, DollarSign } from "lucide-react";
 import { performAdvancedStoreAnalysis } from "@/services/aiAnalysisService";
 import { AIThinkingAnimation } from "./AIThinkingAnimation";
@@ -31,6 +32,7 @@ const thinkingSteps = [
 export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType, cart = [] }: AIRecommendationProps) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
   const [recommendation, setRecommendation] = useState<any>(null);
   const [showTypingEffect, setShowTypingEffect] = useState(false);
   const [typedText, setTypedText] = useState("");
@@ -39,13 +41,28 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
     if (storeTotals.length === 0) return;
     
     const runAnalysis = async () => {
-      console.log("Starting AI analysis...");
+      console.log("Starting intelligent analysis...");
       setIsAnalyzing(true);
       setCurrentStep(0);
+      setProgress(0);
       setRecommendation(null);
+      setShowTypingEffect(false);
+      setTypedText("");
+      
+      // Progress animation over 2 seconds
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 100) {
+            clearInterval(progressInterval);
+            return 100;
+          }
+          return prev + 2; // Will reach 100 in 2 seconds (50 * 20ms intervals)
+        });
+      }, 40);
       
       try {
-        const result = await performAdvancedStoreAnalysis(
+        // Set a 2-second timeout for the entire analysis
+        const analysisPromise = performAdvancedStoreAnalysis(
           storeTotals,
           substitutionCounts,
           shoppingType,
@@ -56,14 +73,22 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
           }
         );
         
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Analysis timeout')), 2000)
+        );
+        
+        const result = await Promise.race([analysisPromise, timeoutPromise]) as any;
+        
         console.log("Analysis complete:", result);
+        clearInterval(progressInterval);
+        setProgress(100);
         setRecommendation(result);
         setIsAnalyzing(false);
         
-        // Start typing effect after analysis
+        // Start typing effect immediately after analysis
         setTimeout(() => {
           setShowTypingEffect(true);
-          const fullText = `Based on advanced analysis, we recommend ${result.recommendedStore.store} since it ${result.reason}.`;
+          const fullText = `Based on intelligent analysis, we recommend ${result.recommendedStore.store} since it ${result.reason}.`;
           let index = 0;
           
           const typeInterval = setInterval(() => {
@@ -73,14 +98,17 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
             } else {
               clearInterval(typeInterval);
             }
-          }, 30); // Fast typing - 30ms per character
+          }, 25); // Very fast typing - 25ms per character
           
           return () => clearInterval(typeInterval);
-        }, 200);
+        }, 100);
         
       } catch (error) {
-        console.error('Analysis failed:', error);
-        // Fallback recommendation
+        console.error('Analysis failed or timed out:', error);
+        clearInterval(progressInterval);
+        setProgress(100);
+        
+        // Fallback recommendation after timeout
         const fallbackResult = {
           recommendedStore: storeTotals[0],
           reason: "offers the best overall value for your shopping list",
@@ -99,7 +127,7 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
         
         setTimeout(() => {
           setShowTypingEffect(true);
-          const fullText = `Based on advanced analysis, we recommend ${fallbackResult.recommendedStore.store} since it ${fallbackResult.reason}.`;
+          const fullText = `Based on intelligent analysis, we recommend ${fallbackResult.recommendedStore.store} since it ${fallbackResult.reason}.`;
           let index = 0;
           
           const typeInterval = setInterval(() => {
@@ -109,10 +137,10 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
             } else {
               clearInterval(typeInterval);
             }
-          }, 30);
+          }, 25);
           
           return () => clearInterval(typeInterval);
-        }, 200);
+        }, 100);
       }
     };
 
@@ -140,7 +168,7 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
           
           <div className="flex-1 space-y-3">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-800">AI-Powered Recommendation</h3>
+              <h3 className="font-semibold text-gray-800">Intelligent Recommendation</h3>
               {recommendation && !isAnalyzing && (
                 <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
                   {recommendation.confidence}% confidence
@@ -150,6 +178,12 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
             
             {isAnalyzing ? (
               <div className="space-y-4">
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                  <Progress value={progress} className="h-2" />
+                  <p className="text-xs text-gray-600 text-center">{progress}% complete</p>
+                </div>
+                
                 <AIThinkingAnimation 
                   isThinking={isAnalyzing}
                   steps={thinkingSteps}
@@ -161,11 +195,11 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
                 {showTypingEffect ? (
                   <p className="text-sm text-gray-700 leading-relaxed">
                     {typedText}
-                    <span className="animate-pulse">|</span>
+                    {typedText.length < 100 && <span className="animate-pulse">|</span>}
                   </p>
                 ) : (
                   <p className="text-sm text-gray-700 leading-relaxed">
-                    Based on advanced analysis, we recommend{' '}
+                    Based on intelligent analysis, we recommend{' '}
                     <span className="font-semibold text-blue-600">
                       {recommendation.recommendedStore.store}
                     </span>{' '}

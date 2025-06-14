@@ -30,25 +30,25 @@ export const performAdvancedStoreAnalysis = async (
   onProgressUpdate: (step: number) => void
 ): Promise<AnalysisResult> => {
   
-  // Step 1: Fetch product reviews - faster timing
+  // Step 1: Fetch product reviews - very fast
   onProgressUpdate(0);
   const productNames = cartItems.map(item => item.name);
   const reviews = await fetchProductReviews(productNames);
-  await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
+  await new Promise(resolve => setTimeout(resolve, 200)); // Quick delay
   
   // Step 2: Fetch store metrics
   onProgressUpdate(1);
   const storeMetrics = await fetchStoreMetrics();
-  await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
+  await new Promise(resolve => setTimeout(resolve, 200)); // Quick delay
   
   // Step 3: Analyze market trends
   onProgressUpdate(2);
   const marketData = await analyzeMarketTrends(storeTotals.map(s => s.store));
-  await new Promise(resolve => setTimeout(resolve, 400)); // Reduced delay
+  await new Promise(resolve => setTimeout(resolve, 300)); // Quick delay
   
   // Step 4: Calculate complex scoring algorithm
   onProgressUpdate(3);
-  await new Promise(resolve => setTimeout(resolve, 300)); // Reduced delay
+  await new Promise(resolve => setTimeout(resolve, 200)); // Quick delay
   
   const storeScores = storeTotals.map(store => {
     const metrics = storeMetrics.find(m => m.name === store.store);
@@ -99,7 +99,7 @@ export const performAdvancedStoreAnalysis = async (
   
   // Step 5: Generate recommendation
   onProgressUpdate(4);
-  await new Promise(resolve => setTimeout(resolve, 200)); // Final quick delay
+  await new Promise(resolve => setTimeout(resolve, 100)); // Final quick delay
   
   // Find the best scoring store
   const bestStore = storeScores.reduce((best, current) => 
