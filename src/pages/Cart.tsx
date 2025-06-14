@@ -412,6 +412,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             storeTotals={storeTotals}
             substitutionCounts={substitutionCounts}
             shoppingType={shoppingType}
+            cart={cart}
           />
         </div>
       </div>
