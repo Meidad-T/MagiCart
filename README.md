@@ -5,7 +5,7 @@
 
 ## About the Creators
 
-**Meidad Troper** | **Kelvin Mathew & Vaidic Soni**  
+**Meidad Troper** | **Kelvin Mathew** | **Vaidic Soni**  
 Computer Science Students at Texas State University (TXST)
 
 ## Our Story
