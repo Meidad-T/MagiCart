@@ -2,7 +2,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
 // @ts-ignore - leaflet-routing-machine doesn't have perfect TypeScript support
 import 'leaflet-routing-machine';
 import { Label } from "@/components/ui/label";
@@ -75,7 +74,7 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
           L.latLng(destCoords[0], destCoords[1])
         ],
         routeWhileDragging: false,
-        show: true,
+        show: false, // Hide the routing instructions panel
         createMarker: function(i: number, waypoint: any) {
           const color = i === 0 ? '#3b82f6' : '#ef4444';
           const title = i === 0 ? `Origin: ${origin}` : `Destination: ${destination}`;
