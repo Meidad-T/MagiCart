@@ -1,12 +1,11 @@
+
 import { useState } from "react";
-import { Loader } from "lucide-react";
+import { Loader, ShoppingCart } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
-import LandingHeader from "@/components/LandingHeader";
-import WelcomeBanner from "@/components/WelcomeBanner";
-import QuickActions from "@/components/QuickActions";
-import SuggestedPlans from "@/components/SuggestedPlans";
-import CommunityDeals from "@/components/CommunityDeals";
-import LandingFooter from "@/components/LandingFooter";
+import Header from "@/components/Header";
 import ProductFeed from "@/components/ProductFeed";
 import { useProducts } from "@/hooks/useProducts";
 import type { ProductWithPrices } from "@/types/database";
@@ -16,7 +15,6 @@ const Index = () => {
   const [cart, setCart] = useState<Array<ProductWithPrices & { quantity: number }>>([]);
   const [showCartSummary, setShowCartSummary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showProductFeed, setShowProductFeed] = useState(false);
 
   const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -101,72 +99,21 @@ const Index = () => {
   const storeTotals = calculateStoreTotals();
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* New Landing Header */}
-      <LandingHeader 
+    <div className="min-h-screen bg-gray-50">
+      {/* Header with search */}
+      <Header 
+        items={items}
         cart={cart}
+        onAddToCart={addToCart}
         onCartClick={handleCartClick}
         isLoading={isLoading}
       />
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {!showProductFeed ? (
-          <>
-            {/* Welcome Banner */}
-            <div className="mb-12">
-              <WelcomeBanner />
-            </div>
-
-            {/* Quick Actions */}
-            <div className="mb-16">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Quick Actions</h2>
-              <QuickActions />
-            </div>
-
-            {/* Suggested Plans */}
-            <div className="mb-16">
-              <SuggestedPlans />
-            </div>
-
-            {/* Community Deals */}
-            <div className="mb-16">
-              <CommunityDeals />
-            </div>
-
-            {/* Browse Products Button */}
-            <div className="text-center mb-16">
-              <button
-                onClick={() => setShowProductFeed(true)}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3 rounded-lg font-medium transition-colors"
-              >
-                Browse All Products
-              </button>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Back to Landing Button */}
-            <div className="mb-6">
-              <button
-                onClick={() => setShowProductFeed(false)}
-                className="text-green-600 hover:text-green-700 font-medium"
-              >
-                ← Back to Home
-              </button>
-            </div>
-
-            {/* Product Feed */}
-            <ProductFeed 
-              items={items}
-              onAddToCart={addToCart}
-            />
-          </>
-        )}
-      </main>
-
-      {/* Footer */}
-      <LandingFooter />
+      {/* Product Feed */}
+      <ProductFeed 
+        items={items}
+        onAddToCart={addToCart}
+      />
 
       {/* Cart Summary Modal */}
       {showCartSummary && (
