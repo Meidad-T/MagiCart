@@ -1,5 +1,4 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Star, TrendingUp, Shield, Clock } from "lucide-react";
 
@@ -21,9 +20,11 @@ export const IntelligentRecommendation = ({
   shoppingType
 }: IntelligentRecommendationProps) => {
   const [recommendation, setRecommendation] = useState<any>(null);
+  const hasSetRecommendation = useRef(false);
 
   useEffect(() => {
-    if (storeTotals.length === 0) return;
+    // Only calculate recommendation if we haven't set one yet
+    if (storeTotals.length === 0 || hasSetRecommendation.current) return;
 
     // Intelligent algorithm to choose store
     const calculateStoreScore = (store: StoreTotalData, index: number) => {
@@ -149,6 +150,9 @@ export const IntelligentRecommendation = ({
       metrics: bestStore.metrics,
       savings: isChepeast ? null : `$${(parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total)).toFixed(2)} more than cheapest`
     });
+
+    // Mark that we've set the recommendation - never change it again
+    hasSetRecommendation.current = true;
   }, [storeTotals, shoppingType]);
 
   if (!recommendation || storeTotals.length === 0) return null;

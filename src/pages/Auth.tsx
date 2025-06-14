@@ -86,7 +86,7 @@ const Auth = () => {
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back
           </Button>
-          <h1 className="text-2xl font-bold">Smart Cart</h1>
+          <h1 className="text-2xl font-bold">MagiCart</h1>
         </div>
 
         <Card>
