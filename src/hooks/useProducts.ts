@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -46,76 +47,83 @@ export const useProducts = () => {
         const getProductSpecificImage = (productName: string) => {
           const imageMap: Record<string, string> = {
             // Dairy products
-            '1 Gallon Whole Milk': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Jug of milk
-            'Eggs 12 count': 'https://images.unsplash.com/photo-1464983953574-0892a716854b?w=400&h=300&auto=format&fit=crop', // Carton of eggs
-            'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1584308971803-5d04d4c3a0be?w=400&h=300&auto=format&fit=crop', // Block/shredded cheese in package
-            'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1613145993482-2c217b648c2c?w=400&h=300&auto=format&fit=crop', // Sliced/shredded cheese
-            'Salted Butter': 'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=400&h=300&auto=format&fit=crop', // Packaged butter on shelf
-            'Unsalted Butter': 'https://images.unsplash.com/photo-1528825871115-3581a5387919?w=400&h=300&auto=format&fit=crop',
+            '1 Gallon Whole Milk': 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=400&h=300&fit=crop&auto=format',
+            'Eggs 12 count': 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=400&h=300&fit=crop&auto=format',
+            'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=300&fit=crop&auto=format',
+            'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=400&h=300&fit=crop&auto=format',
+            'Salted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=300&fit=crop&auto=format',
+            'Unsalted Butter': 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=400&h=300&fit=crop&auto=format',
+            
             // Produce
-            'Bananas': 'https://images.unsplash.com/photo-1574226516831-e1dff420e8c4?w=400&h=300&auto=format&fit=crop', // Bunch of bananas on grocery shelf
-            'Tomatoes': 'https://images.unsplash.com/photo-1465101178521-c1a9136a3b41?w=400&h=300&auto=format&fit=crop', // Tomatoes in a grocery bin
-            'Apples': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Apples in store
-            'Oranges': 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?w=400&h=300&auto=format&fit=crop', // Oranges stacked for sale
-            'Lettuce': 'https://images.unsplash.com/photo-1502741338009-cac2772e18bc?w=400&h=300&auto=format&fit=crop', // Lettuce on grocery rack
-            'Potatoes': 'https://images.unsplash.com/photo-1481931098730-318b6f776db0?w=400&h=300&auto=format&fit=crop', // Bulk potatoes, sack if possible
-            'Onions': 'https://images.unsplash.com/photo-1464226184884-fa280b87c399?w=400&h=300&auto=format&fit=crop', // Bagged onions in grocery
+            'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
+            'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
+            'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
+            'Oranges': 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop&auto=format',
+            'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
+            'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
+            'Onions': 'https://images.unsplash.com/photo-1508747702303-7e6e190ed8b3?w=400&h=300&fit=crop&auto=format',
+            
             // Bakery
-            'White Bread Loaf': 'https://images.unsplash.com/photo-1548365328-9b2d815d7b8c?w=400&h=300&auto=format&fit=crop', // Packaged sandwich bread
+            'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
+            
             // Meat
-            'Bacon': 'https://images.unsplash.com/photo-1606755962773-13596f228eb6?w=400&h=300&auto=format&fit=crop', // Packaged bacon
+            'Bacon': 'https://images.unsplash.com/photo-1608877906550-1d57c9d1b9fc?w=400&h=300&fit=crop&auto=format',
+            
             // Pantry
-            'White Rice': 'https://images.unsplash.com/photo-1600185365927-3d297e6b4f47?w=400&h=300&auto=format&fit=crop', // Bag/box of white rice
-            'Brown Rice': 'https://images.unsplash.com/photo-1600185365927-3d297e6b4f47?w=400&h=300&auto=format&fit=crop',
-            'Pasta': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Dry pasta in box
-            'Flour': 'https://images.unsplash.com/photo-1588854337238-9eea46b21bea?w=400&h=300&auto=format&fit=crop', // Packaged flour
-            'White Sugar': 'https://images.unsplash.com/photo-1523293832814-d07de1128f6f?w=400&h=300&auto=format&fit=crop', // Bag of sugar
-            'Brown Sugar': 'https://images.unsplash.com/photo-1512580782-8e3caa5bc3ab?w=400&h=300&auto=format&fit=crop',
-            'Peanut Butter 16 ounce': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop', // Jar, on shelf
-            'Grape Jelly 18 ounce': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop', // Jar, on shelf
-            'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            // Drinks
-            '3 Liter Coke Bottle': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Bottle beverage
-            '3 Liter Sprite Bottle': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop',
-            '3 Liter Dr Pepper Bottle': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop',
-            'Bottled water 1 Gallon': 'https://images.unsplash.com/photo-1455656678494-4d1c4366c22b?w=400&h=300&auto=format&fit=crop', // Gallon jug
-            // Chips
-            'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1584308971803-5d04d4c3a0be?w=400&h=300&auto=format&fit=crop',
-            'Dortios BBQ 14.5 Oz Bag': 'https://images.unsplash.com/photo-1584308971803-5d04d4c3a0be?w=400&h=300&auto=format&fit=crop',
-            'Dortios Nacho Cheese 14.5 Oz Bag': 'https://images.unsplash.com/photo-1584308971803-5d04d4c3a0be?w=400&h=300&auto=format&fit=crop',
-            // Frozen Foods
-            'DiGiorno Rising Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop', // Pizza in box (not slice)
-            'DiGiorno Rising Crust Three Meat Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Rising Crust Four Cheese Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Rising Crust Supreme Meat Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Stuffed Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Stuffed Crust Five Cheese Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Thin Crust Supreme Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'DiGiorno Classic Crust Cheese & Pepperoni': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'Red Baron Four Cheese Classic Crust Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'Red Baron Four Meat Classic Crust Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'Red Baron Supreme Classic Crust Pizza': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'Tombstone Roadhouse Loaded Double Down Deluxe': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&auto=format&fit=crop',
-            'Stouffers Lasagna with Meat & Sauce': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop', // Boxed lasagna meal
-            'Marie Callenders Chicken Pot Pie': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop', // Boxed frozen meal
-            'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Great Value Chicken Alfredo Pasta': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop', // Boxed meal
-            'Lean Cuisine Chicken Fettuccine Alfredo': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Hungry-Man Boneless Fried Chicken': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Amys Mexican Casserole Bowl': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Great Value Enchiladas & Spanish Rice': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Devour Sweet & Smoky BBQ Meatballs': 'https://images.unsplash.com/photo-1519865203733-7955d2268d0b?w=400&h=300&auto=format&fit=crop',
-            'Ore-Ida Golden Crinkles French Fries': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Bagged fries
-            'TGI Fridays Loaded Potato Skins': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop',
-            'Farm Rich Mozzarella Sticks': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop',
-            'Totinos Pepperoni Pizza Rolls': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop',
-            'Great Value Onion Rings': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Bagged rings
-            'State Fair Classic Corn Dogs': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&auto=format&fit=crop', // Bagged frozen food
+            'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
+            'Brown Rice': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&h=300&fit=crop&auto=format',
+            'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
+            'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
+            'White Sugar': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop&auto=format',
+            'Brown Sugar': 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=300&fit=crop&auto=format',
+            'Peanut Butter 16 ounce': 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=400&h=300&fit=crop&auto=format',
+            'Grape Jelly 18 ounce': 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&h=300&fit=crop&auto=format',
+            'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop&auto=format',
+            
+            // Drinks - better bottle/container images
+            '3 Liter Coke Bottle': 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400&h=300&fit=crop&auto=format',
+            '3 Liter Sprite Bottle': 'https://images.unsplash.com/photo-1594971475674-6a97f8fe8c2d?w=400&h=300&fit=crop&auto=format',
+            '3 Liter Dr Pepper Bottle': 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop&auto=format',
+            'Bottled water 1 Gallon': 'https://images.unsplash.com/photo-1622618338451-9b6b1b5e58a2?w=400&h=300&fit=crop&auto=format',
+            
+            // Chips - actual chip bag images
+            'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1613743983303-b3e89f8a2b80?w=400&h=300&fit=crop&auto=format',
+            'Dortios BBQ 14.5 Oz Bag': 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=300&fit=crop&auto=format',
+            'Dortios Nacho Cheese 14.5 Oz Bag': 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400&h=300&fit=crop&auto=format',
+            
+            // Frozen Foods - pizza and frozen meal images
+            'DiGiorno Rising Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Rising Crust Three Meat Pizza': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Rising Crust Four Cheese Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Rising Crust Supreme Meat Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Stuffed Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Stuffed Crust Five Cheese Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Thin Crust Supreme Pizza': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Classic Crust Cheese & Pepperoni': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
+            'Red Baron Four Cheese Classic Crust Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
+            'Red Baron Four Meat Classic Crust Pizza': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop&auto=format',
+            'Red Baron Supreme Classic Crust Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
+            'Tombstone Roadhouse Loaded Double Down Deluxe': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
+            'Stouffers Lasagna with Meat & Sauce': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
+            'Marie Callenders Chicken Pot Pie': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&auto=format',
+            'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
+            'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://images.unsplash.com/photo-1559054663-e9b23fdf4726?w=400&h=300&fit=crop&auto=format',
+            'Great Value Chicken Alfredo Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
+            'Lean Cuisine Chicken Fettuccine Alfredo': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
+            'Hungry-Man Boneless Fried Chicken': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format',
+            'Amys Mexican Casserole Bowl': 'https://images.unsplash.com/photo-1559054663-e9b23fdf4726?w=400&h=300&fit=crop&auto=format',
+            'Great Value Enchiladas & Spanish Rice': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'Devour Sweet & Smoky BBQ Meatballs': 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop&auto=format',
+            'Ore-Ida Golden Crinkles French Fries': 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop&auto=format',
+            'TGI Fridays Loaded Potato Skins': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop&auto=format',
+            'Farm Rich Mozzarella Sticks': 'https://images.unsplash.com/photo-1619740455993-12ad3bb6ed6e?w=400&h=300&fit=crop&auto=format',
+            'Totinos Pepperoni Pizza Rolls': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
+            'Great Value Onion Rings': 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400&h=300&fit=crop&auto=format',
+            'State Fair Classic Corn Dogs': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format'
           };
-
-          return imageMap[productName] || 'https://images.unsplash.com/photo-1574226516831-e1dff420e8c4?w=400&h=300&auto=format&fit=crop';
+          
+          return imageMap[productName] || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format';
         };
 
         // Fix any zero prices with realistic pricing
