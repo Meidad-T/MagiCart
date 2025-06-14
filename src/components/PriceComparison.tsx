@@ -31,34 +31,59 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
   const [showRejectWarning, setShowRejectWarning] = useState<string | null>(null);
   const [substitutions, setSubstitutions] = useState<Record<string, SubstitutionItem[]>>({});
 
-  // Generate substitutions for stores that need them
+  // Define which items are unavailable at which stores and their substitutes
+  const getUnavailableItems = (storeKey: string) => {
+    const unavailableItems: Record<string, string[]> = {
+      'aldi': ['DiGiorno Rising Crust Three Meat Pizza', 'Stouffers Lasagna with Meat & Sauce'],
+      'sams': ['DiGiorno Rising Crust Three Meat Pizza', 'Farm Rich Mozzarella Sticks'],
+      'heb': ['DiGiorno Rising Crust Four Cheese Pizza', 'Farm Rich Mozzarella Sticks', 'Hungry-Man Boneless Fried Chicken'],
+      'kroger': ['DiGiorno Rising Crust Four Cheese Pizza'],
+      'target': [],
+      'walmart': []
+    };
+    
+    return unavailableItems[storeKey] || [];
+  };
+
+  // Define substitution mappings for items that are unavailable
+  const getSubstituteItem = (originalItem: string) => {
+    const substituteMappings: Record<string, string> = {
+      'DiGiorno Rising Crust Three Meat Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
+      'DiGiorno Rising Crust Four Cheese Pizza': 'DiGiorno Rising Crust Pepperoni Pizza',
+      'Stouffers Lasagna with Meat & Sauce': 'Great Value Chicken Alfredo Pasta',
+      'Farm Rich Mozzarella Sticks': 'Great Value Onion Rings',
+      'Hungry-Man Boneless Fried Chicken': 'Banquet Mega Bowls Buffalo Chicken Mac & Cheese'
+    };
+    
+    return substituteMappings[originalItem] || originalItem;
+  };
+
+  // Generate substitutions for stores based on actual cart items
   const generateSubstitutions = (storeKey: string): SubstitutionItem[] => {
     if (substitutions[storeKey]) return substitutions[storeKey];
 
-    const mockSubstitutions: SubstitutionItem[] = [];
+    const unavailableAtStore = getUnavailableItems(storeKey);
+    const cartItemNames = cart.map(item => item.name);
     
-    // Some example substitutions based on cart items
-    if (Math.random() > 0.7) {
-      mockSubstitutions.push({
-        originalItem: "DiGiorno Rising Crust Three Meat Pizza",
-        substituteItem: "DiGiorno Rising Crust Pepperoni Pizza", 
-        status: 'pending'
-      });
-    }
+    const storeSubstitutions: SubstitutionItem[] = [];
     
-    if (Math.random() > 0.8) {
-      mockSubstitutions.push({
-        originalItem: "Farm Rich Mozzarella Sticks",
-        substituteItem: "Great Value Mozzarella Sticks",
-        status: 'pending'
-      });
-    }
+    // Only create substitutions for items that are both in the cart AND unavailable at this store
+    unavailableAtStore.forEach(unavailableItem => {
+      if (cartItemNames.includes(unavailableItem)) {
+        const substitute = getSubstituteItem(unavailableItem);
+        storeSubstitutions.push({
+          originalItem: unavailableItem,
+          substituteItem: substitute,
+          status: 'pending'
+        });
+      }
+    });
 
-    setSubstitutions(prev => ({ ...prev, [storeKey]: mockSubstitutions }));
-    return mockSubstitutions;
+    setSubstitutions(prev => ({ ...prev, [storeKey]: storeSubstitutions }));
+    return storeSubstitutions;
   };
 
-  const getRandomSubstitutions = (storeKey: string) => {
+  const getSubstitutionCount = (storeKey: string) => {
     const subs = generateSubstitutions(storeKey);
     return subs.filter(sub => sub.status === 'pending').length;
   };
@@ -98,7 +123,7 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
   };
 
   const handleStoreExpand = (storeKey: string) => {
-    const subs = getRandomSubstitutions(storeKey);
+    const subs = getSubstitutionCount(storeKey);
     if (subs > 0) {
       setExpandedStore(expandedStore === storeKey ? null : storeKey);
     }
@@ -121,7 +146,7 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
           </TableHeader>
           <TableBody>
             {storeTotals.map((store, index) => {
-              const substitutionCount = getRandomSubstitutions(store.storeKey);
+              const substitutionCount = getSubstitutionCount(store.storeKey);
               const hasSubstitutions = substitutionCount > 0;
               const storeSubstitutions = substitutions[store.storeKey] || [];
               const isExpanded = expandedStore === store.storeKey;
