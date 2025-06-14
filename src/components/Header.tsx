@@ -44,7 +44,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
               <img 
                 src="/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png" 
                 alt="MagiCart Logo" 
-                className="h-8 w-8 scale-115"
+                className="h-10 w-10"
               />
               <span className="text-2xl font-bold">MagiCart</span>
             </Button>

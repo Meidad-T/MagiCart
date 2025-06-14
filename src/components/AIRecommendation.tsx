@@ -20,76 +20,55 @@ interface AIRecommendationProps {
 
 export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType, cart = [] }: AIRecommendationProps) => {
   const [recommendation, setRecommendation] = useState<any>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (storeTotals.length === 0) return;
     
-    setIsAnalyzing(true);
-    setProgress(0);
+    // Generate recommendation immediately
+    const topStores = storeTotals.slice(0, 4); // Get top 4 stores
+    const randomStore = topStores[Math.floor(Math.random() * topStores.length)];
     
-    // Progress bar animation over 2 seconds
-    const progressInterval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + 2; // Will reach 100 in about 2 seconds (50 intervals * 40ms)
-      });
-    }, 40);
+    // Generate realistic scores
+    const baseScore = 75 + Math.floor(Math.random() * 20); // 75-95
+    const priceScore = randomStore === storeTotals[0] ? 95 : 85 + Math.floor(Math.random() * 10);
+    const qualityScore = 78 + Math.floor(Math.random() * 17);
+    const reliabilityScore = 82 + Math.floor(Math.random() * 15);
+    const convenienceScore = shoppingType === 'pickup' && randomStore.store === 'H-E-B' ? 95 : 70 + Math.floor(Math.random() * 20);
     
-    // Generate recommendation after exactly 2 seconds
-    const timer = setTimeout(() => {
-      // Smart randomized recommendation from top 3 stores
-      const topStores = storeTotals.slice(0, 3); // Get top 3 cheapest
-      const randomStore = topStores[Math.floor(Math.random() * topStores.length)];
-      
-      // Generate realistic scores
-      const baseScore = 75 + Math.floor(Math.random() * 20); // 75-95
-      const priceScore = randomStore === storeTotals[0] ? 95 : 85 + Math.floor(Math.random() * 10);
-      const qualityScore = 78 + Math.floor(Math.random() * 17);
-      const reliabilityScore = 82 + Math.floor(Math.random() * 15);
-      const convenienceScore = shoppingType === 'pickup' && randomStore.store === 'H-E-B' ? 95 : 70 + Math.floor(Math.random() * 20);
-      
-      // Smart reason generation based on store and shopping type
-      let reason = "";
-      const substitutions = substitutionCounts[randomStore.storeKey] || 0;
-      
-      if (randomStore === storeTotals[0]) {
-        reason = "offers the best price-to-value ratio while maintaining excellent quality standards";
-      } else if (randomStore.store === 'H-E-B') {
-        reason = "excels in product quality and customer satisfaction, with superior fresh produce selection";
-      } else if (randomStore.store === 'Target') {
-        reason = "provides premium shopping experience with reliable inventory and fast fulfillment";
-      } else if (substitutions === 0) {
-        reason = "guarantees all items in stock with exceptional reliability ratings";
-      } else {
-        reason = "delivers optimal balance of price, quality, and convenience for your preferences";
+    // Smart reason generation based on store and shopping type
+    let reason = "";
+    const substitutions = substitutionCounts[randomStore.storeKey] || 0;
+    
+    if (randomStore === storeTotals[0]) {
+      reason = "offers the best price-to-value ratio while maintaining excellent quality standards";
+    } else if (randomStore.store === 'H-E-B') {
+      reason = "excels in product quality and customer satisfaction, with superior fresh produce selection";
+    } else if (randomStore.store === 'Target') {
+      reason = "provides premium shopping experience with reliable inventory and fast fulfillment";
+    } else if (randomStore.store === 'Walmart') {
+      reason = "delivers exceptional value with consistent availability and competitive pricing";
+    } else if (randomStore.store === 'Kroger') {
+      reason = "offers excellent member benefits and high-quality store brands at competitive prices";
+    } else if (substitutions === 0) {
+      reason = "guarantees all items in stock with exceptional reliability ratings";
+    } else {
+      reason = "delivers optimal balance of price, quality, and convenience for your preferences";
+    }
+    
+    const smartRecommendation = {
+      recommendedStore: randomStore,
+      reason,
+      confidence: baseScore,
+      factors: {
+        priceScore,
+        qualityScore,
+        reliabilityScore,
+        convenienceScore,
+        overallScore: baseScore
       }
-      
-      const smartRecommendation = {
-        recommendedStore: randomStore,
-        reason,
-        confidence: baseScore,
-        factors: {
-          priceScore,
-          qualityScore,
-          reliabilityScore,
-          convenienceScore,
-          overallScore: baseScore
-        }
-      };
-      
-      setRecommendation(smartRecommendation);
-      setIsAnalyzing(false);
-    }, 2000);
-    
-    return () => {
-      clearTimeout(timer);
-      clearInterval(progressInterval);
     };
+    
+    setRecommendation(smartRecommendation);
   }, [storeTotals, substitutionCounts, shoppingType, cart]);
 
   if (storeTotals.length === 0) return null;
@@ -104,7 +83,7 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
           
           <div className="flex-1 space-y-3">
             <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-gray-800">Intelligent Recommendation</h3>
+              <h3 className="font-semibold text-gray-800">AI Recommendation</h3>
               {recommendation && (
                 <span className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
                   {recommendation.confidence}% confidence
@@ -112,25 +91,10 @@ export const AIRecommendation = ({ storeTotals, substitutionCounts, shoppingType
               )}
             </div>
             
-            {isAnalyzing ? (
-              <div className="space-y-3">
-                <div className="text-sm text-gray-700">
-                  Analyzing store data, product reviews, and market trends...
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-blue-400 via-purple-500 to-blue-600 h-2 rounded-full transition-all duration-100"
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-                <div className="text-xs text-gray-500">
-                  {progress}% complete
-                </div>
-              </div>
-            ) : recommendation ? (
+            {recommendation ? (
               <div className="space-y-3">
                 <p className="text-sm text-gray-700 leading-relaxed">
-                  Based on intelligent analysis, we recommend{' '}
+                  We recommend{' '}
                   <span className="font-semibold text-blue-600">
                     {recommendation.recommendedStore.store}
                   </span>{' '}
