@@ -1,3 +1,4 @@
+
 import { ShoppingCart, User, LogOut } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,7 +31,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
   };
 
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border/40">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-600/95 via-blue-700/95 to-blue-800/95 backdrop-blur-sm border-b border-blue-400/30 shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
@@ -38,7 +39,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             <Button 
               variant="ghost" 
               onClick={() => navigate('/')}
-              className="flex items-center space-x-3 text-foreground hover:bg-transparent transition-colors px-2 h-auto"
+              className="flex items-center space-x-3 text-white hover:bg-white/10 transition-colors px-2 h-auto"
             >
               <img 
                 src="/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png" 
@@ -63,7 +64,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative text-foreground hover:bg-accent rounded-full w-10 h-10">
+                  <Button variant="ghost" className="relative text-white hover:bg-white/10 rounded-full w-10 h-10">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -78,7 +79,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={handleSignIn} className="text-foreground hover:bg-accent/80">
+              <Button onClick={handleSignIn} className="text-white bg-white/10 hover:bg-white/20">
                 Sign In
               </Button>
             )}
@@ -86,7 +87,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {/* Cart Button */}
             <Button 
               variant="ghost" 
-              className="relative text-foreground hover:bg-accent rounded-full w-10 h-10"
+              className="relative text-white hover:bg-white/10 rounded-full w-10 h-10"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-5 w-5" />
