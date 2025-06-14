@@ -1,4 +1,3 @@
-
 import { MapContainer, TileLayer, Polyline, Marker, useMap } from "react-leaflet";
 import L from "leaflet";
 import { useEffect } from "react";
@@ -20,8 +19,8 @@ const storeIcon = L.divIcon({
 
 function fitRoute(map: any, points: [number, number][]) {
   if (map && points.length > 1) {
-    const bounds = L.latLngBounds(points[0], points[points.length - 1]);
-    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 15 });
+    const bounds = L.latLngBounds(points);
+    map.fitBounds(bounds, { padding: [60, 60], maxZoom: 18 });
   }
 }
 
@@ -46,23 +45,12 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       </div>
     );
 
-  // Explicitly type as [number, number][]
-  const curve: [number, number][] = [
-    start,
-    [
-      start[0] + (dest[0] - start[0]) * 0.33 + 0.002,
-      start[1] + (dest[1] - start[1]) * 0.33 - 0.002,
-    ],
-    [
-      start[0] + (dest[0] - start[0]) * 0.66 - 0.002,
-      start[1] + (dest[1] - start[1]) * 0.66 + 0.002,
-    ],
-    dest,
-  ];
+  // Draw only a straight line
+  const straightLine: [number, number][] = [start, dest];
 
   return (
     <div
-      className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2"
+      className="w-full rounded-xl overflow-hidden border border-blue-100 shadow mb-2 relative"
       style={{ height: 180 }}
     >
       <MapContainer
@@ -70,9 +58,9 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
           width: "100%",
           height: "100%",
           pointerEvents: "none",
-          filter: "contrast(1.13) saturate(1.1) brightness(1.05)",
+          filter: "contrast(1.08) saturate(0.88) brightness(1.08) grayscale(0.3)",
         }}
-        zoom={15}
+        zoom={18}
         center={[(start[0] + dest[0]) / 2, (start[1] + dest[1]) / 2]}
         dragging={false}
         scrollWheelZoom={false}
@@ -82,19 +70,30 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
       >
         <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" />
         <Polyline
-          positions={curve}
+          positions={straightLine}
           pathOptions={{
             color: "#2563eb",
-            weight: 5,
-            opacity: 0.85,
-            dashArray: "10 14",
+            weight: 7,
+            opacity: 0.95,
+            dashArray: "", // solid line
             lineCap: "round",
           }}
         />
         <Marker position={start} icon={startIcon} />
         <Marker position={dest} icon={storeIcon} />
-        <MapFitter points={[start, dest]} />
+        <MapFitter points={straightLine} />
       </MapContainer>
+      {/* Soft white overlay for cartoon look */}
+      <div
+        className="pointer-events-none absolute inset-0 rounded-xl"
+        style={{
+          background: "rgba(255,255,255,0.82)",
+          backdropFilter: "blur(1.5px)",
+          zIndex: 20,
+        }}
+      />
+      {/* Keep markers above overlay (by raising pointerEvents) */}
+      <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 30 }} />
     </div>
   );
 }
