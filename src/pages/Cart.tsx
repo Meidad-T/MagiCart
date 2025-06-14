@@ -367,13 +367,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* AI Recommendation */}
-            <AIRecommendation 
-              storeTotals={storeTotals}
-              substitutionCounts={substitutionCounts}
-              shoppingType={shoppingType}
-            />
-
             {/* Continue with Cheapest Store Button */}
             <Card>
               <CardContent className="pt-6">
@@ -410,6 +403,15 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             cart={cart}
             onUpdateCart={onUpdateCart}
             onSubstitutionCountsChange={setSubstitutionCounts}
+          />
+        </div>
+
+        {/* AI Recommendation */}
+        <div className="mt-6">
+          <AIRecommendation 
+            storeTotals={storeTotals}
+            substitutionCounts={substitutionCounts}
+            shoppingType={shoppingType}
           />
         </div>
       </div>
