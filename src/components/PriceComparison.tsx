@@ -67,12 +67,12 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
       ],
       'walmart': [] // Walmart has everything including Great Value
     };
-    
-    // For non-Walmart stores, add Great Value items to unavailable list
+
+    // For non-Walmart stores, Great Value items are ALWAYS unavailable
     if (storeKey !== 'walmart') {
-      return [...(storeSpecificUnavailable[storeKey] || []), ...greatValueItems];
+      const unavailable = new Set([...(storeSpecificUnavailable[storeKey] || []), ...greatValueItems]);
+      return Array.from(unavailable);
     }
-    
     return storeSpecificUnavailable[storeKey] || [];
   };
 
@@ -80,12 +80,13 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
   const getSubstituteItem = (originalItem: string, storeKey: string) => {
     // Handle Great Value substitutions first (for non-Walmart stores)
     if (originalItem.toLowerCase().includes('great value') && storeKey !== 'walmart') {
+      // Use one SENSIBLE fallback substitute for all Great Value items:
+      // If a specific mapping, use it, otherwise default
       const greatValueSubstitutions: Record<string, string> = {
         'Great Value Chicken Alfredo Pasta': 'Stouffers Lasagna with Meat & Sauce',
         'Great Value Enchiladas & Spanish Rice': 'Amys Mexican Casserole Bowl',
         'Great Value Onion Rings': 'Ore-Ida Golden Crinkles French Fries'
       };
-      
       return greatValueSubstitutions[originalItem] || 'Stouffers Lasagna with Meat & Sauce';
     }
 
@@ -119,7 +120,6 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
       },
       'walmart': {}
     };
-    
     return substituteMappings[storeKey]?.[originalItem] || originalItem;
   };
 
