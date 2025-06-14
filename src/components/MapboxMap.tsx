@@ -1,11 +1,19 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
-import { Input } from "@/components/ui/input";
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
+// @ts-ignore - leaflet-routing-machine doesn't have perfect TypeScript support
+import 'leaflet-routing-machine';
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { MapPin } from "lucide-react";
+
+// Fix for default markers in Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
 
 interface MapboxMapProps {
   origin?: string;
@@ -19,180 +27,106 @@ const MapboxMap: React.FC<MapboxMapProps> = ({
   onRouteCalculated 
 }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [isTokenSet, setIsTokenSet] = useState(false);
+  const map = useRef<L.Map | null>(null);
+  const routingControl = useRef<any>(null);
 
-  const initializeMap = () => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    mapboxgl.accessToken = mapboxToken;
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: [-97.7431, 30.2672], // Austin, TX coordinates
-      zoom: 12
-    });
-
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl(),
-      'top-right'
-    );
-
-    // Geocode and add markers for origin and destination
-    geocodeAndAddRoute();
+  const geocodeAddress = async (address: string): Promise<[number, number] | null> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`
+      );
+      const data = await response.json();
+      
+      if (data.length > 0) {
+        return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+      }
+      return null;
+    } catch (error) {
+      console.error('Geocoding error:', error);
+      return null;
+    }
   };
 
-  const geocodeAndAddRoute = async () => {
-    if (!map.current || !mapboxToken) return;
+  const initializeMap = async () => {
+    if (!mapContainer.current) return;
 
-    try {
-      // Geocode origin
-      const originResponse = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(origin)}.json?access_token=${mapboxToken}`
-      );
-      const originData = await originResponse.json();
-      
-      // Geocode destination
-      const destResponse = await fetch(
-        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(destination)}.json?access_token=${mapboxToken}`
-      );
-      const destData = await destResponse.json();
+    // Initialize map centered on Austin, TX
+    map.current = L.map(mapContainer.current).setView([30.2672, -97.7431], 12);
 
-      if (originData.features.length > 0 && destData.features.length > 0) {
-        const originCoords = originData.features[0].center;
-        const destCoords = destData.features[0].center;
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map.current);
 
-        // Add origin marker (blue)
-        new mapboxgl.Marker({ color: '#3b82f6' })
-          .setLngLat(originCoords)
-          .setPopup(new mapboxgl.Popup().setHTML(`<div><strong>Origin</strong><br/>${origin}</div>`))
-          .addTo(map.current!);
+    // Geocode addresses and add routing
+    const originCoords = await geocodeAddress(origin);
+    const destCoords = await geocodeAddress(destination);
 
-        // Add destination marker (red)
-        new mapboxgl.Marker({ color: '#ef4444' })
-          .setLngLat(destCoords)
-          .setPopup(new mapboxgl.Popup().setHTML(`<div><strong>Destination</strong><br/>${destination}</div>`))
-          .addTo(map.current!);
+    if (originCoords && destCoords && map.current) {
+      // Remove existing routing control if it exists
+      if (routingControl.current) {
+        map.current.removeControl(routingControl.current);
+      }
 
-        // Get route
-        const routeResponse = await fetch(
-          `https://api.mapbox.com/directions/v5/mapbox/driving/${originCoords[0]},${originCoords[1]};${destCoords[0]},${destCoords[1]}?geometries=geojson&access_token=${mapboxToken}`
-        );
-        const routeData = await routeResponse.json();
-
-        if (routeData.routes.length > 0) {
-          const route = routeData.routes[0];
+      // Add routing control
+      routingControl.current = (L as any).Routing.control({
+        waypoints: [
+          L.latLng(originCoords[0], originCoords[1]),
+          L.latLng(destCoords[0], destCoords[1])
+        ],
+        routeWhileDragging: false,
+        show: true,
+        createMarker: function(i: number, waypoint: any) {
+          const color = i === 0 ? '#3b82f6' : '#ef4444';
+          const title = i === 0 ? `Origin: ${origin}` : `Destination: ${destination}`;
           
-          // Add route line
-          map.current!.on('load', () => {
-            map.current!.addSource('route', {
-              type: 'geojson',
-              data: {
-                type: 'Feature',
-                properties: {},
-                geometry: route.geometry
-              }
-            });
-
-            map.current!.addLayer({
-              id: 'route',
-              type: 'line',
-              source: 'route',
-              layout: {
-                'line-join': 'round',
-                'line-cap': 'round'
-              },
-              paint: {
-                'line-color': '#3b82f6',
-                'line-width': 5
-              }
-            });
-          });
-
-          // Fit map to show both points
-          const bounds = new mapboxgl.LngLatBounds();
-          bounds.extend(originCoords);
-          bounds.extend(destCoords);
-          map.current!.fitBounds(bounds, { padding: 50 });
-
-          // Calculate distance and duration
-          const distance = (route.distance / 1609.34).toFixed(1); // Convert meters to miles
-          const duration = Math.round(route.duration / 60); // Convert seconds to minutes
+          return L.marker(waypoint.latLng, {
+            title: title
+          }).bindPopup(title);
+        }
+      }).on('routesfound', function(e: any) {
+        const routes = e.routes;
+        if (routes.length > 0) {
+          const route = routes[0];
+          const distance = (route.summary.totalDistance / 1609.34).toFixed(1); // Convert meters to miles
+          const duration = Math.round(route.summary.totalTime / 60); // Convert seconds to minutes
           
           if (onRouteCalculated) {
             onRouteCalculated(`${distance} miles`, `${duration} min`);
           }
         }
-      }
-    } catch (error) {
-      console.error('Error geocoding or routing:', error);
+      }).addTo(map.current);
+
+      // Fit map to show both points
+      const group = new L.FeatureGroup([
+        L.marker(originCoords),
+        L.marker(destCoords)
+      ]);
+      map.current.fitBounds(group.getBounds().pad(0.1));
     }
   };
 
   useEffect(() => {
-    if (isTokenSet && mapboxToken) {
-      initializeMap();
-    }
+    initializeMap();
     
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
-  }, [isTokenSet, mapboxToken, origin, destination]);
-
-  if (!isTokenSet) {
-    return (
-      <div className="bg-white rounded-lg border p-6 space-y-4">
-        <div className="flex items-center space-x-2">
-          <MapPin className="h-5 w-5 text-blue-500" />
-          <Label className="text-lg font-medium">Map Configuration</Label>
-        </div>
-        <p className="text-sm text-gray-600">
-          To display the interactive map, please enter your Mapbox public token. 
-          You can get one free at <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-500 underline">mapbox.com</a>
-        </p>
-        <div className="space-y-2">
-          <Label htmlFor="mapbox-token">Mapbox Public Token</Label>
-          <Input
-            id="mapbox-token"
-            type="text"
-            placeholder="pk.eyJ1IjoieW91cnVzZXJuYW1lIiwiYSI6ImNsYW..."
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-          />
-        </div>
-        <Button 
-          onClick={() => setIsTokenSet(true)}
-          disabled={!mapboxToken.startsWith('pk.')}
-          className="w-full"
-        >
-          Load Map
-        </Button>
-      </div>
-    );
-  }
+  }, [origin, destination]);
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <Label className="text-lg font-medium">Route Map</Label>
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => setIsTokenSet(false)}
-        >
-          Change Token
-        </Button>
-      </div>
+      <Label className="text-lg font-medium">Route Map</Label>
       <div 
         ref={mapContainer} 
         className="w-full h-64 rounded-lg border shadow-sm"
         style={{ minHeight: '300px' }}
       />
       <div className="text-sm text-gray-600 text-center">
-        Blue marker: Origin • Red marker: Destination • Blue line: Route
+        Blue marker: Origin • Red marker: Destination • Route shown in blue
       </div>
     </div>
   );
