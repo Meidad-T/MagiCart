@@ -57,14 +57,11 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            // Reliable, AI-generated SVG for oranges: a pile of oranges
-            'Oranges':
-              'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill=\"#ffd580\"/><circle cx=\"110\" cy=\"210\" r=\"45\" fill=\"#ffa500\" stroke=\"#d68600\" stroke-width=\"6\"/><circle cx=\"180\" cy=\"195\" r=\"50\" fill=\"#ffb733\" stroke=\"#e88c0c\" stroke-width=\"7\"/><circle cx=\"235\" cy=\"220\" r=\"40\" fill=\"#ffa500\" stroke=\"#ae6500\" stroke-width=\"4\"/><circle cx=\"275\" cy=\"170\" r=\"38\" fill=\"#fac564\" stroke=\"#e88a00\" stroke-width=\"6\"/><circle cx=\"320\" cy=\"200\" r=\"33\" fill=\"#ffb733\" stroke=\"#ad7400\" stroke-width=\"5\"/><ellipse cx=\"167\" cy=\"247\" rx=\"28\" ry=\"19\" fill=\"#ffd580\" fill-opacity=\"0.7\"/><ellipse cx=\"276\" cy=\"242\" rx=\"22\" ry=\"15\" fill=\"#ffe199\" fill-opacity=\"0.5\"/></svg>',
+            // Flat orange SVG for oranges:
+            'Oranges': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="orange"/><circle cx="200" cy="150" r="110" fill="orange" stroke="darkorange" stroke-width="10"/></svg>',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
-            // SVG for onions: three onions with color and detail
-            'Onions':
-              'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="#faf9f6"/><ellipse cx="170" cy="210" rx="44" ry="38" fill="#ffe2ad" stroke="#bd9245" stroke-width="6"/><ellipse cx="230" cy="198" rx="36" ry="28" fill="#eac683" stroke="#a69256" stroke-width="5"/><ellipse cx="200" cy="240" rx="32" ry="17" fill="#f5eac7" fill-opacity="0.5"/><ellipse cx="110" cy="230" rx="23" ry="14" fill="#ffe7b8" stroke="#d4ac59" stroke-width="3"/><ellipse cx="260" cy="220" rx="21" ry="12" fill="#ffeac7" stroke="#c7a263" stroke-width="2"/><rect x="185" y="157" width="10" height="24" fill="#6c5309" rx="3"/><rect x="210" y="163" width="5" height="18" fill="#8e7210" rx="1.5"/><rect x="155" y="175" width="7" height="13" fill="#a38c3a" rx="2"/></svg>',
+            'Onions': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=400&h=300&fit=crop&auto=format',
             
             // Bakery
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
