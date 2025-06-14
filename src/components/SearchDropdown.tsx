@@ -1,6 +1,6 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Search, Plus } from "lucide-react";
+import { Search, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,19 +22,9 @@ interface Item {
 interface SearchDropdownProps {
   items: Item[];
   onAddToCart: (item: Item) => void;
-  selectedStore: string;
 }
 
-const storeNames = {
-  walmart: "Walmart",
-  heb: "H-E-B", 
-  aldi: "Aldi",
-  target: "Target",
-  kroger: "Kroger",
-  sams: "Sam's Club"
-};
-
-const SearchDropdown = ({ items, onAddToCart, selectedStore }: SearchDropdownProps) => {
+const SearchDropdown = ({ items, onAddToCart }: SearchDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
@@ -65,61 +55,69 @@ const SearchDropdown = ({ items, onAddToCart, selectedStore }: SearchDropdownPro
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleAddToCart = (item: Item) => {
+  const handleAddToCart = (item: Item, event: React.MouseEvent) => {
+    event.stopPropagation();
     onAddToCart(item);
-    setSearchTerm("");
-    setIsOpen(false);
+  };
+
+  // Find the best price for each item
+  const getBestPrice = (item: Item) => {
+    const prices = [
+      item.walmart_price,
+      item.heb_price,
+      item.aldi_price,
+      item.target_price,
+      item.kroger_price,
+      item.sams_price
+    ];
+    return Math.min(...prices);
   };
 
   return (
-    <div className="relative w-full max-w-2xl mx-auto" ref={dropdownRef}>
+    <div className="relative w-full" ref={dropdownRef}>
       <div className="relative">
-        <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
+        <Search className="absolute left-6 top-1/2 transform -translate-y-1/2 text-gray-400 h-6 w-6" />
         <Input
-          placeholder="Search for groceries, categories, or brands..."
+          placeholder="Search for groceries..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="pl-12 pr-4 py-4 text-lg h-14 rounded-xl border-2 border-gray-200 focus:border-green-500 focus:ring-green-500 shadow-lg"
+          className="pl-16 pr-6 py-6 text-lg h-16 rounded-full border-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 shadow-lg bg-white"
         />
       </div>
 
       {isOpen && filteredItems.length > 0 && (
-        <Card className="absolute top-full left-0 right-0 mt-2 max-h-96 overflow-y-auto z-50 shadow-xl border-2">
+        <Card className="absolute top-full left-0 right-0 mt-4 max-h-96 overflow-y-auto z-50 shadow-2xl border-2 bg-white">
           <CardContent className="p-0">
             {filteredItems.map(item => {
-              const currentPrice = item[`${selectedStore}_price` as keyof Item] as number;
+              const bestPrice = getBestPrice(item);
               
               return (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-4 hover:bg-gray-50 border-b last:border-b-0 cursor-pointer"
-                  onClick={() => handleAddToCart(item)}
+                  className="flex items-center justify-between p-4 hover:bg-gray-50 border-b last:border-b-0"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-1">
-                      <h3 className="font-semibold text-gray-900">{item.item}</h3>
+                      <h3 className="font-medium text-gray-900">{item.item}</h3>
                       <Badge variant="secondary" className="text-xs">
                         {item.category}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-lg font-bold text-green-600">
-                        ${currentPrice.toFixed(2)}
+                      <span className="text-lg font-semibold text-green-600">
+                        From ${bestPrice.toFixed(2)}
                       </span>
                       <span className="text-sm text-gray-500">
-                        at {storeNames[selectedStore as keyof typeof storeNames]}
+                        • {item.unit}
                       </span>
                     </div>
                   </div>
                   <Button
                     size="sm"
-                    className="bg-green-500 hover:bg-green-600 ml-4"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAddToCart(item);
-                    }}
+                    className="bg-blue-500 hover:bg-blue-600 ml-4 rounded-full"
+                    onClick={(e) => handleAddToCart(item, e)}
                   >
-                    <Plus className="h-4 w-4 mr-1" />
+                    <ShoppingCart className="h-4 w-4 mr-1" />
                     Add
                   </Button>
                 </div>
