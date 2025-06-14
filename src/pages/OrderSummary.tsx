@@ -131,6 +131,10 @@ export default function OrderSummary() {
               By clicking "Order at {storeName}", you will be redirected to {storeSite} 
               where all your items will already be in the cart ready for checkout.
             </p>
+            
+            <p className="text-xs text-gray-500 px-4">
+              * This is an affiliate link
+            </p>
           </div>
 
           {/* Additional Actions */}
@@ -144,7 +148,12 @@ export default function OrderSummary() {
             </Button>
             <Button 
               variant="outline" 
-              onClick={() => navigate("/checkout-details")}
+              onClick={() => navigate("/checkout-details", { 
+                state: { 
+                  ...state,
+                  fromOrderSummary: true 
+                } 
+              })}
               className="w-full"
             >
               Edit Details
