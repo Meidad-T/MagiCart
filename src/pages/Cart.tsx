@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -114,8 +115,8 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   const storeTotals = calculateStoreTotals();
 
-  // Determine which items to show
-  const shouldCollapse = cart.length > 8;
+  // Determine which items to show - changed from 8 to 5
+  const shouldCollapse = cart.length > 5;
   const itemsToShow = shouldCollapse && !cartExpanded ? cart.slice(0, 4) : cart;
 
   if (cart.length === 0) {
@@ -184,7 +185,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Cart Items ({cart.length})</CardTitle>
-                  {/* Expand Button at Top */}
+                  {/* Expand Button at Top - now shows for 5+ items */}
                   {shouldCollapse && !cartExpanded && (
                     <Button
                       variant="ghost"

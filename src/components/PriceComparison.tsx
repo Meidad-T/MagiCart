@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -348,13 +347,6 @@ export const PriceComparison = ({ storeTotals, cart, onUpdateCart }: PriceCompar
             </div>
           </div>
         )}
-        
-        <div className="mt-6 flex justify-center">
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-lg text-lg">
-            <RefreshCw className="h-5 w-5 mr-2" />
-            Review Substitutions
-          </Button>
-        </div>
       </CardContent>
     </Card>
   );

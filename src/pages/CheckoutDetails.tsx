@@ -29,18 +29,18 @@ export default function CheckoutDetails() {
 
   // Form fields
   const [deliveryAddress, setDeliveryAddress] = useState("");
-  const [storeAddress, setStoreAddress] = useState("");
+  const [storeStreet, setStoreStreet] = useState("");
+  const [storeCity, setStoreCity] = useState("");
+  const [storeState, setStoreState] = useState("");
+  const [storeZip, setStoreZip] = useState("");
   const [pickupTime, setPickupTime] = useState("");
   const [notes, setNotes] = useState("");
-
-  // For this demo, provide store addresses to choose from
-  const storeChoices = mockStoreAddresses;
 
   // Mock user location for the map (static for now)
   const userAddress = "Your Home, TX";
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
-    : !!storeAddress && !!pickupTime;
+    : !!(storeStreet && storeCity && storeState && storeZip && pickupTime);
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
@@ -74,19 +74,33 @@ export default function CheckoutDetails() {
             </>
           ) : (
             <>
-              <Label htmlFor="store-adr">Store Address</Label>
-              <Input
-                id="store-adr"
-                placeholder="Type or choose the store address"
-                list="store-addresses"
-                value={storeAddress}
-                onChange={e => setStoreAddress(e.target.value)}
-              />
-              <datalist id="store-addresses">
-                {storeChoices.map(addr => (
-                  <option key={addr} value={addr} />
-                ))}
-              </datalist>
+              <Label htmlFor="store-street">Store Address</Label>
+              <div className="grid grid-cols-1 gap-4">
+                <Input
+                  id="store-street"
+                  placeholder="Street Address"
+                  value={storeStreet}
+                  onChange={e => setStoreStreet(e.target.value)}
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    placeholder="City"
+                    value={storeCity}
+                    onChange={e => setStoreCity(e.target.value)}
+                  />
+                  <Input
+                    placeholder="State"
+                    value={storeState}
+                    onChange={e => setStoreState(e.target.value)}
+                  />
+                </div>
+                <Input
+                  placeholder="ZIP Code"
+                  value={storeZip}
+                  onChange={e => setStoreZip(e.target.value)}
+                />
+              </div>
+              
               <Label htmlFor="pickup-time" className="pt-2">Pickup Time</Label>
               <Input
                 id="pickup-time"
@@ -123,7 +137,9 @@ export default function CheckoutDetails() {
               <div className="text-sm text-gray-700 pt-2">
                 Route from <span className="font-medium">{userAddress}</span> to{" "}
                 <span className="font-medium">
-                  {shoppingType === "delivery" ? "Your Address" : (storeAddress || "Selected Store")}
+                  {shoppingType === "delivery" 
+                    ? "Your Address" 
+                    : (storeStreet && storeCity ? `${storeStreet}, ${storeCity}` : "Selected Store")}
                 </span>
               </div>
             </div>
