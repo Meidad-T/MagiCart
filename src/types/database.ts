@@ -42,3 +42,21 @@ export interface ProductWithPrices extends Product {
   kroger_price: number;
   sams_price: number;
 }
+
+export interface Profile {
+  id: string;
+  email?: string;
+  full_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ShoppingSession {
+  id: string;
+  user_id?: string;
+  session_data: any;
+  shopping_type?: 'pickup' | 'delivery' | 'instore';
+  store_preference?: string;
+  created_at: string;
+  updated_at: string;
+}

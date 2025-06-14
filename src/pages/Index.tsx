@@ -2,19 +2,20 @@
 import { useState } from "react";
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
 import Header from "@/components/Header";
 import ProductFeed from "@/components/ProductFeed";
 import { useProducts } from "@/hooks/useProducts";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
 
 const Index = () => {
   const { data: items = [], isLoading: productsLoading, error } = useProducts();
   const [cart, setCart] = useState<Array<ProductWithPrices & { quantity: number }>>([]);
-  const [showCartSummary, setShowCartSummary] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -33,46 +34,8 @@ const Index = () => {
     });
   };
 
-  const calculateStoreTotals = () => {
-    const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
-    const storeNames = {
-      walmart: 'Walmart',
-      heb: 'H-E-B',
-      aldi: 'Aldi',
-      target: 'Target',
-      kroger: 'Kroger',
-      sams: "Sam's Club"
-    };
-
-    const storeTotals = stores.map(store => {
-      const total = cart.reduce((sum, cartItem) => {
-        const price = cartItem[`${store}_price` as keyof ProductWithPrices] as number;
-        return sum + (price * cartItem.quantity);
-      }, 0);
-
-      return {
-        store: storeNames[store as keyof typeof storeNames],
-        total: total.toFixed(2)
-      };
-    });
-
-    return storeTotals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
-  };
-
   const handleCartClick = () => {
-    if (cart.length === 0) {
-      toast({
-        title: "Empty cart",
-        description: "Add some items to your cart first!",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-      setShowCartSummary(true);
-    }, 2000);
+    navigate('/cart');
   };
 
   if (productsLoading) {
@@ -96,8 +59,6 @@ const Index = () => {
     );
   }
 
-  const storeTotals = calculateStoreTotals();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header with search */}
@@ -106,7 +67,7 @@ const Index = () => {
         cart={cart}
         onAddToCart={addToCart}
         onCartClick={handleCartClick}
-        isLoading={isLoading}
+        user={user}
       />
 
       {/* Product Feed */}
@@ -115,67 +76,8 @@ const Index = () => {
         onAddToCart={addToCart}
       />
 
-      {/* Cart Summary Modal */}
-      {showCartSummary && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-semibold">Cart Summary</h3>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={() => setShowCartSummary(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  ✕
-                </Button>
-              </div>
-              
-              {/* Cart Items */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-3 text-gray-700">Items in your cart:</h4>
-                {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center py-2 border-b">
-                    <div>
-                      <span className="text-sm">{item.name}</span>
-                      <span className="text-gray-500 ml-2">×{item.quantity}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Store Totals */}
-              <div>
-                <h4 className="font-medium mb-3 text-gray-700">Total cost by store:</h4>
-                <div className="space-y-3">
-                  {storeTotals.map((store, index) => (
-                    <div 
-                      key={store.store}
-                      className={`flex justify-between items-center p-3 rounded-lg ${
-                        index === 0 ? 'bg-green-50 border-2 border-green-200' : 'bg-gray-50'
-                      }`}
-                    >
-                      <div className="flex items-center">
-                        <span className="font-medium">{store.store}</span>
-                        {index === 0 && (
-                          <Badge className="ml-2 bg-green-500 text-white text-xs">
-                            Best Price!
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-lg font-semibold">${store.total}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-
       {/* Cart summary at bottom if there are items */}
-      {cart.length > 0 && !showCartSummary && (
+      {cart.length > 0 && (
         <div className="fixed bottom-6 right-6">
           <Card className="shadow-lg">
             <CardContent className="p-4">
@@ -186,13 +88,8 @@ const Index = () => {
                   size="sm" 
                   className="bg-blue-500 hover:bg-blue-600"
                   onClick={handleCartClick}
-                  disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <Loader className="h-4 w-4 animate-spin" />
-                  ) : (
-                    "View Cart"
-                  )}
+                  View Cart
                 </Button>
               </div>
             </CardContent>
