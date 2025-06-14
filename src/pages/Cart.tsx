@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -115,6 +114,16 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   const storeTotals = calculateStoreTotals();
 
+  // Store brand colors
+  const storeColors = {
+    'H-E-B': '#e31837',
+    'Walmart': '#004c91',
+    'Target': '#cc0000',
+    'Kroger': '#0f4c81',
+    'Sam\'s Club': '#00529c',
+    'Aldi': '#ff6900'
+  };
+
   // Determine which items to show - changed from 8 to 5
   const shouldCollapse = cart.length > 5;
   const itemsToShow = shouldCollapse && !cartExpanded ? cart.slice(0, 4) : cart;
@@ -152,6 +161,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     if (!userProfile?.full_name) return '';
     return userProfile.full_name.split(' ')[0];
   };
+
+  const cheapestStore = storeTotals[0]; // First one is cheapest due to sorting
+  const cheapestStoreColor = storeColors[cheapestStore?.store as keyof typeof storeColors] || '#3b82f6';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -315,19 +327,30 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* Next Step Button */}
+            {/* Continue with Cheapest Store Button */}
             <Card>
               <CardContent className="pt-6">
                 <Button
-                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  className="w-full text-white hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: cheapestStoreColor }}
                   onClick={() =>
                     navigate("/checkout-details", {
-                      state: { shoppingType }
+                      state: { 
+                        shoppingType,
+                        cheapestStore: cheapestStore?.store,
+                        orderTotal: parseFloat(cheapestStore?.total || '0'),
+                        itemCount: cart.length
+                      }
                     })
                   }
                 >
-                  Next Step
+                  Continue with {cheapestStore?.store}
                 </Button>
+                {cheapestStore && (
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Best price: ${cheapestStore.total}
+                  </p>
+                )}
               </CardContent>
             </Card>
           </div>

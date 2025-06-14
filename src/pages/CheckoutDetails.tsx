@@ -11,7 +11,9 @@ type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
 interface LocationState {
   shoppingType?: ShoppingType;
-  // Optionally pass cart/other stuff if wanted
+  cheapestStore?: string;
+  orderTotal?: number;
+  itemCount?: number;
 }
 
 export default function CheckoutDetails() {
@@ -19,6 +21,9 @@ export default function CheckoutDetails() {
   const location = useLocation();
   const state = location.state as LocationState | null;
   const shoppingType: ShoppingType = state?.shoppingType || 'delivery';
+  const cheapestStore = state?.cheapestStore || 'H-E-B';
+  const orderTotal = state?.orderTotal || 45.67;
+  const itemCount = state?.itemCount || 8;
 
   // Form fields
   const [deliveryAddress, setDeliveryAddress] = useState("");
@@ -39,12 +44,12 @@ export default function CheckoutDetails() {
     navigate("/order-summary", {
       state: {
         shoppingType,
-        storeName: "H-E-B", // This could be dynamic based on selection
+        storeName: cheapestStore,
         storeAddress: shoppingType === "delivery" ? undefined : storeAddress,
         deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
         pickupTime,
-        orderTotal: 45.67, // This would come from cart
-        itemCount: 8 // This would come from cart
+        orderTotal,
+        itemCount
       }
     });
   };
