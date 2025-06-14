@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -52,32 +51,32 @@ export const useProducts = () => {
             'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=300&fit=crop&auto=format',
             'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=400&h=300&fit=crop&auto=format',
             'Salted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=300&fit=crop&auto=format',
-            'Unsalted Butter': 'https://images.unsplash.com/photo-1553909489-cd47e0ef937f?w=400&h=300&fit=crop&auto=format',
+            'Unsalted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=300&fit=crop&auto=format',
             
             // Produce
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            'Oranges': 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=400&h=300&fit=crop&auto=format',
+            'Oranges': 'https://www.peakpx.com/20906/3-oranges',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
-            'Onions': 'https://images.unsplash.com/photo-1508747702303-7e6e190ed8b3?w=400&h=300&fit=crop&auto=format',
+            'Onions': 'https://www.pexels.com/photo/brown-onions-144206/',
             
             // Bakery
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
             
             // Meat
-            'Bacon': 'https://images.unsplash.com/photo-1608877906550-1d57c9d1b9fc?w=400&h=300&fit=crop&auto=format',
+            'Bacon': 'https://www.pexels.com/photo/food-photography-of-sliced-bacon-on-top-of-brown-chopping-board-1927377/',
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
-            'Brown Rice': 'https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=400&h=300&fit=crop&auto=format',
+            'Brown Rice': 'https://www.pexels.com/photo/close-up-photo-of-brown-rice-4110257/',
             'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
             'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
-            'White Sugar': 'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=400&h=300&fit=crop&auto=format',
-            'Brown Sugar': 'https://images.unsplash.com/photo-1584464491033-06628f3a6b7b?w=400&h=300&fit=crop&auto=format',
-            'Peanut Butter 16 ounce': 'https://images.unsplash.com/photo-1606890737304-57a1ca8a5b62?w=400&h=300&fit=crop&auto=format',
-            'Grape Jelly 18 ounce': 'https://images.unsplash.com/photo-1571115764595-644a1f56a55c?w=400&h=300&fit=crop&auto=format',
+            'White Sugar': 'https://pixabay.com/photos/sugar-sugar-cubes-sugar-lumps-cute-4085174/',
+            'Brown Sugar': 'https://pixabay.com/photos/brown-sugar-sugar-food-sugar-cubes-5847979/',
+            'Peanut Butter 16 ounce': 'https://www.pexels.com/photo/close-up-photo-of-creamy-peanut-butter-6659881/',
+            'Grape Jelly 18 ounce': 'https://www.pexels.com/photo/jar-with-red-jam-on-white-sauer-1051849/',
             'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop&auto=format',
             
             // Drinks - better bottle/container images
