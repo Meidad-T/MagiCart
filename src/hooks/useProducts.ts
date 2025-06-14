@@ -57,8 +57,8 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            // Flat orange SVG for oranges:
-            'Oranges': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="orange"/><circle cx="200" cy="150" r="110" fill="orange" stroke="darkorange" stroke-width="10"/></svg>',
+            // Oranges: Real oranges in a pile photo
+            'Oranges': 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?w=400&h=300&fit=crop&auto=format',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
             'Onions': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=400&h=300&fit=crop&auto=format',
