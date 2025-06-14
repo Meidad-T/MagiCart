@@ -396,14 +396,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           </div>
         </div>
 
-        {/* Intelligent Recommendation */}
-        <div className="mt-8">
-          <IntelligentRecommendation 
-            storeTotals={storeTotals}
-            shoppingType={shoppingType}
-          />
-        </div>
-
         {/* Price Comparison Component */}
         <div className="mt-8">
           <PriceComparison 
@@ -411,6 +403,14 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             cart={cart}
             onUpdateCart={onUpdateCart}
             onSubstitutionCountsChange={setSubstitutionCounts}
+          />
+        </div>
+
+        {/* Intelligent Recommendation */}
+        <div className="mt-8">
+          <IntelligentRecommendation 
+            storeTotals={storeTotals}
+            shoppingType={shoppingType}
           />
         </div>
       </div>

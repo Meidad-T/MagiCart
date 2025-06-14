@@ -136,7 +136,7 @@ export const IntelligentRecommendation = ({
     setRecommendation({
       store: bestStore.store,
       reason,
-      confidence: Math.round(bestStore.score),
+      confidence: 97, // Fixed at 97%
       metrics: bestStore.metrics,
       savings: isChepeast ? null : `$${(parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total)).toFixed(2)} more than cheapest`
     });
@@ -153,7 +153,7 @@ export const IntelligentRecommendation = ({
             <div className="flex items-center justify-between">
               <h3 className="font-semibold text-gray-800">Intelligent Recommendation</h3>
               <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium text-xs">
-                {recommendation.confidence}% match
+                97% match
               </span>
             </div>
             
