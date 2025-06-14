@@ -314,11 +314,18 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* Checkout Button */}
+            {/* Next Step Button */}
             <Card>
               <CardContent className="pt-6">
-                <Button className="w-full bg-blue-500 hover:bg-blue-600">
-                  Continue to Checkout
+                <Button
+                  className="w-full bg-blue-500 hover:bg-blue-600"
+                  onClick={() =>
+                    navigate("/checkout-details", {
+                      state: { shoppingType }
+                    })
+                  }
+                >
+                  Next Step
                 </Button>
               </CardContent>
             </Card>

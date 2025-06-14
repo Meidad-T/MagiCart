@@ -29,6 +29,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index cart={cart} onUpdateCart={updateCart} />} />
             <Route path="/cart" element={<Cart cart={cart} onUpdateCart={updateCart} />} />
+            <Route path="/checkout-details" element={<(await import('./pages/CheckoutDetails')).default />} />
             <Route path="/auth" element={<Auth />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
