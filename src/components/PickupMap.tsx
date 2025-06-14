@@ -13,7 +13,6 @@ type PickupMapProps = {
 };
 
 export default function PickupMap({ start, dest }: PickupMapProps) {
-  // Important: require the user to set their API key in .env.local
   const googleMapsApiKey = import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || "";
 
   const { isLoaded } = useLoadScript({
@@ -21,7 +20,6 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     mapIds: undefined,
   });
 
-  // Only show once ready and both points are given
   if (!isLoaded || !start || !dest) {
     return (
       <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
@@ -71,6 +69,37 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     }),
     [start, dest]
   );
+  
+  // Utility to safely create Google Maps objects for marker icons
+  function getHouseIcon() {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.google !== "undefined" &&
+      window.google.maps
+    ) {
+      return {
+        path: "",
+        anchor: new window.google.maps.Point(16, 32),
+        labelOrigin: new window.google.maps.Point(20, 20),
+        scaledSize: new window.google.maps.Size(32, 32),
+      };
+    }
+    return undefined;
+  }
+  function getStoreIcon() {
+    if (
+      typeof window !== "undefined" &&
+      typeof window.google !== "undefined" &&
+      window.google.maps
+    ) {
+      return {
+        url: storeImage,
+        scaledSize: new window.google.maps.Size(38, 38),
+        anchor: new window.google.maps.Point(19, 38),
+      };
+    }
+    return undefined;
+  }
 
   return (
     <div
@@ -102,21 +131,12 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
             fontSize: "24px",
             fontWeight: "bold",
           }}
-          icon={{
-            path: "",
-            anchor: { x: 16, y: 32 },
-            labelOrigin: { x: 20, y: 20 },
-            scaledSize: { width: 32, height: 32 },
-          }}
+          icon={getHouseIcon()}
         />
         {/* Dest marker - store icon */}
         <Marker
           position={{ lat: dest[0], lng: dest[1] }}
-          icon={{
-            url: storeImage,
-            scaledSize: { width: 38, height: 38 },
-            anchor: { x: 19, y: 38 }
-          }}
+          icon={getStoreIcon()}
         />
       </GoogleMap>
       <div className="absolute inset-0 border-[3px] border-blue-300 pointer-events-none rounded-xl" style={{ zIndex: 20, opacity: 0.23 }} />
