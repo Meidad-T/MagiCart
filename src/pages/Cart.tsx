@@ -10,7 +10,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { PriceComparison } from "@/components/PriceComparison";
-import { AIRecommendation } from "@/components/AIRecommendation";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -403,16 +402,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             cart={cart}
             onUpdateCart={onUpdateCart}
             onSubstitutionCountsChange={setSubstitutionCounts}
-          />
-        </div>
-
-        {/* AI Recommendation */}
-        <div className="mt-6">
-          <AIRecommendation 
-            storeTotals={storeTotals}
-            substitutionCounts={substitutionCounts}
-            shoppingType={shoppingType}
-            cart={cart}
           />
         </div>
       </div>
