@@ -1,8 +1,7 @@
-
-import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF, Polyline } from "@react-google-maps/api";
+import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MapPin } from "lucide-react";
+import { MapPin, Store } from "lucide-react";
 import mapStyle from "./mapStyle.json";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -19,29 +18,58 @@ const createLucideIcon = (icon: React.ReactElement) => {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
-// Helper to build public Supabase logo URLs
-const getSupabaseLogoUrl = (logo_url?: string) => {
-  if (!logo_url) return null;
-  // Example URL structure for Supabase Storage public asset:
-  // https://xuwfaljqzvjbxhhrjara.supabase.co/storage/v1/object/public/store-logos/mylogo.png
-  if (logo_url.startsWith("http")) return logo_url;
-  return `https://xuwfaljqzvjbxhhrjara.supabase.co/storage/v1/object/public/store-logos/${logo_url}`;
+const storeBrandColors: { [key: string]: { color: string, initial: string } } = {
+  'h-e-b': { color: '#e31837', initial: 'H' },
+  'walmart': { color: '#004c91', initial: 'W' },
+  'kroger': { color: '#0f4c81', initial: 'K' },
+  'costco': { color: '#00529c', initial: 'C' },
+  'whole foods': { color: '#00a844', initial: 'W' },
+  'trader joe': { color: '#d2202b', initial: 'T' },
+  'safeway': { color: '#ff6900', initial: 'S' },
+  'publix': { color: '#008542', initial: 'P' },
+  'wegmans': { color: '#ff6900', initial: 'W' },
+  'aldi': { color: '#00559f', initial: 'A' },
+  "sam's club": { color: '#008844', initial: 'S' }
 };
 
-const getStoreIconUrl = (logo_url?: string) => {
-  const maybeLogo = getSupabaseLogoUrl(logo_url);
-  if (maybeLogo) {
-    return maybeLogo;
+// Returns a dynamic store icon URL
+const getStoreIconUrl = (storeName?: string) => {
+  const lowerCaseStoreName = storeName?.toLowerCase() || '';
+
+  // Use a custom Target logo if the store is Target
+  if (lowerCaseStoreName.includes('target')) {
+    const targetIconSvg = `
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#cc0000" stroke="white" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="white"/>
+        <circle cx="24" cy="24" r="7" fill="#cc0000"/>
+      </svg>
+    `;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(targetIconSvg)}`;
   }
-  // Fallback to a red map pin icon as requested.
-  return createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#cc0000" />);
+  
+  // Check for other known stores and create a simple logo
+  for (const brandName in storeBrandColors) {
+    if (lowerCaseStoreName.includes(brandName)) {
+      const { color, initial } = storeBrandColors[brandName];
+      const brandIconSvg = `
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="${color}" stroke="white" stroke-width="2"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="white">${initial}</text>
+        </svg>
+      `;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(brandIconSvg)}`;
+    }
+  }
+
+  // Fallback to a generic store icon for other stores
+  return createLucideIcon(<Store size={40} color="#4A4A4A" strokeWidth={2} />);
 };
 
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
-const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }: PickupMapProps & { apiKey: string, storeLogoUrl?: string }) => {
+const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey }: PickupMapProps & { apiKey: string }) => {
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
-  const [simplifiedPath, setSimplifiedPath] = useState<google.maps.LatLng[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   console.log("Work/Start coords:", start);
@@ -62,7 +90,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
   // Memoize icons to prevent re-creating them on each render
   const workPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#007aff" />), []);
   const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []);
-  const storeIconUrl = useMemo(() => getStoreIconUrl(storeLogoUrl), [storeLogoUrl]);
+  const storeIconUrl = useMemo(() => getStoreIconUrl(storeName), [storeName]);
 
   const startIconUrl = isSameStartDest ? homePinUrl : workPinUrl;
   const destIconUrl = homePinUrl;
@@ -103,13 +131,9 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           console.log("Directions result:", { result, status });
           if (status === window.google.maps.DirectionsStatus.OK && result) {
             setDirectionsResult(result);
-            if (result.routes?.[0]?.overview_path) {
-              setSimplifiedPath(result.routes[0].overview_path);
-            }
           } else {
             console.error("Directions request failed:", status);
             setDirectionsResult(null);
-            setSimplifiedPath([]);
           }
         }
       );
@@ -146,7 +170,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
 
   return (
     <div
-      className="relative w-full rounded-xl overflow-hidden border border-gray-300 shadow mb-2"
+      className="w-full rounded-xl overflow-hidden border border-gray-300 shadow mb-2"
       style={{ height: 300 }}
     >
       <GoogleMap
@@ -165,23 +189,13 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
             directions={directionsResult}
             options={{
               suppressMarkers: true, // Hide default markers to use custom ones
-              suppressPolylines: true, // Hide default route to draw our own
+              polylineOptions: {
+                strokeColor: "#007aff", // Apple-style blue
+                strokeWeight: 5,
+              },
             }}
           />
         )}
-        
-        {/* Custom, simplified polyline */}
-        {simplifiedPath.length > 0 && (
-          <Polyline
-            path={simplifiedPath}
-            options={{
-              strokeColor: "#007aff", // Apple-style blue
-              strokeWeight: 6,
-              strokeOpacity: 0.8,
-            }}
-          />
-        )}
-
 
         {/* Custom Markers */}
         {start && window.google && (
@@ -209,40 +223,16 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
             position={{ lat: storeLocation[0], lng: storeLocation[1] }} 
             icon={{ 
               url: storeIconUrl,
-              scaledSize: new window.google.maps.Size(40, 40) // Adjusted size for logos
+              scaledSize: new window.google.maps.Size(48, 48)
             }} 
           />
         )}
       </GoogleMap>
-      <div className="absolute bottom-2 left-2 bg-white/80 p-2 rounded-lg shadow-md backdrop-blur-sm text-xs">
-        <h4 className="font-bold mb-1 text-gray-800">Legend</h4>
-        <ul className="space-y-1">
-          {!isSameStartDest && start && (
-            <li className="flex items-center">
-              <img src={startIconUrl} alt="Start Location" className="w-5 h-5 mr-1.5" />
-              <span className="text-gray-700">Work</span>
-            </li>
-          )}
-          {dest && (
-             <li className="flex items-center">
-              <img src={destIconUrl} alt="Destination" className="w-5 h-5 mr-1.5" />
-              <span className="text-gray-700">{isSameStartDest ? 'Work & Home' : 'Home'}</span>
-            </li>
-          )}
-          {storeLocation && (
-            <li className="flex items-center">
-              <img src={storeIconUrl} alt={storeName || 'Store'} className="w-5 h-5 mr-1.5 object-contain" />
-              <span className="text-gray-700">{storeName || 'Store'}</span>
-            </li>
-          )}
-        </ul>
-      </div>
     </div>
   );
 }
 
-// Exported PickupMap with logo support
-export default function PickupMap({ start, dest, storeLocation, storeName, storeLogoUrl }: PickupMapProps & { storeLogoUrl?: string }) {
+export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -269,5 +259,5 @@ export default function PickupMap({ start, dest, storeLocation, storeName, store
     );
   }
 
-  return <PickupMapContent {...{ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }} />;
+  return <PickupMapContent {...{ start, dest, storeLocation, storeName, apiKey }} />;
 }

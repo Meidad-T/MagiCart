@@ -1,9 +1,9 @@
+
 export interface Store {
   id: string;
   name: string;
   display_name: string;
   created_at: string;
-  logo_url?: string; // Added logo_url for custom store logos
 }
 
 export interface Category {
