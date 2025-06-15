@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import PickupMap from "@/components/PickupMap"; // NEW
+import PickupMap from "@/components/PickupMap";
+import { supabase } from "@/integrations/supabase/client";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -54,6 +54,7 @@ export default function CheckoutDetails() {
   const [workLoc, setWorkLoc] = useState<[number, number] | null>(null);
   const [homeLoc, setHomeLoc] = useState<[number, number] | null>(null);
   const [storeLoc, setStoreLoc] = useState<[number, number] | null>(null);
+  const [actualStoreName, setActualStoreName] = useState<string>(cheapestStore);
 
   // Geocode work address
   useEffect(() => {
@@ -105,16 +106,44 @@ export default function CheckoutDetails() {
     geocodeHomeAddress();
   }, [homeStreet, homeCity, homeState, homeZip, shoppingType]);
 
-  // Geocode store address (placeholder - will be updated with actual store locations)
+  // Fetch actual recommended store location from database
   useEffect(() => {
-    async function geocodeStoreAddress() {
+    async function fetchRecommendedStore() {
       if (shoppingType === "pickup" || shoppingType === "instore") {
-        // Placeholder store location - this will be updated with actual store data
-        // For now, using a central Austin location
-        setStoreLoc([30.2672, -97.7431]);
+        try {
+          // Get store location from database based on the recommended store name
+          const { data: storeData, error } = await supabase
+            .from('store_locations')
+            .select('latitude, longitude, name, address_line1, city, state')
+            .ilike('name', `%${cheapestStore}%`)
+            .not('latitude', 'is', null)
+            .not('longitude', 'is', null)
+            .limit(1)
+            .single();
+
+          if (error) {
+            console.error('Error fetching store location:', error);
+            // Fallback to Austin central location if store not found
+            setStoreLoc([30.2672, -97.7431]);
+            return;
+          }
+
+          if (storeData && storeData.latitude && storeData.longitude) {
+            setStoreLoc([storeData.latitude, storeData.longitude]);
+            setActualStoreName(storeData.name);
+            console.log('Found recommended store:', storeData.name, 'at', [storeData.latitude, storeData.longitude]);
+          } else {
+            // Fallback to Austin central location
+            setStoreLoc([30.2672, -97.7431]);
+          }
+        } catch (error) {
+          console.error('Error in fetchRecommendedStore:', error);
+          // Fallback to Austin central location
+          setStoreLoc([30.2672, -97.7431]);
+        }
       }
     }
-    geocodeStoreAddress();
+    fetchRecommendedStore();
   }, [shoppingType, cheapestStore]);
 
   const canProceed = shoppingType === "delivery"
@@ -258,10 +287,10 @@ export default function CheckoutDetails() {
                   start={workLoc} 
                   dest={homeLoc} 
                   storeLocation={storeLoc}
-                  storeName={cheapestStore}
+                  storeName={actualStoreName}
                 />
                 <p className="text-xs text-gray-400 text-center mt-1">
-                  <span role="img" aria-label="info">🗺️</span> Optimized route: Work → {cheapestStore} (best price) → Home
+                  <span role="img" aria-label="info">🗺️</span> Optimized route: Work → {actualStoreName} (recommended store) → Home
                 </p>
               </div>
             </>
