@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle, Minus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle, Minus, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import type { ProductWithPrices } from "@/types/database";
@@ -32,6 +32,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
   const [recommendations, setRecommendations] = useState<HealthRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [addedItems, setAddedItems] = useState<Record<string, number>>({});
+  const [pendingQuantities, setPendingQuantities] = useState<Record<string, number>>({});
 
   const { shoppingType, cheapestStore, orderTotal, itemCount } = location.state || {};
 
@@ -211,6 +212,12 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
       ...prev,
       [recommendation.product.name]: (prev[recommendation.product.name] || 0) + quantity
     }));
+
+    // Reset pending quantity for this item
+    setPendingQuantities(prev => ({
+      ...prev,
+      [recommendation.product.name]: 1
+    }));
   };
 
   const updateRecommendationQuantity = (recommendation: HealthRecommendation, newQuantity: number) => {
@@ -240,6 +247,18 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     }
   };
 
+  const getPendingQuantity = (productName: string) => {
+    return pendingQuantities[productName] || 1;
+  };
+
+  const updatePendingQuantity = (productName: string, quantity: number) => {
+    const clampedQuantity = Math.max(1, Math.min(99, quantity));
+    setPendingQuantities(prev => ({
+      ...prev,
+      [productName]: clampedQuantity
+    }));
+  };
+
   const calculateNewCartTotal = () => {
     const addedProductsTotal = recommendations
       .filter(rec => addedItems[rec.product.name])
@@ -248,15 +267,8 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     return (orderTotal || 0) + addedProductsTotal;
   };
 
-  const continueToCheckout = () => {
-    navigate("/checkout-details", {
-      state: { 
-        shoppingType,
-        cheapestStore,
-        orderTotal: calculateNewCartTotal(),
-        itemCount: cart.length
-      }
-    });
+  const reviewCart = () => {
+    navigate("/cart");
   };
 
   if (cart.length === 0) {
@@ -344,6 +356,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             {recommendations.map((rec, index) => {
               const addedQuantity = addedItems[rec.product.name] || 0;
               const isAdded = addedQuantity > 0;
+              const pendingQty = getPendingQuantity(rec.product.name);
               
               return (
                 <Card key={index} className="border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -389,13 +402,43 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
 
                         {/* Add Button or Quantity Controls */}
                         {!isAdded ? (
-                          <Button
-                            onClick={() => addToCart(rec, 1)}
-                            className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
-                          >
-                            <Plus className="h-4 w-4 mr-2" />
-                            Add to Cart - ${rec.product.walmart_price.toFixed(2)}
-                          </Button>
+                          <div className="flex items-center space-x-3">
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updatePendingQuantity(rec.product.name, pendingQty - 1)}
+                                disabled={pendingQty <= 1}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <Input
+                                type="number"
+                                min="1"
+                                max="99"
+                                value={pendingQty}
+                                onChange={(e) => updatePendingQuantity(rec.product.name, parseInt(e.target.value) || 1)}
+                                className="w-16 h-8 text-center text-sm"
+                              />
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => updatePendingQuantity(rec.product.name, pendingQty + 1)}
+                                disabled={pendingQty >= 99}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            <Button
+                              onClick={() => addToCart(rec, pendingQty)}
+                              className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
+                            >
+                              <Plus className="h-4 w-4 mr-2" />
+                              Add {pendingQty > 1 ? `${pendingQty} ` : ''}to Cart - ${(rec.product.walmart_price * pendingQty).toFixed(2)}
+                            </Button>
+                          </div>
                         ) : (
                           <div className="flex items-center space-x-4">
                             <div className="flex items-center bg-green-100 text-green-700 px-3 py-2 rounded-lg">
@@ -438,12 +481,12 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
         {/* Continue Button */}
         <div className="flex justify-center">
           <Button 
-            onClick={continueToCheckout}
+            onClick={reviewCart}
             size="lg"
             className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-3 text-lg"
           >
-            Continue to Checkout
-            <ArrowRight className="h-5 w-5 ml-2" />
+            <ShoppingCart className="h-5 w-5 mr-2" />
+            Review Your Cart
           </Button>
         </div>
       </div>
