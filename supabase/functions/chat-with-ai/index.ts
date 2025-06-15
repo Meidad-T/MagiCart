@@ -23,6 +23,8 @@ serve(async (req) => {
       throw new Error('Gemini API key not found');
     }
 
+    console.log('Using API key:', apiKey ? 'Key found' : 'Key missing');
+
     // Create context about the recommendation and store data
     const storeComparison = storeTotals.map((store: any, index: number) => 
       `${index + 1}. ${store.store}: $${store.total}${store.store === recommendation.store.store ? ' (RECOMMENDED)' : ''}`
@@ -55,8 +57,11 @@ Remember: You can chat about anything, but your main job is helping them underst
 
     console.log('Calling Gemini API with prompt:', fullPrompt);
 
+    // Use the correct Gemini API endpoint with the API key as a query parameter
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
+
     // Call Gemini API
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=' + apiKey, {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -64,13 +69,38 @@ Remember: You can chat about anything, but your main job is helping them underst
       body: JSON.stringify({
         contents: [{
           parts: [{ text: fullPrompt }]
-        }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          topK: 1,
+          topP: 1,
+          maxOutputTokens: 2048,
+        },
+        safetySettings: [
+          {
+            category: "HARM_CATEGORY_HARASSMENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_HATE_SPEECH",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          },
+          {
+            category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+            threshold: "BLOCK_MEDIUM_AND_ABOVE"
+          }
+        ]
       }),
     });
 
     if (!response.ok) {
-      console.error('Gemini API error:', response.status, response.statusText);
-      throw new Error(`Gemini API error: ${response.status}`);
+      const errorText = await response.text();
+      console.error('Gemini API error:', response.status, response.statusText, errorText);
+      throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();
