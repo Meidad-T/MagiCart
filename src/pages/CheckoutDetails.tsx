@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -205,16 +206,16 @@ export default function CheckoutDetails() {
             </>
           ) : (
             <>
-              {/* Work Address Section */}
+              {/* Starting Location Section */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="work-street">Work Address</Label>
-                  <p className="text-sm text-gray-600 mb-2">Enter your work location for route optimization</p>
+                  <Label htmlFor="work-street">Starting Location</Label>
+                  <p className="text-sm text-gray-600 mb-2">Enter your starting point (e.g., work, university, gym) for route optimization</p>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <Input
                     id="work-street"
-                    placeholder="Work Street Address"
+                    placeholder="Starting Location Street Address"
                     value={workStreet}
                     onChange={e => setWorkStreet(e.target.value)}
                   />
@@ -241,7 +242,7 @@ export default function CheckoutDetails() {
               {/* Home Address Section */}
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="home-street">Home Address</Label>
+                  <Label htmlFor="home-street">Destination (Home)</Label>
                   <p className="text-sm text-gray-600 mb-2">Enter your home location for route optimization</p>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
@@ -271,13 +272,15 @@ export default function CheckoutDetails() {
                 </div>
               </div>
               
-              <Label htmlFor="pickup-time" className="pt-2">Pickup Time</Label>
-              <Input
-                id="pickup-time"
-                type="time"
-                value={pickupTime}
-                onChange={e => setPickupTime(e.target.value)}
-              />
+              <div className="pt-4">
+                <Label htmlFor="pickup-time">Pickup Time</Label>
+                <Input
+                  id="pickup-time"
+                  type="time"
+                  value={pickupTime}
+                  onChange={e => setPickupTime(e.target.value)}
+                />
+              </div>
               
               {pickupTime && (
                 <StoreHoursAlert 
@@ -286,13 +289,16 @@ export default function CheckoutDetails() {
                 />
               )}
               
-              <Label htmlFor="pickup-notes">Pickup Notes (optional)</Label>
-              <Textarea
-                id="pickup-notes"
-                placeholder="Anything to help the store staff?"
-                value={notes}
-                onChange={e => setNotes(e.target.value)}
-              />
+              <div className="pt-4">
+                <Label htmlFor="pickup-notes">Pickup Notes (optional)</Label>
+                <Textarea
+                  id="pickup-notes"
+                  placeholder="Anything to help the store staff?"
+                  value={notes}
+                  onChange={e => setNotes(e.target.value)}
+                />
+              </div>
+              
               {/* Route optimization map */}
               <div>
                 <PickupMap 
@@ -302,7 +308,7 @@ export default function CheckoutDetails() {
                   storeName={actualStoreName}
                 />
                 <p className="text-xs text-gray-400 text-center mt-1">
-                  <span role="img" aria-label="info">🗺️</span> Optimized route: Work → {actualStoreName} (recommended store) → Home
+                  <span role="img" aria-label="info">🗺️</span> Optimized route: Starting Location → {actualStoreName} (recommended store) → Home
                 </p>
               </div>
             </>
