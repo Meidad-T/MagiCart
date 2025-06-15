@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -30,7 +31,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
   const { data: products, isLoading: productsLoading } = useProducts();
   const [recommendations, setRecommendations] = useState<HealthRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [addedItems, setAddedItems] = useState<Record<string, number>>({}); // Changed to track quantities
+  const [addedItems, setAddedItems] = useState<Record<string, number>>({});
 
   const { shoppingType, cheapestStore, orderTotal, itemCount } = location.state || {};
 
@@ -212,18 +213,30 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     }));
   };
 
-  const updateQuantity = (productName: string, newQuantity: number) => {
+  const updateRecommendationQuantity = (recommendation: HealthRecommendation, newQuantity: number) => {
     if (newQuantity <= 0) {
       setAddedItems(prev => {
         const updated = { ...prev };
-        delete updated[productName];
+        delete updated[recommendation.product.name];
         return updated;
       });
+      
+      // Also remove from cart
+      const updatedCart = cart.filter(item => item.id !== recommendation.product.id);
+      onUpdateCart(updatedCart);
     } else {
       setAddedItems(prev => ({
         ...prev,
-        [productName]: newQuantity
+        [recommendation.product.name]: newQuantity
       }));
+      
+      // Update cart
+      const existingItemIndex = cart.findIndex(item => item.id === recommendation.product.id);
+      if (existingItemIndex >= 0) {
+        const updatedCart = [...cart];
+        updatedCart[existingItemIndex].quantity = newQuantity;
+        onUpdateCart(updatedCart);
+      }
     }
   };
 
@@ -358,7 +371,12 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-gray-900">${rec.product.walmart_price.toFixed(2)}</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                              ${rec.product.walmart_price.toFixed(2)}
+                              <span className="text-sm font-normal text-gray-500 ml-1">
+                                {rec.product.unit}
+                              </span>
+                            </p>
                             <p className="text-sm text-gray-500">{rec.priceJustification}</p>
                           </div>
                         </div>
@@ -388,7 +406,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => updateQuantity(rec.product.name, addedQuantity - 1)}
+                                onClick={() => updateRecommendationQuantity(rec, addedQuantity - 1)}
                                 className="h-8 w-8 p-0"
                               >
                                 <Minus className="h-3 w-3" />
@@ -397,11 +415,14 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => updateQuantity(rec.product.name, addedQuantity + 1)}
+                                onClick={() => updateRecommendationQuantity(rec, addedQuantity + 1)}
                                 className="h-8 w-8 p-0"
                               >
                                 <Plus className="h-3 w-3" />
                               </Button>
+                            </div>
+                            <div className="text-sm text-gray-600">
+                              ${(rec.product.walmart_price * addedQuantity).toFixed(2)} total
                             </div>
                           </div>
                         )}

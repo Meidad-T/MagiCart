@@ -376,9 +376,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             {/* Combined Checkout & AI Recommendations */}
             <Card>
               <CardContent className="pt-6 space-y-3">
-                <p className="text-sm text-gray-600 text-center">
-                  Discover affordable and health additions
-                </p>
                 <Button
                   className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
                   onClick={() =>
@@ -395,6 +392,10 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   <Sparkles className="h-4 w-4 mr-2" />
                   Get AI Health Recommendations
                 </Button>
+                
+                <p className="text-sm text-gray-600 text-center">
+                  Discover affordable and health additions
+                </p>
                 
                 <Button
                   className="w-full text-white"
