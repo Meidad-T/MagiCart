@@ -190,12 +190,26 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
     setIsLoading(true);
     setMessageTimestamps(prev => [...prev, Date.now()]);
     try {
-      // IMPORTANT: This now matches the API call of Cart AIChatDialog exactly!
+      // IMPORTANT: Update the API call for Home page dietary AI to suppress store explanation and focus on health/diet advice
+      // Instead of sending full store totals, instruct the backend to answer ONLY with dietary/health recs
+      // Pass a special flag or override recommendation/reason for the home chat so Gemini will not reference store recs
+
+      // Compose a very focused context about cart + "answer dietary/health only" instruction
+      const dietaryContextMessage =
+        `Act as a helpful nutrition and health assistant. The user may have allergies, dietary restrictions, or health goals. Based on the current cart items, suggest healthier alternatives or tips related to nutrition, fruits, vegetables, or diet. Ignore store prices or quality ratings; do NOT explain store recommendations or mention store names. Just answer the user's dietary/health question in a concise, friendly way.`;
+
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
         body: {
-          userMessage: inputMessage,
-          recommendation,
-          storeTotals,
+          userMessage: `${dietaryContextMessage}\n\nUser: ${inputMessage}`,
+          // Pass in an empty recommendation and storeTotals so Gemini cannot compare or cite them
+          recommendation: {
+            store: { store: '', storeKey: '', subtotal: '0', taxesAndFees: '0', total: '0' },
+            reason: '',
+            confidence: 0,
+            metrics: { reviewScore: 0, freshness: 0, availability: 0, service: 0 },
+            savings: undefined,
+          },
+          storeTotals: [],
           shoppingType,
         }
       });
