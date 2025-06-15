@@ -1,5 +1,3 @@
-
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -111,17 +109,17 @@ export const useProducts = () => {
             'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
             'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://th.bing.com/th/id/R.253f46bfde8ea2339840c3588d29951b?rik=qcFb3A9Ig%2fcGGg&pid=ImgRaw&r=0',
             'Great Value Chicken Alfredo Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
-            'Lean Cuisine Chicken Fettuccine Alfredo': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
+            'Lean Cuisine Chicken Fettuccine Alfredo': 'https://th.bing.com/th/id/R.2a214960c86b1adee19f52b28ed6adbc?rik=MWdD21V7rL8bDA&riu=http%3a%2f%2ffarm2.staticflickr.com%2f1257%2f4725037231_0dfedd4c38_z.jpg&ehk=mE7%2b%2flWiI%2ffHxI7Ijqj2zOFpftoR2iZiaatgMpjmQMY%3d&risl=&pid=ImgRaw&r=0',
             'Hungry-Man Boneless Fried Chicken': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format',
-            'Amys Mexican Casserole Bowl': 'https://images.unsplash.com/photo-1559054663-e9b23fdf4726?w=400&h=300&fit=crop&auto=format',
-            'Great Value Enchiladas & Spanish Rice': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'Amys Mexican Casserole Bowl': 'https://live.staticflickr.com/7047/26336842953_9965dc9273_b.jpg',
+            'Great Value Enchiladas & Spanish Rice': 'https://1.bp.blogspot.com/-R1YeR1I7WBw/TrqzRUChFhI/AAAAAAAAEjE/ILsAmZrrAkA/w1200-h630-p-k-no-nu/queso+99c.jpg',
             'Devour Sweet & Smoky BBQ Meatballs': 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop&auto=format',
             'Ore-Ida Golden Crinkles French Fries': 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop&auto=format',
-            'TGI Fridays Loaded Potato Skins': 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop&auto=format',
-            'Farm Rich Mozzarella Sticks': 'https://images.unsplash.com/photo-1619740455993-12ad3bb6ed6e?w=400&h=300&fit=crop&auto=format',
+            'TGI Fridays Loaded Potato Skins': 'https://images.unsplash.com/photo-1555939594-58d7cb6ed6e5?w=400&h=300&fit=crop&auto=format',
+            'Farm Rich Mozzarella Sticks': 'https://th.bing.com/th/id/OIP.7szUTW0nihlbq95VcLvFAAHaFj?r=0&o=7rm=3&rs=1&pid=ImgDetMain',
             'Totinos Pepperoni Pizza Rolls': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
-            'Great Value Onion Rings': 'https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?w=400&h=300&fit=crop&auto=format',
-            'State Fair Classic Corn Dogs': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format'
+            'Great Value Onion Rings': 'https://live.staticflickr.com/7381/27470155262_a6725c49c3.jpg',
+            'State Fair Classic Corn Dogs': 'https://live.staticflickr.com/7346/16391404760_75afc418de.jpg'
           };
           
           return imageMap[productName] || 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format';
@@ -201,4 +199,3 @@ export const useProducts = () => {
     },
   });
 };
-
