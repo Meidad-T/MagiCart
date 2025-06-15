@@ -10,6 +10,8 @@ import PickupMap from "@/components/PickupMap";
 import { supabase } from "@/integrations/supabase/client";
 import StoreHoursAlert, { validateStoreHours } from "@/components/StoreHoursAlert";
 import { getDistance } from "@/utils/geo";
+import { Loader2 } from "lucide-react";
+import { Database } from "@/integrations/supabase/types";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -24,6 +26,9 @@ interface LocationState {
   pickupTime?: string;
   fromOrderSummary?: boolean;
 }
+
+type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
+type StoreWithDistance = StoreLocation & { distance: number };
 
 export default function CheckoutDetails() {
   const navigate = useNavigate();
@@ -68,6 +73,11 @@ export default function CheckoutDetails() {
   const [singleLoc, setSingleLoc] = useState<[number, number] | null>(null);
   const [storeLoc, setStoreLoc] = useState<[number, number] | null>(null);
   const [actualStoreName, setActualStoreName] = useState<string>(cheapestStore);
+
+  // New state for nearby stores
+  const [isFetchingStores, setIsFetchingStores] = useState(false);
+  const [nearbyStores, setNearbyStores] = useState<StoreWithDistance[]>([]);
+  const [selectedStore, setSelectedStore] = useState<StoreWithDistance | null>(null);
 
   // Geocode single address (when route optimization is off)
   useEffect(() => {
@@ -159,14 +169,18 @@ export default function CheckoutDetails() {
 
     async function fetchRecommendedStore() {
       if ((shoppingType === "pickup" || shoppingType === "instore") && userLoc) {
-        setStoreLoc(null); // Reset store location while searching
+        setStoreLoc(null); // Reset store location
+        setSelectedStore(null);
+        setNearbyStores([]);
+        setIsFetchingStores(true);
+
         try {
           const chainName = getChainName(cheapestStore);
-          console.log(`Searching for closest store for chain: ${chainName} near ${userLoc}`);
+          console.log(`Searching for nearby stores for chain: ${chainName} near ${userLoc}`);
 
           const { data: allStores, error } = await supabase
             .from('store_locations')
-            .select('latitude, longitude, name, address_line1, city, state')
+            .select('id, name, address_line1, city, state, zip_code, latitude, longitude')
             .eq('chain', chainName)
             .not('latitude', 'is', null)
             .not('longitude', 'is', null);
@@ -180,34 +194,41 @@ export default function CheckoutDetails() {
             const userLat = userLoc[0];
             const userLon = userLoc[1];
 
-            let closestStore: typeof allStores[0] | null = null;
-            let minDistance = Infinity;
-
-            for (const store of allStores) {
-              if (store.latitude && store.longitude) {
-                const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
-                if (distance < minDistance) {
-                  minDistance = distance;
-                  closestStore = store;
+            const storesWithDistance = allStores
+              .map(store => {
+                if (store.latitude && store.longitude) {
+                  const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
+                  return { ...store, distance };
                 }
-              }
-            }
+                return null;
+              })
+              .filter((s): s is StoreWithDistance => s !== null);
 
-            if (closestStore && closestStore.latitude && closestStore.longitude) {
-              setStoreLoc([closestStore.latitude, closestStore.longitude]);
-              setActualStoreName(closestStore.name);
-              console.log('Found closest store:', closestStore.name, 'at', [closestStore.latitude, closestStore.longitude], 'distance:', minDistance.toFixed(2), 'miles');
-            }
+            storesWithDistance.sort((a, b) => a.distance - b.distance);
+            
+            const nearby = storesWithDistance.slice(0, 5);
+            setNearbyStores(nearby);
+            console.log(`Found ${nearby.length} nearby stores.`);
           } else {
             console.warn(`No stores found for chain: ${chainName}.`);
           }
         } catch (error) {
           console.error('Error in fetchRecommendedStore:', error);
+        } finally {
+          setIsFetchingStores(false);
         }
       }
     }
     fetchRecommendedStore();
   }, [shoppingType, cheapestStore, workLoc, singleLoc, routeOptimization]);
+
+  const handleSelectStore = (store: StoreWithDistance) => {
+    setSelectedStore(store);
+    if (store.latitude && store.longitude) {
+      setStoreLoc([store.latitude, store.longitude]);
+      setActualStoreName(store.name);
+    }
+  };
 
   const storeHoursValidation = validateStoreHours(actualStoreName, pickupTime);
 
@@ -216,21 +237,24 @@ export default function CheckoutDetails() {
     : routeOptimization 
       ? !!(workStreet && workCity && workState && workZip && 
            homeStreet && homeCity && homeState && homeZip && pickupTime &&
-           storeHoursValidation.canProceed)
-      : !!(singleStreet && singleCity && singleState && singleZip && pickupTime && storeHoursValidation.canProceed);
+           storeHoursValidation.canProceed && selectedStore)
+      : !!(singleStreet && singleCity && singleState && singleZip && pickupTime && storeHoursValidation.canProceed && selectedStore);
 
   const handlePlaceOrder = () => {
     const workAddress = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
     const homeAddress = `${homeStreet}, ${homeCity}, ${homeState} ${homeZip}`;
-    const singleAddress = `${singleStreet}, ${singleCity}, ${singleState} ${singleZip}`;
     
+    const storeFullAddress = selectedStore
+      ? `${selectedStore.address_line1}, ${selectedStore.city}, ${selectedStore.state} ${selectedStore.zip_code}`
+      : undefined;
+
     navigate("/order-summary", {
       state: {
         shoppingType,
-        storeName: cheapestStore,
+        storeName: actualStoreName,
         workAddress: shoppingType === "delivery" ? undefined : (routeOptimization ? workAddress : undefined),
         homeAddress: shoppingType === "delivery" ? undefined : (routeOptimization ? homeAddress : undefined),
-        storeAddress: shoppingType === "delivery" ? undefined : (!routeOptimization ? singleAddress : undefined),
+        storeAddress: storeFullAddress,
         deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
         pickupTime,
         orderTotal,
@@ -394,6 +418,36 @@ export default function CheckoutDetails() {
                 </>
               )}
               
+              {/* Nearby Stores Selection */}
+              {(singleLoc || workLoc) && (
+                <div className="space-y-4 pt-4">
+                  <Label>Select a Store</Label>
+                  {isFetchingStores ? (
+                    <div className="flex items-center space-x-2 text-gray-500">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Finding nearby stores...</span>
+                    </div>
+                  ) : nearbyStores.length > 0 ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">We found these stores near you. Please select one.</p>
+                      {nearbyStores.map(store => (
+                        <div 
+                          key={store.id}
+                          onClick={() => handleSelectStore(store)}
+                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStore?.id === store.id ? 'border-primary bg-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                        >
+                          <div className="font-semibold">{store.name}</div>
+                          <div className="text-sm text-gray-500">{store.address_line1}, {store.city}</div>
+                          <div className="text-sm font-medium text-primary">{store.distance.toFixed(1)} miles away</div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No stores found for {cheapestStore} near the provided address. Please try a different address.</p>
+                  )}
+                </div>
+              )}
+              
               <div className="pt-4">
                 <Label htmlFor="pickup-time">
                   {shoppingType === "pickup" ? "Pick-up Time" : "Pickup Time"}
@@ -406,7 +460,7 @@ export default function CheckoutDetails() {
                 />
               </div>
               
-              {pickupTime && (
+              {pickupTime && selectedStore && (
                 <StoreHoursAlert 
                   storeName={actualStoreName} 
                   pickupTime={pickupTime} 
@@ -427,7 +481,7 @@ export default function CheckoutDetails() {
               
               {/* Map - show for both route optimization modes */}
               {((routeOptimization && workLoc && homeLoc && storeLoc) || 
-                (!routeOptimization && singleLoc && storeLoc)) && (
+                (!routeOptimization && singleLoc && storeLoc)) && selectedStore && (
                 <div>
                   <PickupMap 
                     start={routeOptimization ? workLoc : singleLoc} 
@@ -437,8 +491,8 @@ export default function CheckoutDetails() {
                   />
                   <p className="text-xs text-gray-400 text-center mt-1">
                     <span role="img" aria-label="info">🗺️</span> {routeOptimization 
-                      ? `Optimized route: Starting Location → ${actualStoreName} (recommended store) → Home`
-                      : `Route: Your Location → ${actualStoreName} (recommended store) → Your Location`
+                      ? `Optimized route: Starting Location → ${actualStoreName} → Home`
+                      : `Route: Your Location → ${actualStoreName} → Your Location`
                     }
                   </p>
                 </div>
