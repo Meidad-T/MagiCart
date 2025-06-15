@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,86 +34,104 @@ export default function CheckoutDetails() {
 
   // Form fields - pre-populate if coming from order summary
   const [deliveryAddress, setDeliveryAddress] = useState(state?.deliveryAddress || "");
-  const [storeStreet, setStoreStreet] = useState("");
-  const [storeCity, setStoreCity] = useState("");
-  const [storeState, setStoreState] = useState("");
-  const [storeZip, setStoreZip] = useState("");
+  
+  // Work address fields
+  const [workStreet, setWorkStreet] = useState("");
+  const [workCity, setWorkCity] = useState("");
+  const [workState, setWorkState] = useState("");
+  const [workZip, setWorkZip] = useState("");
+  
+  // Home address fields
+  const [homeStreet, setHomeStreet] = useState("");
+  const [homeCity, setHomeCity] = useState("");
+  const [homeState, setHomeState] = useState("");
+  const [homeZip, setHomeZip] = useState("");
+  
   const [pickupTime, setPickupTime] = useState(state?.pickupTime || "");
   const [notes, setNotes] = useState("");
 
   // Map geocoding and geolocation
-  const [userLoc, setUserLoc] = useState<[number, number] | null>(null);
+  const [workLoc, setWorkLoc] = useState<[number, number] | null>(null);
+  const [homeLoc, setHomeLoc] = useState<[number, number] | null>(null);
   const [storeLoc, setStoreLoc] = useState<[number, number] | null>(null);
 
-  // Parse existing store address if coming from order summary
+  // Geocode work address
   useEffect(() => {
-    if (fromOrderSummary && state?.storeAddress) {
-      const addressParts = state.storeAddress.split(', ');
-      if (addressParts.length >= 3) {
-        setStoreStreet(addressParts[0]);
-        setStoreCity(addressParts[1]);
-        const stateZip = addressParts[2].split(' ');
-        if (stateZip.length >= 2) {
-          setStoreState(stateZip[0]);
-          setStoreZip(stateZip[1]);
-        }
-      }
-    }
-  }, [fromOrderSummary, state?.storeAddress]);
-
-  // Geolocate user for map on mount
-  useEffect(() => {
-    if (shoppingType === "pickup" || shoppingType === "instore") {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          pos => setUserLoc([pos.coords.latitude, pos.coords.longitude]),
-          () => setUserLoc([30.2672, -97.7431]) // fallback: Austin, TX
-        );
-      } else {
-        setUserLoc([30.2672, -97.7431]);
-      }
-    }
-  }, [shoppingType]);
-
-  // Geocode store address (using simple fetch to Nominatim)
-  useEffect(() => {
-    async function geocodeAddress() {
+    async function geocodeWorkAddress() {
       if (shoppingType === "pickup" || shoppingType === "instore") {
-        const address = `${storeStreet}, ${storeCity}, ${storeState} ${storeZip}`;
-        if (storeStreet && storeCity && storeState && storeZip) {
+        const address = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
+        if (workStreet && workCity && workState && workZip) {
           try {
             const res = await fetch(
               `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
             );
             const results = await res.json();
             if (Array.isArray(results) && results.length > 0) {
-              setStoreLoc([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
+              setWorkLoc([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
             }
           } catch {
-            setStoreLoc(null);
+            setWorkLoc(null);
           }
         } else {
-          setStoreLoc(null);
+          setWorkLoc(null);
         }
       }
     }
-    geocodeAddress();
-    // Only rerun if address changes and only for pickup/instore types
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storeStreet, storeCity, storeState, storeZip, shoppingType]);
+    geocodeWorkAddress();
+  }, [workStreet, workCity, workState, workZip, shoppingType]);
+
+  // Geocode home address
+  useEffect(() => {
+    async function geocodeHomeAddress() {
+      if (shoppingType === "pickup" || shoppingType === "instore") {
+        const address = `${homeStreet}, ${homeCity}, ${homeState} ${homeZip}`;
+        if (homeStreet && homeCity && homeState && homeZip) {
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`
+            );
+            const results = await res.json();
+            if (Array.isArray(results) && results.length > 0) {
+              setHomeLoc([parseFloat(results[0].lat), parseFloat(results[0].lon)]);
+            }
+          } catch {
+            setHomeLoc(null);
+          }
+        } else {
+          setHomeLoc(null);
+        }
+      }
+    }
+    geocodeHomeAddress();
+  }, [homeStreet, homeCity, homeState, homeZip, shoppingType]);
+
+  // Geocode store address (placeholder - will be updated with actual store locations)
+  useEffect(() => {
+    async function geocodeStoreAddress() {
+      if (shoppingType === "pickup" || shoppingType === "instore") {
+        // Placeholder store location - this will be updated with actual store data
+        // For now, using a central Austin location
+        setStoreLoc([30.2672, -97.7431]);
+      }
+    }
+    geocodeStoreAddress();
+  }, [shoppingType, cheapestStore]);
 
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
-    : !!(storeStreet && storeCity && storeState && storeZip && pickupTime);
+    : !!(workStreet && workCity && workState && workZip && 
+         homeStreet && homeCity && homeState && homeZip && pickupTime);
 
   const handlePlaceOrder = () => {
-    const storeAddress = `${storeStreet}, ${storeCity}, ${storeState} ${storeZip}`;
+    const workAddress = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
+    const homeAddress = `${homeStreet}, ${homeCity}, ${homeState} ${homeZip}`;
     
     navigate("/order-summary", {
       state: {
         shoppingType,
         storeName: cheapestStore,
-        storeAddress: shoppingType === "delivery" ? undefined : storeAddress,
+        workAddress: shoppingType === "delivery" ? undefined : workAddress,
+        homeAddress: shoppingType === "delivery" ? undefined : homeAddress,
         deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
         pickupTime,
         orderTotal,
@@ -153,31 +172,70 @@ export default function CheckoutDetails() {
             </>
           ) : (
             <>
-              <Label htmlFor="store-street">Store Address</Label>
-              <div className="grid grid-cols-1 gap-4">
-                <Input
-                  id="store-street"
-                  placeholder="Street Address"
-                  value={storeStreet}
-                  onChange={e => setStoreStreet(e.target.value)}
-                />
-                <div className="grid grid-cols-2 gap-4">
+              {/* Work Address Section */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="work-street">Work Address</Label>
+                  <p className="text-sm text-gray-600 mb-2">Enter your work location for route optimization</p>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
                   <Input
-                    placeholder="City"
-                    value={storeCity}
-                    onChange={e => setStoreCity(e.target.value)}
+                    id="work-street"
+                    placeholder="Work Street Address"
+                    value={workStreet}
+                    onChange={e => setWorkStreet(e.target.value)}
                   />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      placeholder="City"
+                      value={workCity}
+                      onChange={e => setWorkCity(e.target.value)}
+                    />
+                    <Input
+                      placeholder="State"
+                      value={workState}
+                      onChange={e => setWorkState(e.target.value)}
+                    />
+                  </div>
                   <Input
-                    placeholder="State"
-                    value={storeState}
-                    onChange={e => setStoreState(e.target.value)}
+                    placeholder="ZIP Code"
+                    value={workZip}
+                    onChange={e => setWorkZip(e.target.value)}
                   />
                 </div>
-                <Input
-                  placeholder="ZIP Code"
-                  value={storeZip}
-                  onChange={e => setStoreZip(e.target.value)}
-                />
+              </div>
+
+              {/* Home Address Section */}
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="home-street">Home Address</Label>
+                  <p className="text-sm text-gray-600 mb-2">Enter your home location for route optimization</p>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <Input
+                    id="home-street"
+                    placeholder="Home Street Address"
+                    value={homeStreet}
+                    onChange={e => setHomeStreet(e.target.value)}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <Input
+                      placeholder="City"
+                      value={homeCity}
+                      onChange={e => setHomeCity(e.target.value)}
+                    />
+                    <Input
+                      placeholder="State"
+                      value={homeState}
+                      onChange={e => setHomeState(e.target.value)}
+                    />
+                  </div>
+                  <Input
+                    placeholder="ZIP Code"
+                    value={homeZip}
+                    onChange={e => setHomeZip(e.target.value)}
+                  />
+                </div>
               </div>
               
               <Label htmlFor="pickup-time" className="pt-2">Pickup Time</Label>
@@ -194,11 +252,16 @@ export default function CheckoutDetails() {
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
               />
-              {/* Cute pickup map below notes */}
+              {/* Route optimization map */}
               <div>
-                <PickupMap start={userLoc} dest={storeLoc} />
+                <PickupMap 
+                  start={workLoc} 
+                  dest={homeLoc} 
+                  storeLocation={storeLoc}
+                  storeName={cheapestStore}
+                />
                 <p className="text-xs text-gray-400 text-center mt-1">
-                  <span role="img" aria-label="info">🗺️</span> Fun overview: your starting point and store!
+                  <span role="img" aria-label="info">🗺️</span> Optimized route: Work → {cheapestStore} (best price) → Home
                 </p>
               </div>
             </>

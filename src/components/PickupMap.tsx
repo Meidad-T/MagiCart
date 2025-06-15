@@ -3,21 +3,24 @@ import { GoogleMap, DirectionsRenderer, useLoadScript } from "@react-google-maps
 import { useState, useEffect } from "react";
 
 type PickupMapProps = {
-  start: [number, number] | null, // [lat, lng]
-  dest: [number, number] | null,  // [lat, lng]
+  start: [number, number] | null, // [lat, lng] - work location
+  dest: [number, number] | null,  // [lat, lng] - home location
+  storeLocation?: [number, number] | null; // [lat, lng] - store location
+  storeName?: string;
 };
 
 // Move libraries array outside component to prevent reloading
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
-export default function PickupMap({ start, dest }: PickupMapProps) {
+export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
   const googleMapsApiKey = import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || "";
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
 
   // Debug logging
   console.log("Google Maps API Key:", googleMapsApiKey ? "Present" : "Missing");
-  console.log("Start coords:", start);
-  console.log("Dest coords:", dest);
+  console.log("Work coords:", start);
+  console.log("Home coords:", dest);
+  console.log("Store coords:", storeLocation);
 
   // All hooks MUST be called unconditionally, before any early returns
   const { isLoaded, loadError } = useLoadScript({
@@ -32,17 +35,25 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     }
   }, [loadError]);
 
-  // Calculate directions when start/dest change
+  // Calculate directions when start/dest/store change
   useEffect(() => {
-    if (isLoaded && start && dest && window.google) {
-      console.log("Attempting to calculate directions...");
+    if (isLoaded && start && dest && storeLocation && window.google) {
+      console.log("Attempting to calculate multi-stop route...");
       const directionsService = new window.google.maps.DirectionsService();
       
+      // Create route: Work → Store → Home
       directionsService.route(
         {
           origin: { lat: start[0], lng: start[1] },
           destination: { lat: dest[0], lng: dest[1] },
+          waypoints: [
+            {
+              location: { lat: storeLocation[0], lng: storeLocation[1] },
+              stopover: true
+            }
+          ],
           travelMode: window.google.maps.TravelMode.DRIVING,
+          optimizeWaypoints: true,
         },
         (result, status) => {
           console.log("Directions result:", { result, status });
@@ -55,7 +66,7 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
         }
       );
     }
-  }, [isLoaded, start, dest]);
+  }, [isLoaded, start, dest, storeLocation]);
 
   // Handle load error
   if (loadError) {
@@ -70,13 +81,17 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
   }
 
   // Now it's safe to conditionally render
-  if (!isLoaded || !start || !dest) {
+  if (!isLoaded || !start || !dest || !storeLocation) {
     return (
       <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
         Map loading…
       </div>
     );
   }
+
+  // Calculate center point for all three locations
+  const centerLat = (start[0] + dest[0] + storeLocation[0]) / 3;
+  const centerLng = (start[1] + dest[1] + storeLocation[1]) / 3;
 
   return (
     <div
@@ -85,10 +100,10 @@ export default function PickupMap({ start, dest }: PickupMapProps) {
     >
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
-        zoom={13}
-        center={{ lat: (start[0] + dest[0]) / 2, lng: (start[1] + dest[1]) / 2 }}
+        zoom={12}
+        center={{ lat: centerLat, lng: centerLng }}
       >
-        {/* Show directions route with default Google Maps styling */}
+        {/* Show optimized route with custom styling */}
         {directionsResult && (
           <DirectionsRenderer
             directions={directionsResult}
