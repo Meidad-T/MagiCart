@@ -2,8 +2,12 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Star, TrendingUp, Shield, Clock } from "lucide-react";
+import { Sparkles, Star, TrendingUp, Shield, Clock, MapPin } from "lucide-react";
 import { AIChatDialog } from "./AIChatDialog";
+import { StoreLocationPicker } from "./StoreLocationPicker";
+import { Database } from "@/integrations/supabase/types";
+
+type StoreLocationWithDistance = Database['public']['Tables']['store_locations']['Row'] & { distance: number };
 
 interface StoreTotalData {
   store: string;
@@ -16,14 +20,20 @@ interface StoreTotalData {
 interface IntelligentRecommendationProps {
   storeTotals: StoreTotalData[];
   shoppingType: 'pickup' | 'delivery' | 'instore';
+  otherLocations?: StoreLocationWithDistance[];
+  onSelectLocation?: (location: StoreLocationWithDistance) => void;
 }
 
 export const IntelligentRecommendation = ({
   storeTotals,
-  shoppingType
+  shoppingType,
+  otherLocations = [],
+  onSelectLocation = () => {},
 }: IntelligentRecommendationProps) => {
   const [recommendation, setRecommendation] = useState<any>(null);
   const hasSetRecommendation = useRef(false);
+  const [isMinimized, setIsMinimized] = useState(false);
+  const [updatedLocation, setUpdatedLocation] = useState<StoreLocationWithDistance | null>(null);
 
   useEffect(() => {
     // Only calculate recommendation if we haven't set one yet
@@ -161,6 +171,35 @@ export const IntelligentRecommendation = ({
     hasSetRecommendation.current = true;
   }, [storeTotals, shoppingType]);
 
+  const handleLocationSelect = (location: StoreLocationWithDistance) => {
+    onSelectLocation(location);
+    setUpdatedLocation(location);
+    setIsMinimized(true);
+  };
+
+  if (isMinimized && updatedLocation) {
+    return (
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="pt-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <Sparkles className="h-6 w-6 text-blue-600" />
+              <div>
+                <h3 className="font-semibold text-gray-800">Location Updated</h3>
+                <p className="text-sm text-gray-700">
+                  Switched to {updatedLocation.name} at {updatedLocation.address_line1}.
+                </p>
+              </div>
+            </div>
+            <Button variant="link" onClick={() => setIsMinimized(false)}>
+              Show Details
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (!recommendation || storeTotals.length === 0) return null;
 
   return (
@@ -216,21 +255,36 @@ export const IntelligentRecommendation = ({
 
               {/* Continue with recommended store button */}
               <div className="flex justify-between items-center pt-3 border-t border-blue-100">
-                <Button 
-                  className="bg-blue-600 hover:bg-blue-700 text-white"
-                  onClick={() => {
-                    // In a real app, this would handle continuing with the recommended store
-                    console.log('Continuing with', recommendation.store.store);
-                  }}
-                >
-                  Continue with {recommendation.store.store}
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                    onClick={() => {
+                      // In a real app, this would handle continuing with the recommended store
+                      console.log('Continuing with', recommendation.store.store);
+                    }}
+                  >
+                    Continue with {recommendation.store.store}
+                  </Button>
+                  
+                  <AIChatDialog 
+                    recommendation={recommendation}
+                    storeTotals={storeTotals}
+                    shoppingType={shoppingType}
+                  />
+                </div>
                 
-                <AIChatDialog 
-                  recommendation={recommendation}
-                  storeTotals={storeTotals}
-                  shoppingType={shoppingType}
-                />
+                {otherLocations.length > 0 && (
+                  <StoreLocationPicker
+                      locations={otherLocations}
+                      onSelectLocation={handleLocationSelect}
+                      triggerButton={
+                          <Button variant="outline">
+                              <MapPin className="mr-2 h-4 w-4" />
+                              Pick another location
+                          </Button>
+                      }
+                  />
+                )}
               </div>
             </div>
           </div>
