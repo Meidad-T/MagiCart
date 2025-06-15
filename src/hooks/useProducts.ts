@@ -82,7 +82,7 @@ export const useProducts = () => {
             
             // Drinks - better bottle/container images
             '3 Liter Coke Bottle': 'https://live.staticflickr.com/7318/13933195050_6016499339.jpg',
-            '3 Liter Sprite Bottle': 'https://www.foodista.com/sites/default/files/styles/featured/public/field/image/12.jpg',
+            'Sprite Can': 'https://images.unsplash.com/photo-1680404005217-a441afdefe83?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c3ByaXRlfGVufDB8fDB8fHww',
             '3 Liter Dr Pepper Bottle': 'https://c2.staticflickr.com/4/3215/2978925649_d7ca56738f_b.jpg',
             'Bottled water 1 Gallon': 'https://th.bing.com/th/id/R.30251710d09b6bad7d87e3f3468ae5f2?rik=A4MsrMnhAi%2btMQ&riu=http%3a%2f%2fboxingcoachmike.com%2fwp-content%2fuploads%2f2010%2f12%2ffesting.jpg&ehk=sjtB9pTD46UBtTp2MIb40eyR8ODrcwF1CZdDZ8NFGLQ%3d&risl=&pid=ImgRaw&r=0',
             
