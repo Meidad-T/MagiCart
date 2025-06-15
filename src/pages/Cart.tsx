@@ -25,6 +25,8 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [userProfile, setUserProfile] = useState<{ full_name?: string } | null>(null);
   const [cartExpanded, setCartExpanded] = useState(false);
   const [substitutionCounts, setSubstitutionCounts] = useState<Record<string, number>>({});
+  const [confettiTrigger, setConfettiTrigger] = useState(false);
+  const [previousHealthScore, setPreviousHealthScore] = useState(0);
 
   useEffect(() => {
     // Get current user
@@ -101,6 +103,18 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     
     return 20; // fallback
   };
+
+  const healthScore = calculateCartHealthScore();
+
+  // Trigger confetti when health score reaches 100
+  useEffect(() => {
+    if (healthScore === 100 && previousHealthScore !== 100) {
+      setConfettiTrigger(true);
+      // Reset the trigger after a short delay
+      setTimeout(() => setConfettiTrigger(false), 100);
+    }
+    setPreviousHealthScore(healthScore);
+  }, [healthScore, previousHealthScore]);
 
   const getHealthScoreColor = (score: number) => {
     if (score >= 85) return "text-green-600";
@@ -263,8 +277,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   const cheapestStore = storeTotals[0]; // First one is cheapest due to sorting
   const cheapestStoreColor = storeColors[cheapestStore?.store as keyof typeof storeColors] || '#3b82f6';
-
-  const healthScore = calculateCartHealthScore();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -482,7 +494,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             {cart.length > 0 && (
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Cart's Health Score</p>
-                <ConfettiText trigger={healthScore === 100}>
+                <ConfettiText trigger={confettiTrigger}>
                   <p className={`text-6xl font-bold ${getHealthScoreColor(healthScore)}`}>{healthScore}</p>
                 </ConfettiText>
                 <p className="text-sm text-gray-500 mt-1">Add healthy foods to increase your cart's health score!</p>
