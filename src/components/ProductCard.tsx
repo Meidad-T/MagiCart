@@ -70,7 +70,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const remainingCount = availableStores.length - 2;
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200 relative overflow-hidden">
+    <Card className="group hover:shadow-lg transition-shadow duration-200 relative overflow-visible">
       <CardContent className="p-0">
         {/* Product Image */}
         <div className="relative overflow-hidden rounded-t-lg">
@@ -115,9 +115,9 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Dropdown for all stores - improved styling */}
+          {/* Dropdown for all stores - improved positioning and styling */}
           {showAllStores && (
-            <div className="absolute top-10 right-4 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-20 min-w-56 max-w-64">
+            <div className="absolute top-12 right-2 left-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 mx-2">
               <div className="flex items-center justify-between mb-3">
                 <span className="text-sm font-semibold text-gray-700">All Available Stores</span>
                 <button 
@@ -130,22 +130,22 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   <ChevronDown className="h-4 w-4 rotate-180" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 {availableStores.map((store, index) => (
                   <div
                     key={`${store.name}-dropdown-${index}`}
-                    className="flex flex-col items-center space-y-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                     title={`${store.name.charAt(0).toUpperCase() + store.name.slice(1)} - $${store.price.toFixed(2)}`}
                   >
-                    <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
                       <img
                         src={store.logo}
                         alt={`${store.name} logo`}
-                        className="w-full h-full object-contain p-1"
+                        className="w-full h-full object-contain p-0.5"
                       />
                     </div>
                     <span className="text-xs font-medium text-green-600">${store.price.toFixed(2)}</span>
-                    <span className="text-xs text-gray-500 capitalize">{store.name}</span>
+                    <span className="text-xs text-gray-500 capitalize text-center">{store.name}</span>
                   </div>
                 ))}
               </div>
