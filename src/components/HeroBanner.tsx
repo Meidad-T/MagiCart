@@ -1,8 +1,7 @@
 
-import { ShoppingCart, Star, Zap, Heart, TrendingUp } from "lucide-react";
+import { ShoppingCart, Star, Zap, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 interface HeroBannerProps {
@@ -10,26 +9,12 @@ interface HeroBannerProps {
 }
 
 const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
-  const navigate = useNavigate();
-
   const handleViewDeals = () => {
     toast({
       title: "Best Deals!",
       description: "Showing you the lowest prices across all stores",
     });
     onExploreClick();
-  };
-
-  const handleHealthyChoices = () => {
-    navigate('/health-recommendations');
-  };
-
-  const handleSaveToFavorites = () => {
-    toast({
-      title: "Favorites",
-      description: "Sign in to save your favorite products",
-    });
-    navigate('/auth');
   };
 
   return (
@@ -65,8 +50,8 @@ const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
               </p>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            {/* Action Buttons and Text */}
+            <div className="flex flex-col sm:flex-row gap-4 items-start">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200"
@@ -76,15 +61,9 @@ const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
                 Explore Best Deals
               </Button>
               
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="border-2 border-blue-200 hover:border-blue-300 text-blue-700 hover:bg-blue-50 font-semibold px-8 py-4 rounded-xl shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                onClick={handleHealthyChoices}
-              >
-                <Heart className="h-5 w-5 mr-2 text-red-500" />
-                Healthy Choices
-              </Button>
+              <div className="text-lg text-green-600 font-semibold mt-2">
+                🥗 Healthy Choices Available
+              </div>
             </div>
 
             {/* Stats */}
@@ -129,14 +108,6 @@ const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
                 <p className="text-gray-600">
                   Our AI analyzes prices across all major grocery stores to find you the best deals instantly.
                 </p>
-
-                <Button 
-                  className="bg-white text-blue-600 hover:bg-blue-50 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                  onClick={handleSaveToFavorites}
-                >
-                  <Heart className="h-4 w-4 mr-2" />
-                  Save Favorites
-                </Button>
               </div>
             </div>
           </div>
