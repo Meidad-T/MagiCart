@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -94,7 +95,7 @@ export const useProducts = () => {
             'DiGiorno Rising Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Rising Crust Three Meat Pizza': 'https://live.staticflickr.com/3842/15121649151_9501dbbb1c_b.jpg',
             'DiGiorno Rising Crust Four Cheese Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
-            'DiGiorno Rising Crust Supreme Meat Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Rising Crust Supreme Meat Pizza': 'https://c2.staticflickr.com/8/7404/27252669660_b90ef0462a_z.jpg',
             'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://live.staticflickr.com/5626/29914200563_cff7d9a6f3_z.jpg',
             'DiGiorno Stuffed Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Stuffed Crust Five Cheese Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
@@ -102,22 +103,22 @@ export const useProducts = () => {
             'DiGiorno Classic Crust Cheese & Pepperoni': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
             'Red Baron Four Cheese Classic Crust Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
             'Red Baron Four Meat Classic Crust Pizza': 'https://th.bing.com/th/id/R.602841e7fd446a4409ae429b0b2ad95e?rik=%2bO7DMMIQesdERg&riu=http%3a%2f%2fwww.becentsable.net%2fwp-content%2fuploads%2f2014%2f08%2fScreen-shot-2014-08-22-at-10.23.23-AM.png&ehk=dJQ9b74M3m6br%2fQAwYXXl%2bYJh%2f0A7DW75VMIjSaiCaE%3d&risl=&pid=ImgRaw&r=0',
-            'Red Baron Supreme Classic Crust Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
+            'Red Baron Supreme Classic Crust Pizza': 'https://live.staticflickr.com/2848/12946693435_f11b47a69f_b.jpg',
             'Tombstone Roadhouse Loaded Double Down Deluxe': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
             'Stouffers Lasagna with Meat & Sauce': 'https://live.staticflickr.com/5809/21693533023_48674fef8c.jpg',
             'Marie Callenders Chicken Pot Pie': 'https://th.bing.com/th/id/R.5eedcf6ae6683244caa519a88176fd99?rik=sRQ%2bHceNYTf5nw&riu=http%3a%2f%2ffarm4.staticflickr.com%2f3953%2f14927092694_2149533fb6_z.jpg&ehk=RpRWkp%2bvScjB9agNtAfA1RRHC39KczLzM6Uwhf%2bx1Fg%3d&risl=&pid=ImgRaw&r=0',
             'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
             'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://th.bing.com/th/id/R.253f46bfde8ea2339840c3588d29951b?rik=qcFb3A9Ig%2fcGGg&pid=ImgRaw&r=0',
-            'Great Value Chicken Alfredo Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
+            'Great Value Chicken Alfredo Pasta': 'https://live.staticflickr.com/7706/17106533558_8bd82f8463_z.jpg',
             'Lean Cuisine Chicken Fettuccine Alfredo': 'https://th.bing.com/th/id/R.2a214960c86b1adee19f52b28ed6adbc?rik=MWdD21V7rL8bDA&riu=http%3a%2f%2ffarm2.staticflickr.com%2f1257%2f4725037231_0dfedd4c38_z.jpg&ehk=mE7%2b%2flWiI%2ffHxI7Ijqj2zOFpftoR2iZiaatgMpjmQMY%3d&risl=&pid=ImgRaw&r=0',
             'Hungry-Man Boneless Fried Chicken': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format',
             'Amys Mexican Casserole Bowl': 'https://live.staticflickr.com/7047/26336842953_9965dc9273_b.jpg',
             'Great Value Enchiladas & Spanish Rice': 'https://1.bp.blogspot.com/-R1YeR1I7WBw/TrqzRUChFhI/AAAAAAAAEjE/ILsAmZrrAkA/w1200-h630-p-k-no-nu/queso+99c.jpg',
             'Devour Sweet & Smoky BBQ Meatballs': 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=400&h=300&fit=crop&auto=format',
             'Ore-Ida Golden Crinkles French Fries': 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&h=300&fit=crop&auto=format',
-            'TGI Fridays Loaded Potato Skins': 'https://images.unsplash.com/photo-1555939594-58d7cb6ed6e5?w=400&h=300&fit=crop&auto=format',
+            'TGI Fridays Loaded Potato Skins': 'https://live.staticflickr.com/1451/25826353582_03ae7587a9_z.jpg',
             'Farm Rich Mozzarella Sticks': 'https://th.bing.com/th/id/OIP.7szUTW0nihlbq95VcLvFAAHaFj?r=0&o=7rm=3&rs=1&pid=ImgDetMain',
-            'Totinos Pepperoni Pizza Rolls': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
+            'Totinos Pepperoni Pizza Rolls': 'https://live.staticflickr.com/1715/24280664373_4a31ce4bf7.jpg',
             'Great Value Onion Rings': 'https://live.staticflickr.com/7381/27470155262_a6725c49c3.jpg',
             'State Fair Classic Corn Dogs': 'https://live.staticflickr.com/7346/16391404760_75afc418de.jpg'
           };
