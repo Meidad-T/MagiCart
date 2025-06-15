@@ -444,8 +444,14 @@ export default function CheckoutDetails() {
                         store={selectedStore}
                         onClick={() => handleSelectStore(selectedStore)}
                         onModify={() => {
-                          setShowAllStores(false); // Reset 'show all' view
-                          setIsChoosingAlternateStore(true);
+                          if (isChoosingAlternateStore) {
+                            // If the picker is open, close it.
+                            setIsChoosingAlternateStore(false);
+                          } else {
+                            // If the picker is closed, open it and reset the 'show all' view.
+                            setShowAllStores(false);
+                            setIsChoosingAlternateStore(true);
+                          }
                         }}
                         otherStoresCount={nearbyStores.length - 1}
                       />
