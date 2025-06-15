@@ -137,11 +137,9 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
             <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 onClick={handleHealthRecommendationsClick}
-                className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+                className="bg-green-600 hover:bg-green-700 text-white whitespace-normal text-center leading-tight"
               >
-                <span className="break-words">
-                  Get AI Health Recommendations
-                </span>
+                Get AI Health Recommendations
               </Button>
             </div>
           </div>
