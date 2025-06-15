@@ -173,16 +173,24 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
 
     // Fallback to hardcoded logos for stores not in database
     const stores = {
-      'Walmart': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUSA49zzU6Xh1gUBZdrOVKb6wL0A_Y1zrlmw&s', displayName: 'Walmart' },
-      'H-E-B': { logo: 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg', displayName: 'H-E-B' },
-      'HEB': { logo: 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg', displayName: 'H-E-B' },
-      'Target': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtCnXrPfrnBYZU7Vh1km8eJIehxLGbFYgmpA&s', displayName: 'Target' },
-      'Kroger': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSacwkiztC747C6ZcQVa5_g0iSbq7O0sNEaoQ&s', displayName: 'Kroger' },
-      'Aldi': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWykpVvw51CCXNUut3oNfgsJ1T7u9RQBK0bQ&s', displayName: 'Aldi' },
-      'Sams': { logo: 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png', displayName: "Sam's Club" },
-      "Sam's Club": { logo: 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png', displayName: "Sam's Club" }
+      'walmart': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUSA49zzU6Xh1gUBZdrOVKb6wL0A_Y1zrlmw&s' },
+      'heb': { logo: 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg' },
+      'target': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtCnXrPfrnBYZU7Vh1km8eJIehxLGbFYgmpA&s' },
+      'kroger': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSacwkiztC747C6ZcQVa5_g0iSbq7O0sNEaoQ&s' },
+      'aldi': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWykpVvw51CCXNUut3oNfgsJ1T7u9RQBK0bQ&s' },
+      'sams': { logo: 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png' }
     };
-    return stores[storeName as keyof typeof stores] || { logo: '🏪', displayName: storeName };
+    
+    const lowerCaseName = storeName.toLowerCase();
+
+    if (lowerCaseName.includes('walmart')) return { logo: stores.walmart.logo, displayName: storeName };
+    if (lowerCaseName.includes('h-e-b') || lowerCaseName.includes('heb')) return { logo: stores.heb.logo, displayName: storeName };
+    if (lowerCaseName.includes('target')) return { logo: stores.target.logo, displayName: storeName };
+    if (lowerCaseName.includes('kroger')) return { logo: stores.kroger.logo, displayName: storeName };
+    if (lowerCaseName.includes('aldi')) return { logo: stores.aldi.logo, displayName: storeName };
+    if (lowerCaseName.includes("sam's club") || lowerCaseName.includes('sams')) return { logo: stores.sams.logo, displayName: storeName };
+
+    return { logo: '🏪', displayName: storeName };
   };
 
   const getFrequencyDisplay = (frequency: string, customDays?: number) => {
