@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Heart } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -140,6 +140,13 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     if (score >= 70) return "Good";
     if (score >= 50) return "Fair";
     return "Needs Improvement";
+  };
+
+  const getHealthScoreGradient = (score: number) => {
+    if (score >= 85) return "from-green-500 to-green-600";
+    if (score >= 70) return "from-yellow-500 to-yellow-600";
+    if (score >= 50) return "from-orange-500 to-orange-600";
+    return "from-red-500 to-red-600";
   };
 
   const calculateStoreTotals = () => {
@@ -319,25 +326,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
         <div className="grid md:grid-cols-3 gap-6">
           {/* Cart Items */}
           <div className="md:col-span-2 space-y-4">
-            <Card>
+            <Card className="relative">
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div className="flex items-center space-x-4">
+                  <div>
                     <CardTitle>Cart Items ({cart.length})</CardTitle>
-                    {/* Health Score Display */}
-                    {cart.length > 0 && (
-                      <div className="flex items-center space-x-2">
-                        <Heart className="h-4 w-4 text-red-500" />
-                        <div className="text-center">
-                          <ConfettiText trigger={confettiTrigger}>
-                            <span className={`text-lg font-bold ${getHealthScoreColor(healthScore)}`}>
-                              {healthScore}
-                            </span>
-                          </ConfettiText>
-                          <p className="text-xs text-gray-500">Health Score</p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                   {/* Expand Button at Top - shows when more than 4 items and currently collapsed */}
                   {shouldShowExpandButton && !cartExpanded && (
@@ -358,6 +351,25 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   </p>
                 )}
               </CardHeader>
+
+              {/* Health Score Container - Top Right Corner */}
+              {cart.length > 0 && (
+                <div className="absolute top-4 right-4 z-10">
+                  <div className={`bg-gradient-to-r ${getHealthScoreGradient(healthScore)} rounded-xl p-4 shadow-lg transform hover:scale-105 transition-all duration-300`}>
+                    <div className="text-center text-white">
+                      <p className="text-xs font-medium opacity-90 mb-1">Health Score</p>
+                      <ConfettiText trigger={confettiTrigger}>
+                        <div className="text-3xl font-bold mb-1 animate-pulse">
+                          {healthScore}
+                        </div>
+                      </ConfettiText>
+                      <p className="text-xs opacity-80">{getHealthScoreLabel(healthScore)}</p>
+                    </div>
+                    <div className="absolute inset-0 bg-white opacity-10 rounded-xl animate-pulse"></div>
+                  </div>
+                </div>
+              )}
+
               <CardContent className="space-y-4">
                 {itemsToShow.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
