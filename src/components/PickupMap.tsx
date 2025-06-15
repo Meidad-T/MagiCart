@@ -32,8 +32,20 @@ const storeBrandColors: { [key: string]: { color: string, initial: string } } = 
   "sam's club": { color: '#008844', initial: 'S' }
 };
 
-// Returns a dynamic store icon URL
-const getStoreIconUrl = (storeName?: string) => {
+// Helper to build public Supabase logo URLs
+const getSupabaseLogoUrl = (logo_url?: string) => {
+  if (!logo_url) return null;
+  // Example URL structure for Supabase Storage public asset:
+  // https://xuwfaljqzvjbxhhrjara.supabase.co/storage/v1/object/public/store-logos/mylogo.png
+  if (logo_url.startsWith("http")) return logo_url;
+  return `https://xuwfaljqzvjbxhhrjara.supabase.co/storage/v1/object/public/store-logos/${logo_url}`;
+};
+
+const getStoreIconUrl = (storeName?: string, logo_url?: string) => {
+  // Prefer logo_url from DB if available
+  const maybeLogo = getSupabaseLogoUrl(logo_url);
+  if (maybeLogo) return maybeLogo;
+  
   const lowerCaseStoreName = storeName?.toLowerCase() || '';
 
   // Use a custom Target logo if the store is Target
@@ -68,7 +80,7 @@ const getStoreIconUrl = (storeName?: string) => {
 
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
-const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey }: PickupMapProps & { apiKey: string }) => {
+const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }: PickupMapProps & { apiKey: string, storeLogoUrl?: string }) => {
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
@@ -90,7 +102,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey }: Pic
   // Memoize icons to prevent re-creating them on each render
   const workPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#007aff" />), []);
   const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []);
-  const storeIconUrl = useMemo(() => getStoreIconUrl(storeName), [storeName]);
+  const storeIconUrl = useMemo(() => getStoreIconUrl(storeName, storeLogoUrl), [storeName, storeLogoUrl]);
 
   const startIconUrl = isSameStartDest ? homePinUrl : workPinUrl;
   const destIconUrl = homePinUrl;
@@ -232,7 +244,8 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey }: Pic
   );
 }
 
-export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
+// Exported PickupMap with logo support
+export default function PickupMap({ start, dest, storeLocation, storeName, storeLogoUrl }: PickupMapProps & { storeLogoUrl?: string }) {
   const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -259,5 +272,5 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     );
   }
 
-  return <PickupMapContent {...{ start, dest, storeLocation, storeName, apiKey }} />;
+  return <PickupMapContent {...{ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }} />;
 }

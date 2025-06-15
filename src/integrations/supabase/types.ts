@@ -292,18 +292,21 @@ export type Database = {
           created_at: string
           display_name: string
           id: string
+          logo_url: string | null
           name: string
         }
         Insert: {
           created_at?: string
           display_name: string
           id?: string
+          logo_url?: string | null
           name: string
         }
         Update: {
           created_at?: string
           display_name?: string
           id?: string
+          logo_url?: string | null
           name?: string
         }
         Relationships: []

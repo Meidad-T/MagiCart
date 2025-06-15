@@ -533,6 +533,7 @@ export default function CheckoutDetails() {
                     dest={routeOptimization ? homeLoc : singleLoc} 
                     storeLocation={storeLoc}
                     storeName={actualStoreName}
+                    storeLogoUrl={selectedStore?.logo_url}
                   />
                   <p className="text-xs text-gray-400 text-center mt-1">
                     <span role="img" aria-label="info">🗺️</span> {routeOptimization 
