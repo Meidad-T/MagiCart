@@ -1,3 +1,4 @@
+
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ interface ProductCardProps {
 
 const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const [showAllStores, setShowAllStores] = useState(false);
+  const [imageLoadStates, setImageLoadStates] = useState<{[key: string]: boolean}>({});
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside or scrolling
@@ -92,6 +94,11 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const storesToShow = availableStores.slice(0, 2);
   const remainingCount = availableStores.length - 2;
 
+  // Handle image load events
+  const handleImageLoad = (storeKey: string) => {
+    setImageLoadStates(prev => ({ ...prev, [storeKey]: true }));
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 relative overflow-visible">
       <CardContent className="p-0">
@@ -106,7 +113,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             variant="secondary" 
             className="absolute top-2 left-2 bg-white/90 text-gray-700 backdrop-blur-sm"
           >
-            {item.category.name}
+            {item.category.name.charAt(0).toUpperCase() + item.category.name.slice(1).toLowerCase()}
           </Badge>
           
           {/* Store Availability Logos */}
@@ -121,6 +128,8 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   src={store.logo}
                   alt={`${store.name} logo`}
                   className="w-full h-full object-contain rounded-full"
+                  onLoad={() => handleImageLoad(`${store.name}-${index}`)}
+                  loading="eager"
                 />
               </div>
             ))}
@@ -167,6 +176,8 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                         src={store.logo}
                         alt={`${store.name} logo`}
                         className="w-full h-full object-contain rounded-full"
+                        onLoad={() => handleImageLoad(`${store.name}-dropdown-${index}`)}
+                        loading="eager"
                       />
                     </div>
                     <span className="text-xs font-medium text-green-600">${store.price.toFixed(2)}</span>

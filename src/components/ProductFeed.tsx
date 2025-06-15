@@ -26,10 +26,12 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("name");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  // Get unique categories
+  // Get unique categories with proper capitalization
   const categories = useMemo(() => {
     const uniqueCategories = Array.from(new Set(items.map(item => item.category.name)));
-    return uniqueCategories.sort();
+    return uniqueCategories.sort().map(category => 
+      category.charAt(0).toUpperCase() + category.slice(1).toLowerCase()
+    );
   }, [items]);
 
   // Filter and sort items
@@ -38,7 +40,9 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
 
     // Filter by category
     if (selectedCategory !== "all") {
-      filtered = filtered.filter(item => item.category.name === selectedCategory);
+      filtered = filtered.filter(item => 
+        (item.category.name.charAt(0).toUpperCase() + item.category.name.slice(1).toLowerCase()) === selectedCategory
+      );
     }
 
     // Sort items
@@ -106,7 +110,7 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 transition-colors">
               <span className="text-sm font-medium">
-                {sortBy === "name" ? "Name" : sortBy === "price-asc" ? "Price ↑" : "Price ↓"}
+                Sort {sortBy === "price-asc" ? "↑" : sortBy === "price-desc" ? "↓" : ""}
               </span>
               <ChevronDown className="h-4 w-4" />
             </DropdownMenuTrigger>
