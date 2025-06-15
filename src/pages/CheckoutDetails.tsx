@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import PickupMap from "@/components/PickupMap";
 import { supabase } from "@/integrations/supabase/client";
+import StoreHoursAlert, { validateStoreHours } from "@/components/StoreHoursAlert";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -146,10 +147,13 @@ export default function CheckoutDetails() {
     fetchRecommendedStore();
   }, [shoppingType, cheapestStore]);
 
+  const storeHoursValidation = validateStoreHours(actualStoreName, pickupTime);
+
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
     : !!(workStreet && workCity && workState && workZip && 
-         homeStreet && homeCity && homeState && homeZip && pickupTime);
+         homeStreet && homeCity && homeState && homeZip && pickupTime &&
+         storeHoursValidation.canProceed);
 
   const handlePlaceOrder = () => {
     const workAddress = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
@@ -274,6 +278,14 @@ export default function CheckoutDetails() {
                 value={pickupTime}
                 onChange={e => setPickupTime(e.target.value)}
               />
+              
+              {pickupTime && (
+                <StoreHoursAlert 
+                  storeName={actualStoreName} 
+                  pickupTime={pickupTime} 
+                />
+              )}
+              
               <Label htmlFor="pickup-notes">Pickup Notes (optional)</Label>
               <Textarea
                 id="pickup-notes"
