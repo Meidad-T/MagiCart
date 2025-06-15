@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -57,11 +58,10 @@ export const useProducts = () => {
             'Bananas': 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=400&h=300&fit=crop&auto=format',
             'Tomatoes': 'https://images.unsplash.com/photo-1592924357228-91a4daadcfea?w=400&h=300&fit=crop&auto=format',
             'Apples': 'https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?w=400&h=300&fit=crop&auto=format',
-            // Flat orange SVG for oranges:
-            'Oranges': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect width="400" height="300" fill="orange"/><circle cx="200" cy="150" r="110" fill="orange" stroke="darkorange" stroke-width="10"/></svg>',
+            'Oranges': 'https://th.bing.com/th/id/OIP.hOr6_I_hlrEyTS_vK4_ccgHaEK?r=0&rs=1&pid=ImgDetMain',
             'Lettuce': 'https://images.unsplash.com/photo-1622206151226-18ca2c9ab4a1?w=400&h=300&fit=crop&auto=format',
             'Potatoes': 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&h=300&fit=crop&auto=format',
-            'Onions': 'https://images.unsplash.com/photo-1587049352851-8d4e89133924?w=400&h=300&fit=crop&auto=format',
+            'Onions': 'https://www.gardeningknowhow.com/wp-content/uploads/2020/09/onions.jpg',
             
             // Bakery
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
@@ -87,13 +87,13 @@ export const useProducts = () => {
             'Bottled water 1 Gallon': 'https://th.bing.com/th/id/R.30251710d09b6bad7d87e3f3468ae5f2?rik=A4MsrMnhAi%2btMQ&riu=http%3a%2f%2fboxingcoachmike.com%2fwp-content%2fuploads%2f2010%2f12%2ffesting.jpg&ehk=sjtB9pTD46UBtTp2MIb40eyR8ODrcwF1CZdDZ8NFGLQ%3d&risl=&pid=ImgRaw&r=0',
             
             // Chips - actual chip bag images
-            'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1613743983303-b3e89f8a2b80?w=400&h=300&fit=crop&auto=format',
-            'Dortios BBQ 14.5 Oz Bag': 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=300&fit=crop&auto=format',
-            'Dortios Nacho Cheese 14.5 Oz Bag': 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=400&h=300&fit=crop&auto=format',
+            'Dortios Cool Ranch 14.5 Oz Bag': 'https://c1.staticflickr.com/7/6129/6043807379_3af9bd7a00_b.jpg',
+            'Dortios BBQ 14.5 Oz Bag': 'https://smartlabel.pepsico.info/028400697354-0001-en-US/images/a5411be8-f61f-44ae-bfe9-a2cb7dfd4582.JPEG',
+            'Dortios Nacho Cheese 14.5 Oz Bag': 'https://i.etsystatic.com/6036337/r/il/66984d/3249809498/il_794xN.3249809498_bzl5.jpg',
             
             // Frozen Foods - pizza and frozen meal images
             'DiGiorno Rising Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
-            'DiGiorno Rising Crust Three Meat Pizza': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Rising Crust Three Meat Pizza': 'https://live.staticflickr.com/3842/15121649151_9501dbbb1c_b.jpg',
             'DiGiorno Rising Crust Four Cheese Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Rising Crust Supreme Meat Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop&auto=format',
