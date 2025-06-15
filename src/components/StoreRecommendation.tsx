@@ -1,10 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Sparkles, MapPin, Tag } from "lucide-react";
+import { Sparkles, MapPin, Tag, Star } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
-import { Image } from "lucide-react";
 
 // Extend StoreWithDistance to include logo_url alongside existing properties
 type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
@@ -19,8 +18,8 @@ interface StoreRecommendationProps {
 
 const StoreLogo = ({ url, alt, className = "h-9 w-9 rounded-lg object-cover" }: { url?: string; alt: string; className?: string }) => {
   if (!url) return (
-    <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-gray-200">
-      <Image className="w-5 h-5 text-gray-400" />
+    <div className="flex items-center justify-center h-9 w-9 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
+      <Star className="w-5 h-5 text-white fill-white" />
     </div>
   );
   return <img src={url} alt={alt} className={className} />;
@@ -84,4 +83,3 @@ export const StoreRecommendation = ({ store, onModify, otherStoresCount, onClick
     </Card>
   );
 };
-
