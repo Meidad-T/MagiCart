@@ -59,14 +59,21 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
     // Add each plan item. The items in the plan should have the same structure as cart items.
     let newCart = [...cart];
     planItems.forEach((planItem: any) => {
+      // Get the price for the specific store of the plan.
+      // The cart component likely expects a 'price' property on each item.
+      const storePrice = planItem.prices?.[plan.store_name] ?? 0;
+
       // Check if this item is already in cart
-      const existing = newCart.find((i) => i.id === planItem.id);
-      if (existing) {
-        // If already in cart, add its quantity
-        existing.quantity += planItem.quantity || 1;
+      const existingItem = newCart.find((i) => i.id === planItem.id);
+      
+      if (existingItem) {
+        // If already in cart, add its quantity.
+        // For simplicity, we don't handle price changes if the plan's store is different
+        // from the store of the item already in the cart.
+        existingItem.quantity += planItem.quantity || 1;
       } else {
-        // Just push the item from the plan, ensuring it has a quantity
-        newCart.push({ ...planItem, quantity: planItem.quantity || 1 });
+        // Add the item from the plan, ensuring it has a quantity and the correct price.
+        newCart.push({ ...planItem, quantity: planItem.quantity || 1, price: storePrice });
       }
     });
 
