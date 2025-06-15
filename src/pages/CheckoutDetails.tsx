@@ -422,20 +422,38 @@ export default function CheckoutDetails() {
                   ) : nearbyStores.length > 0 ? (
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">We found these stores near you. Please select one.</p>
-                      {(showAllStores ? nearbyStores : nearbyStores.slice(0, 2)).map(store => (
+                      
+                      {/* If a store is selected and we are not showing all, only render the selected one */}
+                      {selectedStore && !showAllStores ? (
                         <div 
-                          key={store.id}
-                          onClick={() => handleSelectStore(store)}
-                          className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStore?.id === store.id ? 'border-primary bg-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                          key={selectedStore.id}
+                          className="p-3 border rounded-lg cursor-pointer transition-colors border-primary bg-primary/10"
                         >
-                          <div className="font-semibold">{store.name}</div>
-                          <div className="text-sm text-gray-500">{store.address_line1}{store.city ? `, ${store.city}` : ''}</div>
-                          <div className="text-sm font-medium text-primary">{store.distance.toFixed(1)} miles away</div>
+                          <div className="font-semibold">{selectedStore.name}</div>
+                          <div className="text-sm text-gray-500">{selectedStore.address_line1}{selectedStore.city ? `, ${selectedStore.city}` : ''}</div>
+                          <div className="text-sm font-medium text-primary">{selectedStore.distance.toFixed(1)} miles away</div>
                         </div>
-                      ))}
-                      {nearbyStores.length > 2 && !showAllStores && (
+                      ) : (
+                        // Otherwise, show all stores (if toggled) or the top 2 initially
+                        (showAllStores ? nearbyStores : nearbyStores.slice(0, 2)).map(store => (
+                          <div 
+                            key={store.id}
+                            onClick={() => handleSelectStore(store)}
+                            className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStore?.id === store.id ? 'border-primary bg-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
+                          >
+                            <div className="font-semibold">{store.name}</div>
+                            <div className="text-sm text-gray-500">{store.address_line1}{store.city ? `, ${store.city}` : ''}</div>
+                            <div className="text-sm font-medium text-primary">{store.distance.toFixed(1)} miles away</div>
+                          </div>
+                        ))
+                      )}
+
+                      {/* Logic for "Show more" button */}
+                      {!showAllStores && nearbyStores.length > (selectedStore ? 1 : 2) && (
                         <Button variant="link" className="p-0 h-auto text-blue-600" onClick={() => setShowAllStores(true)}>
-                          Show {nearbyStores.length - 2} more stores...
+                          {selectedStore 
+                            ? `Show ${nearbyStores.length - 1} other stores...` 
+                            : `Show ${nearbyStores.length - 2} more stores...`}
                         </Button>
                       )}
                     </div>
