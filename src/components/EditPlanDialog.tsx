@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -146,7 +145,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
           
           <div className="flex-1">
             <h4 className="font-medium">{item.name}</h4>
-            <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
           </div>
           
           <div className="flex items-center gap-2">
@@ -175,10 +173,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
             >
               <Trash2 className="h-3 w-3" />
             </Button>
-          </div>
-          
-          <div className="text-right min-w-20">
-            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
           </div>
         </div>
       </CardContent>
@@ -229,12 +223,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               
               {planItems.length === 0 && (
                 <p className="text-gray-500 text-center py-4">No items in this plan.</p>
-              )}
-              
-              {planItems.length > 0 && (
-                <div className="text-right pt-4 border-t">
-                  <p className="text-lg font-bold">Total: ${calculateTotal().toFixed(2)}</p>
-                </div>
               )}
             </div>
           </div>
