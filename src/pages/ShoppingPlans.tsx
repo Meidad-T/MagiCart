@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -57,7 +56,7 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
       return;
     }
 
-    // Add each plan item, while preserving all data for the cart
+    // Add each plan item. The items in the plan should have the same structure as cart items.
     let newCart = [...cart];
     planItems.forEach((planItem: any) => {
       // Check if this item is already in cart
@@ -66,36 +65,8 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
         // If already in cart, add its quantity
         existing.quantity += planItem.quantity || 1;
       } else {
-        newCart.push({
-          id: planItem.id,
-          name: planItem.name,
-          description: planItem.description ?? "",
-          image_url: planItem.image_url,
-          unit: planItem.unit ?? "",
-          category_id: planItem.category_id ?? "",
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          category: {
-            id: planItem.category_id ?? "",
-            name: "General",
-            created_at: new Date().toISOString(),
-          },
-          prices: planItem.prices || {
-            Walmart: planItem.walmart_price ?? 0,
-            "H-E-B": planItem.heb_price ?? 0,
-            Aldi: planItem.aldi_price ?? 0,
-            Target: planItem.target_price ?? 0,
-            Kroger: planItem.kroger_price ?? 0,
-            "Sam's Club": planItem.sams_price ?? 0,
-          },
-          walmart_price: planItem.walmart_price ?? 0,
-          heb_price: planItem.heb_price ?? 0,
-          aldi_price: planItem.aldi_price ?? 0,
-          target_price: planItem.target_price ?? 0,
-          kroger_price: planItem.kroger_price ?? 0,
-          sams_price: planItem.sams_price ?? 0,
-          quantity: planItem.quantity || 1,
-        });
+        // Just push the item from the plan, ensuring it has a quantity
+        newCart.push({ ...planItem, quantity: planItem.quantity || 1 });
       }
     });
 
@@ -317,4 +288,3 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
 };
 
 export default ShoppingPlans;
-

@@ -9,6 +9,7 @@ import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
+import type { ProductWithPrices } from "@/types/database";
 
 interface OrderData {
   storeName: string;
@@ -21,8 +22,8 @@ interface OrderData {
 }
 
 interface ShoppingPlanFormProps {
-  cart: Array<any>; // Accepts the real cart array as a prop
-  orderData: OrderData; // Keep for order summary details
+  cart: Array<ProductWithPrices & { quantity: number }>;
+  orderData: OrderData;
   onPlanCreated?: (plan: any) => void;
 }
 
@@ -73,6 +74,15 @@ export default function ShoppingPlanForm({ cart, orderData, onPlanCreated }: Sho
       });
       return;
     }
+    
+    if (!cart || cart.length === 0) {
+      toast({
+        title: "Cart is empty",
+        description: "You cannot save an empty shopping plan.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     if (!user) {
       toast({
@@ -85,35 +95,12 @@ export default function ShoppingPlanForm({ cart, orderData, onPlanCreated }: Sho
 
     setLoading(true);
     try {
-      // Deep map cart items for saving in Supabase
-      const planItems = (cart || []).map((item) => ({
-        id: item.id,
-        name: item.name,
-        image_url: item.image_url,
-        quantity: item.quantity,
-        prices: item.prices || {
-          Walmart: item.walmart_price ?? 0,
-          "H-E-B": item.heb_price ?? 0,
-          Aldi: item.aldi_price ?? 0,
-          Target: item.target_price ?? 0,
-          Kroger: item.kroger_price ?? 0,
-          "Sam's Club": item.sams_price ?? 0,
-        },
-        walmart_price: item.walmart_price ?? 0,
-        heb_price: item.heb_price ?? 0,
-        aldi_price: item.aldi_price ?? 0,
-        target_price: item.target_price ?? 0,
-        kroger_price: item.kroger_price ?? 0,
-        sams_price: item.sams_price ?? 0,
-        description: item.description ?? "",
-        unit: item.unit ?? "",
-        category_id: item.category_id ?? "",
-        // Add any other fields you need from ProductWithPrices here!
-      }));
+      // Create a full copy of cart items to save in the plan
+      const planItems = cart.map(item => ({...item}));
 
       const planData = {
         name: planName.trim(),
-        items: planItems, // 💡 Save the real cart items array
+        items: planItems, // Save the real cart items array
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         store_name: orderData.storeName,

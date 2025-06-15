@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,12 +16,13 @@ interface EditPlanDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface CartItem {
+interface PlanItemInDialog {
   id: string;
   name: string;
-  price: number;
   quantity: number;
   image_url?: string;
+  price: number;
+  [key: string]: any;
 }
 
 export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDialogProps) {
@@ -32,60 +32,38 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
-  // Use actual plan items with proper images from database
-  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+  const [planItems, setPlanItems] = useState<PlanItemInDialog[]>(() => {
     if (Array.isArray(plan.items)) {
-      return plan.items.map((item: any) => ({
-        id: item.id || Math.random().toString(36).substr(2, 9),
-        name: item.name || 'Unknown Item',
-        price: item.price || 0,
-        quantity: item.quantity || 1,
-        image_url: item.image_url || '/placeholder.svg'
-      }));
+      return plan.items.map((item: any) => {
+        // Get the price for the specific store of the plan
+        const storePrice = item.prices?.[plan.store_name] ?? 0;
+        
+        return {
+          ...item,
+          price: storePrice, // Add price for UI calculations
+        };
+      });
     }
-    
-    // Fallback to mock data if plan items are not properly formatted
-    return [
-      {
-        id: '1',
-        name: 'Organic Bananas',
-        price: 2.99,
-        quantity: 2,
-        image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
-      },
-      {
-        id: '2', 
-        name: 'Whole Milk (1 Gallon)',
-        price: 3.49,
-        quantity: 1,
-        image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
-      },
-      {
-        id: '3',
-        name: 'Bread - Whole Wheat',
-        price: 2.79,
-        quantity: 1,
-        image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
-      }
-    ];
+    // If no items, return an empty array.
+    return [];
   });
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
-      setCartItems(cartItems.filter(item => item.id !== itemId));
+      setPlanItems(planItems.filter(item => item.id !== itemId));
     } else {
-      setCartItems(cartItems.map(item =>
+      setPlanItems(planItems.map(item =>
         item.id === itemId ? { ...item, quantity: newQuantity } : item
       ));
     }
   };
 
   const removeItem = (itemId: string) => {
-    setCartItems(cartItems.filter(item => item.id !== itemId));
+    setPlanItems(planItems.filter(item => item.id !== itemId));
   };
 
   const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    return planItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
   const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -106,13 +84,16 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
     setLoading(true);
     try {
+      // Before saving, strip the temporary `price` property from each item.
+      const itemsToSave = planItems.map(({ price, ...restOfItem }) => restOfItem);
+
       const updates = {
         name: planName.trim(),
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         estimated_total: calculateTotal(),
-        item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-        items: cartItems
+        item_count: planItems.reduce((sum, item) => sum + item.quantity, 0),
+        items: itemsToSave,
       };
 
       await updatePlan(plan.id, updates);
@@ -156,9 +137,9 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
           {/* Cart Items */}
           <div>
-            <Label className="text-base font-medium">Cart Items</Label>
+            <Label className="text-base font-medium">Items in Plan</Label>
             <div className="space-y-3 mt-2">
-              {cartItems.map((item) => (
+              {planItems.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
@@ -214,11 +195,11 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
                 </Card>
               ))}
               
-              {cartItems.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No items in cart</p>
+              {planItems.length === 0 && (
+                <p className="text-gray-500 text-center py-4">No items in this plan.</p>
               )}
               
-              {cartItems.length > 0 && (
+              {planItems.length > 0 && (
                 <div className="text-right pt-4 border-t">
                   <p className="text-lg font-bold">Total: ${calculateTotal().toFixed(2)}</p>
                 </div>
@@ -274,7 +255,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               disabled={loading}
               className="flex-1 bg-blue-600 hover:bg-blue-700"
             >
-              {loading ? "Saving..." : "Save"}
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </div>
