@@ -29,8 +29,17 @@ export const sendPromptToGemini = async (
   shoppingType: string
 ): Promise<string> => {
   try {
-    // Initialize Gemini AI
-    const genAI = new GoogleGenerativeAI("AIzaSyD4of7Cv83E0hLD7WmUw_bwN2fI2AXRZBU");
+    // Get API key from environment (Supabase secrets)
+    // Note: DO NOT REMOVE - This uses the secure GEMINI_API_KEY from Supabase secrets for AI responses
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      console.error('Gemini API key not found in environment variables');
+      return await intelligentFallbackResponse(userMessage, recommendation, storeTotals, shoppingType);
+    }
+
+    // Initialize Gemini AI with secure API key
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     // Create context about the recommendation and store data

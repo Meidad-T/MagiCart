@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageCircle, Send, Bot, User } from "lucide-react";
-import { sendPromptToGemini } from "@/services/geminiService";
+import { supabase } from "@/integrations/supabase/client";
 
 interface StoreTotalData {
   store: string;
@@ -69,22 +69,28 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
     setIsLoading(true);
 
     try {
-      const aiResponse = await sendPromptToGemini(
-        inputMessage,
-        recommendation,
-        storeTotals,
-        shoppingType
-      );
+      // Call Supabase Edge Function for secure AI response
+      const { data, error } = await supabase.functions.invoke('chat-with-ai', {
+        body: {
+          userMessage: inputMessage,
+          recommendation,
+          storeTotals,
+          shoppingType
+        }
+      });
+
+      if (error) throw error;
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: aiResponse,
+        content: data.response,
         isUser: false,
         timestamp: new Date()
       };
 
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
+      console.error('Error getting AI response:', error);
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: "I'm sorry, I'm having trouble responding right now. Please try again.",
