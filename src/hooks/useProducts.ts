@@ -71,8 +71,7 @@ export const useProducts = () => {
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
-            // Brown Rice as a black rice pile SVG
-            'Brown Rice': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><ellipse cx="200" cy="210" rx="150" ry="60" fill="black"/><ellipse cx="200" cy="180" rx="120" ry="40" fill="brown" opacity="0.7"/><ellipse cx="230" cy="160" rx="70" ry="20" fill="#3c1c06" opacity="0.6"/></svg>',
+            'Brown Rice': 'https://images.pexels.com/photos/4110257/pexels-photo-4110257.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
             'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
             // White Sugar as a white sugar box SVG image
