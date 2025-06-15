@@ -232,16 +232,9 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
 
   return (
     <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
-      {!isOpen && (
-        <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="ml-auto bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:from-green-100 hover:to-emerald-100 transition-all duration-200">
-            <Sparkles className="h-4 w-4 mr-2 text-green-600" />
-            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-medium">
-              Chat with AI
-            </span>
-          </Button>
-        </DialogTrigger>
-      )}
+      {/* --- Removed Chat with AI Button/DialogTrigger for main page --- */}
+      {/* The main page will now only show the dialog when triggered by "Get AI Health Recommendations" */}
+      {/* DialogTrigger is now omitted */}
       <DialogContent className="max-w-md h-[600px] flex flex-col p-0 bg-gradient-to-br from-slate-50 to-green-50/50">
         <DialogHeader className="px-6 py-4 border-b bg-white/80 backdrop-blur-sm">
           <DialogTitle className="flex items-center text-lg">
@@ -344,3 +337,5 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
     </Dialog>
   );
 };
+
+export default HomeAIChatDialog;
