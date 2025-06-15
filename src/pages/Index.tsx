@@ -1,3 +1,4 @@
+
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <Loader className="h-8 w-8 animate-spin mx-auto mb-4 text-blue-600" />
           <p className="text-gray-600">Loading products...</p>
         </div>
       </div>
@@ -61,11 +62,27 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-600">Error loading products. Please try again.</p>
+          <p className="text-red-600 mb-4">Error loading products. Please try again.</p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
         </div>
       </div>
     );
   }
+
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalValue = cart.reduce((sum, item) => {
+    const bestPrice = Math.min(
+      item.walmart_price,
+      item.heb_price,
+      item.aldi_price,
+      item.target_price,
+      item.kroger_price,
+      item.sams_price
+    );
+    return sum + (bestPrice * item.quantity);
+  }, 0);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -84,17 +101,29 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
         onAddToCart={addToCart}
       />
 
-      {/* Cart summary at bottom if there are items */}
+      {/* Enhanced Cart summary at bottom if there are items */}
       {cart.length > 0 && (
-        <div className="fixed bottom-6 right-6">
-          <Card className="shadow-lg">
+        <div className="fixed bottom-6 right-6 z-50">
+          <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
             <CardContent className="p-4">
-              <div className="flex items-center gap-3">
-                <ShoppingCart className="h-5 w-5" />
-                <span className="font-medium">{cart.length} items in cart</span>
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <div className="relative">
+                    <ShoppingCart className="h-5 w-5 text-blue-600" />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                        {totalItems > 99 ? '99+' : totalItems}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm">
+                    <div className="font-medium text-gray-900">{totalItems} items</div>
+                    <div className="text-green-600 font-semibold">${totalValue.toFixed(2)}</div>
+                  </div>
+                </div>
                 <Button 
                   size="sm" 
-                  className="bg-blue-500 hover:bg-blue-600"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition-colors duration-200"
                   onClick={handleCartClick}
                 >
                   View Cart
