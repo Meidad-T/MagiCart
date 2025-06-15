@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,32 +41,58 @@ export default function CheckoutDetails() {
   const itemCount = state?.itemCount || 8;
   const fromOrderSummary = state?.fromOrderSummary || false;
 
-  // Form fields - pre-populate if coming from order summary
-  const [deliveryAddress, setDeliveryAddress] = useState(state?.deliveryAddress || "");
+  // Helper: Session key to prevent mixing data if shopping type changes
+  function getSessionKey() {
+    return `checkoutDetails:${shoppingType}`;
+  }
+
+  // Load any pre-saved session data
+  function loadSessionData() {
+    try {
+      const data = sessionStorage.getItem(getSessionKey());
+      return data ? JSON.parse(data) : {};
+    } catch {
+      return {};
+    }
+  }
+  // Save session data on each update
+  function saveSessionData(updates: Record<string, string>) {
+    const prev = loadSessionData();
+    const next = { ...prev, ...updates };
+    sessionStorage.setItem(getSessionKey(), JSON.stringify(next));
+  }
+
+  // Load previous session data if available (fields depend on type)
+  const sessionData = loadSessionData();
+
+  // Form fields - pre-populate if coming from order summary/ sessionStorage
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    sessionData.deliveryAddress ?? state?.deliveryAddress ?? ""
+  );
   
   // Route optimization toggle
-  const [routeOptimization, setRouteOptimization] = useState(false);
+  const [routeOptimization, setRouteOptimization] = useState(sessionData.routeOptimization ?? false);
   
-  // Single address fields (when route optimization is off)
-  const [singleStreet, setSingleStreet] = useState("");
-  const [singleCity, setSingleCity] = useState("");
-  const [singleState, setSingleState] = useState("");
-  const [singleZip, setSingleZip] = useState("");
-  
+  // Single address fields
+  const [singleStreet, setSingleStreet] = useState(sessionData.singleStreet ?? "");
+  const [singleCity, setSingleCity] = useState(sessionData.singleCity ?? "");
+  const [singleState, setSingleState] = useState(sessionData.singleState ?? "");
+  const [singleZip, setSingleZip] = useState(sessionData.singleZip ?? "");
+
   // Work address fields
-  const [workStreet, setWorkStreet] = useState("");
-  const [workCity, setWorkCity] = useState("");
-  const [workState, setWorkState] = useState("");
-  const [workZip, setWorkZip] = useState("");
-  
+  const [workStreet, setWorkStreet] = useState(sessionData.workStreet ?? "");
+  const [workCity, setWorkCity] = useState(sessionData.workCity ?? "");
+  const [workState, setWorkState] = useState(sessionData.workState ?? "");
+  const [workZip, setWorkZip] = useState(sessionData.workZip ?? "");
+
   // Home address fields
-  const [homeStreet, setHomeStreet] = useState("");
-  const [homeCity, setHomeCity] = useState("");
-  const [homeState, setHomeState] = useState("");
-  const [homeZip, setHomeZip] = useState("");
-  
-  const [pickupTime, setPickupTime] = useState(state?.pickupTime || "");
-  const [notes, setNotes] = useState("");
+  const [homeStreet, setHomeStreet] = useState(sessionData.homeStreet ?? "");
+  const [homeCity, setHomeCity] = useState(sessionData.homeCity ?? "");
+  const [homeState, setHomeState] = useState(sessionData.homeState ?? "");
+  const [homeZip, setHomeZip] = useState(sessionData.homeZip ?? "");
+
+  const [pickupTime, setPickupTime] = useState(sessionData.pickupTime ?? state?.pickupTime || "");
+  const [notes, setNotes] = useState(sessionData.notes ?? "");
 
   // Map geocoding and geolocation
   const [workLoc, setWorkLoc] = useState<[number, number] | null>(null);
@@ -268,6 +293,7 @@ export default function CheckoutDetails() {
            storeHoursValidation.canProceed && selectedStore)
       : !!(singleStreet && singleCity && singleState && singleZip && pickupTime && storeHoursValidation.canProceed && selectedStore);
 
+  // Optionally, clear session data after order placed
   const handlePlaceOrder = () => {
     const workAddress = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
     const homeAddress = `${homeStreet}, ${homeCity}, ${homeState} ${homeZip}`;
