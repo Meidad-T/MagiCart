@@ -275,6 +275,15 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     'Aldi': '#ff6900'
   };
 
+  const storeLogos: { [key: string]: string } = {
+    'H-E-B': '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png',
+    'Walmart': '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png',
+    'Target': '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png',
+    'Kroger': '/lovable-uploads/626c14cb-fdb3-4472-8f02-7f33de90f3e0.png',
+    "Sam's Club": '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png',
+    'Aldi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Aldi_Nord_logo.svg/1200px-Aldi_Nord_logo.svg.png'
+  };
+
   // Fixed logic: Always show max 3 items when collapsed, regardless of total count
   const shouldShowExpandButton = cart.length > 3;
   const itemsToShow = cartExpanded ? cart : cart.slice(0, 3);
@@ -585,27 +594,32 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                         <Info className="h-4 w-4" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-64" align="end">
+                    <PopoverContent className="w-72" align="end">
                         <div className="grid gap-1 p-1">
-                            <p className="font-semibold text-sm px-2 py-1">Choose a store</p>
+                            <p className="font-semibold text-sm px-2 py-1 text-center">Choose a store</p>
                             {sortedStoresForPopover.map((store) => (
                             <Button
                                 key={store.storeKey}
                                 variant="ghost"
-                                className="justify-between h-auto py-2"
+                                className="h-auto py-2 w-full"
                                 onClick={() => {
                                   setCheckoutStore(store);
                                   setPopoverOpen(false);
                                 }}
                             >
-                                <div className="flex items-center gap-2">
-                                  <div className="flex items-center w-10 gap-1">
-                                    {store.icons.includes('money') && <CircleDollarSign className="h-4 w-4 text-green-500" />}
-                                    {store.icons.includes('sparkles') && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                                <div className="flex items-center justify-between w-full">
+                                  <div className="flex items-center gap-2">
+                                    <img src={storeLogos[store.store as keyof typeof storeLogos]} alt={`${store.store} logo`} className="h-5 w-5 object-contain" />
+                                    <span className="font-medium text-sm">{store.store}</span>
                                   </div>
-                                  <span>{store.store}</span>
+                                  <div className="flex items-center gap-2">
+                                    <div className="flex items-center gap-1">
+                                      {store.icons.includes('money') && <CircleDollarSign className="h-4 w-4 text-green-500" />}
+                                      {store.icons.includes('sparkles') && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                                    </div>
+                                    <span className="text-sm text-gray-600 w-12 text-right">${store.total}</span>
+                                  </div>
                                 </div>
-                                <span className="ml-auto text-xs text-gray-500">${store.total}</span>
                             </Button>
                             ))}
                         </div>
