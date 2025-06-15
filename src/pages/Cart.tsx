@@ -28,6 +28,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [previousHealthScore, setPreviousHealthScore] = useState(0);
 
+  // Scroll to top when component mounts
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   useEffect(() => {
     // Get current user
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -317,8 +322,22 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             <Card>
               <CardHeader>
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex items-center space-x-4">
                     <CardTitle>Cart Items ({cart.length})</CardTitle>
+                    {/* Health Score Display */}
+                    {cart.length > 0 && (
+                      <div className="flex items-center space-x-2">
+                        <Heart className="h-4 w-4 text-red-500" />
+                        <div className="text-center">
+                          <ConfettiText trigger={confettiTrigger}>
+                            <span className={`text-lg font-bold ${getHealthScoreColor(healthScore)}`}>
+                              {healthScore}
+                            </span>
+                          </ConfettiText>
+                          <p className="text-xs text-gray-500">Health Score</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                   {/* Expand Button at Top - shows when more than 4 items and currently collapsed */}
                   {shouldShowExpandButton && !cartExpanded && (
@@ -332,6 +351,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     </Button>
                   )}
                 </div>
+                {/* Health Score Tip */}
+                {cart.length > 0 && (
+                  <p className="text-xs text-gray-400">
+                    Add healthy foods to increase your cart's health score! (AI generated assessment)
+                  </p>
+                )}
               </CardHeader>
               <CardContent className="space-y-4">
                 {itemsToShow.map((item) => (
@@ -497,18 +522,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                 )}
               </CardContent>
             </Card>
-
-            {/* Health Score Display with Confetti */}
-            {cart.length > 0 && (
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-1">Cart's Health Score</p>
-                <ConfettiText trigger={confettiTrigger}>
-                  <p className={`text-6xl font-bold ${getHealthScoreColor(healthScore)}`}>{healthScore}</p>
-                </ConfettiText>
-                <p className="text-sm text-gray-500 mt-1">Add healthy foods to increase your cart's health score!</p>
-                <p className="text-xs text-gray-400 mt-1">AI generated health assessment</p>
-              </div>
-            )}
           </div>
         </div>
 

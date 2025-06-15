@@ -45,6 +45,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 
   const handleCartClick = () => {
     navigate('/cart');
+    // Scroll to top will be handled by the Cart component
   };
 
   const handleExploreClick = () => {
