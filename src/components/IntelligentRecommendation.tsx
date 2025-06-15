@@ -1,5 +1,7 @@
+
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Sparkles, Star, TrendingUp, Shield, Clock } from "lucide-react";
 import { AIChatDialog } from "./AIChatDialog";
 
@@ -127,12 +129,12 @@ export const IntelligentRecommendation = ({
 
     // Generate reason based on why this store was chosen
     let reason = "";
-    const isChepeast = bestStore.store === storeTotals[0];
+    const isCheapest = bestStore.store === storeTotals[0];
     const metrics = bestStore.metrics;
 
-    if (isChepeast && bestStore.score > 85) {
+    if (isCheapest && bestStore.score > 85) {
       reason = `offers the best overall value with ${metrics.reviewScore}★ reviews and competitive pricing`;
-    } else if (!isChepeast && metrics.reviewScore >= 4.4) {
+    } else if (!isCheapest && metrics.reviewScore >= 4.4) {
       reason = `excels in customer satisfaction (${metrics.reviewScore}★ rating) and product quality, making it worth the slight premium`;
     } else if (shoppingType === 'pickup' && bestStore.store.store === 'H-E-B') {
       reason = `provides free curbside pickup with excellent fresh produce quality (${metrics.freshness}★ rating)`;
@@ -144,12 +146,15 @@ export const IntelligentRecommendation = ({
       reason = `provides optimal balance of price, quality (${metrics.reviewScore}★), and ${shoppingType} convenience`;
     }
 
+    const priceDifference = parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total);
+
     setRecommendation({
       store: bestStore.store,
       reason,
       confidence: 97, // Fixed at 97%
       metrics: bestStore.metrics,
-      savings: isChepeast ? null : `$${(parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total)).toFixed(2)} more than cheapest`
+      savings: isCheapest ? null : `$${priceDifference.toFixed(2)} more than cheapest`,
+      isCheapest
     });
 
     // Mark that we've set the recommendation - never change it again
@@ -183,7 +188,7 @@ export const IntelligentRecommendation = ({
                 because it {recommendation.reason}.
               </p>
               
-              {recommendation.savings && (
+              {recommendation.savings && !recommendation.isCheapest && (
                 <p className="text-xs text-orange-600 bg-orange-50 px-2 py-1 rounded">
                   {recommendation.savings} • Quality justifies the premium
                 </p>
@@ -209,8 +214,18 @@ export const IntelligentRecommendation = ({
                 </div>
               </div>
 
-              {/* Chat with AI Button */}
-              <div className="flex justify-end pt-3 border-t border-blue-100">
+              {/* Continue with recommended store button */}
+              <div className="flex justify-between items-center pt-3 border-t border-blue-100">
+                <Button 
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                  onClick={() => {
+                    // In a real app, this would handle continuing with the recommended store
+                    console.log('Continuing with', recommendation.store.store);
+                  }}
+                >
+                  Continue with {recommendation.store.store}
+                </Button>
+                
                 <AIChatDialog 
                   recommendation={recommendation}
                   storeTotals={storeTotals}

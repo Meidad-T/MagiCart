@@ -32,30 +32,43 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
-  // Mock cart items - in a real app, this would come from the plan.items
-  const [cartItems, setCartItems] = useState<CartItem[]>([
-    {
-      id: '1',
-      name: 'Organic Bananas',
-      price: 2.99,
-      quantity: 2,
-      image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
-    },
-    {
-      id: '2', 
-      name: 'Whole Milk (1 Gallon)',
-      price: 3.49,
-      quantity: 1,
-      image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
-    },
-    {
-      id: '3',
-      name: 'Bread - Whole Wheat',
-      price: 2.79,
-      quantity: 1,
-      image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
+  // Use actual plan items with proper images from database
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => {
+    if (Array.isArray(plan.items)) {
+      return plan.items.map((item: any) => ({
+        id: item.id || Math.random().toString(36).substr(2, 9),
+        name: item.name || 'Unknown Item',
+        price: item.price || 0,
+        quantity: item.quantity || 1,
+        image_url: item.image_url || '/placeholder.svg'
+      }));
     }
-  ]);
+    
+    // Fallback to mock data if plan items are not properly formatted
+    return [
+      {
+        id: '1',
+        name: 'Organic Bananas',
+        price: 2.99,
+        quantity: 2,
+        image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
+      },
+      {
+        id: '2', 
+        name: 'Whole Milk (1 Gallon)',
+        price: 3.49,
+        quantity: 1,
+        image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
+      },
+      {
+        id: '3',
+        name: 'Bread - Whole Wheat',
+        price: 2.79,
+        quantity: 1,
+        image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
+      }
+    ];
+  });
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -78,9 +91,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     // Allow empty string or numbers only
-    if (value === '' || /^\d+$/.test(value)) {
-      setCustomDays(value);
-    }
+    setCustomDays(value);
   };
 
   const handleSave = async () => {
@@ -101,7 +112,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         estimated_total: calculateTotal(),
         item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-        // In a real app, you would also update the items array
         items: cartItems
       };
 
@@ -157,6 +167,9 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
                           src={item.image_url}
                           alt={item.name}
                           className="w-12 h-12 object-cover rounded"
+                          onError={(e) => {
+                            e.currentTarget.src = '/placeholder.svg';
+                          }}
                         />
                       )}
                       
@@ -238,8 +251,8 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
               <Input
                 id="custom-days"
-                type="text"
-                inputMode="numeric"
+                type="number"
+                min="1"
                 value={customDays}
                 onChange={handleCustomDaysChange}
                 placeholder="30"

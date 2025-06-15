@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ShoppingCart, Plus, Edit, Loader } from "lucide-react";
+import { ShoppingCart, Plus, Edit, Loader, Trash2 } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +19,7 @@ interface ShoppingPlansProps {
 }
 
 const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
-  const { plans, loading } = useShoppingPlans();
+  const { plans, loading, deletePlan } = useShoppingPlans();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingPlan, setEditingPlan] = useState<ShoppingPlan | null>(null);
@@ -46,11 +46,49 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   };
 
   const handleAddPlanToCart = (plan: ShoppingPlan) => {
-    // In a real implementation, this would add the plan's items to the cart
-    // For now, we'll just show a toast message
+    // Convert plan items to cart format and add to cart
+    const planItems = Array.isArray(plan.items) ? plan.items : [];
+    
+    planItems.forEach((planItem: any) => {
+      // Convert plan item to ProductWithPrices format
+      const cartItem: ProductWithPrices & { quantity: number } = {
+        id: planItem.id || Math.random().toString(36).substr(2, 9),
+        name: planItem.name,
+        description: planItem.description || '',
+        image_url: planItem.image_url || '/placeholder.svg',
+        unit: planItem.unit || 'each',
+        category_id: planItem.category_id || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        prices: [{
+          id: Math.random().toString(36).substr(2, 9),
+          product_id: planItem.id || '',
+          store_id: '',
+          price: planItem.price || 0,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }],
+        quantity: planItem.quantity || 1
+      };
+
+      // Check if item already exists in cart
+      const existingItem = cart.find(item => item.name === cartItem.name);
+      if (existingItem) {
+        // Update quantity
+        onUpdateCart(cart.map(item =>
+          item.name === cartItem.name
+            ? { ...item, quantity: item.quantity + cartItem.quantity }
+            : item
+        ));
+      } else {
+        // Add new item
+        onUpdateCart([...cart, cartItem]);
+      }
+    });
+
     toast({
       title: "Plan added to cart!",
-      description: `Items from "${plan.name}" have been added to your cart.`,
+      description: `${planItems.length} items from "${plan.name}" have been added to your cart.`,
     });
   };
 
@@ -58,15 +96,33 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
     setEditingPlan(plan);
   };
 
+  const handleDeletePlan = async (plan: ShoppingPlan) => {
+    try {
+      await deletePlan(plan.id);
+      toast({
+        title: "Plan deleted",
+        description: `"${plan.name}" has been deleted successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error deleting plan",
+        description: "There was an error deleting your shopping plan. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStoreInfo = (storeName: string) => {
-    // Mock store data - in a real app, this would come from a store lookup
+    // Store logos and display names
     const stores = {
       'Walmart': { logo: '🏪', displayName: 'Walmart' },
-      'HEB': { logo: '🏬', displayName: 'H-E-B' },
+      'H-E-B': { logo: '🛒', displayName: 'H-E-B' },
+      'HEB': { logo: '🛒', displayName: 'H-E-B' },
       'Target': { logo: '🎯', displayName: 'Target' },
-      'Kroger': { logo: '🛒', displayName: 'Kroger' },
+      'Kroger': { logo: '🛍️', displayName: 'Kroger' },
       'Aldi': { logo: '🏪', displayName: 'Aldi' },
-      'Sams': { logo: '🏢', displayName: "Sam's Club" }
+      'Sams': { logo: '🏢', displayName: "Sam's Club" },
+      "Sam's Club": { logo: '🏢', displayName: "Sam's Club" }
     };
     return stores[storeName as keyof typeof stores] || { logo: '🏪', displayName: storeName };
   };
@@ -137,7 +193,7 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Shopping Plans</h1>
-          <p className="text-gray-600">Manage your saved shopping lists and recurring orders</p>
+          <p className="text-gray-600">Manage your saved shopping lists and recurring orders ({plans.length}/10 plans)</p>
         </div>
 
         {plans.length === 0 ? (
@@ -201,14 +257,25 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
                           Add to Cart
                         </Button>
                         
-                        <Button 
-                          variant="outline"
-                          onClick={() => handleEditPlan(plan)}
-                          className="w-full"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit Plan
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button 
+                            variant="outline"
+                            onClick={() => handleEditPlan(plan)}
+                            className="flex-1"
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Button>
+                          
+                          <Button 
+                            variant="destructive"
+                            onClick={() => handleDeletePlan(plan)}
+                            className="flex-1"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Delete
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </CardContent>

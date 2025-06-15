@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
@@ -27,7 +27,7 @@ interface ShoppingPlanFormProps {
 }
 
 export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingPlanFormProps) {
-  const { createPlan } = useShoppingPlans();
+  const { createPlan, plans } = useShoppingPlans();
   const { user } = useAuth();
   const [savePlan, setSavePlan] = useState(false);
   const [planName, setPlanName] = useState("");
@@ -35,6 +35,9 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
   const [customDays, setCustomDays] = useState<string>("30");
   const [loading, setLoading] = useState(false);
   const [planSaved, setPlanSaved] = useState(false);
+
+  // Check if plan limit is reached
+  const planLimitReached = plans.length >= 10;
 
   // Mock cart items - in a real app, this would come from the actual cart
   const mockCartItems = [
@@ -137,6 +140,22 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
             <div>
               <p className="font-medium">Plan Saved Successfully!</p>
               <p className="text-sm text-blue-500">Your shopping plan "{planName}" has been saved and can be found in your Shopping Plans.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (planLimitReached && user) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-red-600">
+            <AlertTriangle className="h-6 w-6" />
+            <div>
+              <p className="font-medium">Plan Limit Reached!</p>
+              <p className="text-sm text-red-500">You have reached the maximum of 10 saved plans. Please go back and delete some plans to save new ones.</p>
             </div>
           </div>
         </CardContent>
