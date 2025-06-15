@@ -91,7 +91,7 @@ export default function CheckoutDetails() {
   const [homeState, setHomeState] = useState(sessionData.homeState ?? "");
   const [homeZip, setHomeZip] = useState(sessionData.homeZip ?? "");
 
-  const [pickupTime, setPickupTime] = useState(sessionData.pickupTime ?? state?.pickupTime || "");
+  const [pickupTime, setPickupTime] = useState(sessionData.pickupTime ?? (state?.pickupTime || ""));
   const [notes, setNotes] = useState(sessionData.notes ?? "");
 
   // Map geocoding and geolocation
