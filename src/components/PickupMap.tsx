@@ -1,13 +1,12 @@
-
 import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF } from "@react-google-maps/api";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { Home, Store } from "lucide-react";
+import { MapPin, Store } from "lucide-react";
 import mapStyle from "./mapStyle.json";
 
 type PickupMapProps = {
-  start: [number, number] | null, // [lat, lng] - work or home location
-  dest: [number, number] | null,  // [lat, lng] - home location
+  start: [number, number] | null; // [lat, lng] - work or home location
+  dest: [number, number] | null;  // [lat, lng] - home location
   storeLocation?: [number, number] | null; // [lat, lng] - store location
   storeName?: string;
 };
@@ -32,7 +31,7 @@ const getStoreIconUrl = (storeName?: string) => {
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(targetIconSvg)}`;
   }
   // Fallback to a generic store icon for other stores
-  return createLucideIcon(<Store size={40} color="#ff3b30" strokeWidth={2} />);
+  return createLucideIcon(<Store size={40} color="#4A4A4A" strokeWidth={2} />);
 };
 
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
@@ -40,6 +39,7 @@ const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization
 export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
   const googleMapsApiKey = "AIzaSyAZtVLp8EY3PBAPo_XZMDl1D4Y1HHAtYpg";
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
+  const [map, setMap] = useState<google.maps.Map | null>(null);
 
   console.log("Google Maps API Key:", googleMapsApiKey ? "Present" : "Missing");
   console.log("Work/Start coords:", start);
@@ -57,18 +57,20 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
   );
 
   // Memoize icons to prevent re-creating them on each render
-  const startIconUrl = useMemo(() => {
-    if (isSameStartDest) {
-      // User's single address (home)
-      return createLucideIcon(<Home size={40} color="#007aff" strokeWidth={2} />);
-    }
-    // Starting location (e.g., work), represented by a building icon
-    return createLucideIcon(<Store size={40} color="#5856d6" strokeWidth={2} />);
-  }, [isSameStartDest]);
-
-  const destIconUrl = useMemo(() => createLucideIcon(<Home size={40} color="#007aff" strokeWidth={2} />), []);
+  const workPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#007aff" />), []);
+  const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []);
   const storeIconUrl = useMemo(() => getStoreIconUrl(storeName), [storeName]);
 
+  const startIconUrl = isSameStartDest ? homePinUrl : workPinUrl;
+  const destIconUrl = homePinUrl;
+
+  const onLoad = useCallback((mapInstance: google.maps.Map) => {
+    setMap(mapInstance);
+  }, []);
+
+  const onUnmount = useCallback(() => {
+    setMap(null);
+  }, []);
 
   useEffect(() => {
     if (loadError) {
@@ -107,6 +109,12 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     }
   }, [isLoaded, start, dest, storeLocation]);
 
+  useEffect(() => {
+    if (map && directionsResult?.routes?.[0]?.bounds) {
+      map.fitBounds(directionsResult.routes[0].bounds);
+    }
+  }, [map, directionsResult]);
+
   if (loadError) {
     return (
       <div className="bg-red-100 h-36 rounded-xl flex items-center justify-center text-red-600 p-4">
@@ -142,6 +150,8 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
           styles: mapStyle,
           disableDefaultUI: true,
         }}
+        onLoad={onLoad}
+        onUnmount={onUnmount}
       >
         {directionsResult && (
           <DirectionsRenderer
