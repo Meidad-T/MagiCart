@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle, Minus, ShoppingCart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
+import { HomeAIChatDialog } from "@/components/HomeAIChatDialog";
 import type { ProductWithPrices } from "@/types/database";
 
 interface CartItem extends ProductWithPrices {
@@ -289,15 +291,18 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             <ArrowLeft className="h-5 w-5 mr-2" />
             Back to Cart
           </Button>
-          <div className="flex items-center">
+          <div className="flex items-center flex-1">
             <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-500 mr-4">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <div>
+            <div className="flex-1">
               <h1 className="text-3xl font-bold text-gray-900">
                 AI Health Recommendations
               </h1>
               <p className="text-gray-600">Personalized suggestions to boost your nutrition</p>
+            </div>
+            <div className="ml-4">
+              <HomeAIChatDialog cart={cart} />
             </div>
           </div>
         </div>

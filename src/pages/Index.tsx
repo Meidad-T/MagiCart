@@ -1,4 +1,3 @@
-
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
 import HeroBanner from "@/components/HeroBanner";
-import { HomeAIChatDialog } from "@/components/HomeAIChatDialog";
 import { useState } from "react";
 
 interface IndexProps {
@@ -145,7 +143,6 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
                   Get AI Health Recommendations
                 </span>
               </Button>
-              <HomeAIChatDialog cart={cart} />
             </div>
           </div>
         </div>
