@@ -1,4 +1,3 @@
-
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,10 +30,16 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
     } else {
       onUpdateCart([...cart, { ...item, quantity: 1 }]);
     }
-    toast({
+    
+    const toastInstance = toast({
       title: "Added to cart!",
       description: `${item.name} has been added to your cart`,
     });
+    
+    // Dismiss the toast after 2 seconds
+    setTimeout(() => {
+      toastInstance.dismiss();
+    }, 2000);
   };
 
   const handleCartClick = () => {
