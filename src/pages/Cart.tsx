@@ -1,5 +1,6 @@
+
 import { useState, useEffect, useMemo } from "react";
-import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Filter, CircleDollarSign } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, SlidersHorizontal, CircleDollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -591,7 +592,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="outline" size="icon" className="flex-shrink-0 bg-blue-100 text-blue-700 hover:bg-blue-200">
-                        <Filter className="h-4 w-4" />
+                        <SlidersHorizontal className="h-4 w-4" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-72" align="end">
