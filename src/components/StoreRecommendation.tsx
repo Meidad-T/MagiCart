@@ -3,7 +3,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MapPin, Tag } from "lucide-react";
 import { Database } from "@/integrations/supabase/types";
-import { cn } from "@/lib/utils";
 
 type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
 type StoreWithDistance = StoreLocation & { distance: number };
@@ -12,18 +11,11 @@ interface StoreRecommendationProps {
   store: StoreWithDistance;
   onModify: () => void;
   otherStoresCount: number;
-  onClick?: () => void;
 }
 
-export const StoreRecommendation = ({ store, onModify, otherStoresCount, onClick }: StoreRecommendationProps) => {
+export const StoreRecommendation = ({ store, onModify, otherStoresCount }: StoreRecommendationProps) => {
   return (
-    <Card 
-      onClick={onClick}
-      className={cn(
-        "border-blue-200 bg-blue-50 animate-fade-in",
-        onClick && "cursor-pointer hover:border-blue-300 transition-colors"
-      )}
-    >
+    <Card className="border-blue-200 bg-blue-50 animate-fade-in">
       <CardContent className="pt-4">
         <div className="flex items-start space-x-3">
           <div className="flex-shrink-0">
@@ -50,10 +42,7 @@ export const StoreRecommendation = ({ store, onModify, otherStoresCount, onClick
                 <Button 
                   variant="outline"
                   size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onModify();
-                  }}
+                  onClick={onModify}
                 >
                   <MapPin className="mr-2 h-4 w-4" />
                   Pick another location
