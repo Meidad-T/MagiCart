@@ -549,6 +549,7 @@ export default function CheckoutDetails() {
                     storeLocation={storeLoc}
                     storeName={actualStoreName}
                     storeLogoUrl={selectedStore?.logo_url}
+                    routeOptimization={routeOptimization}
                   />
                   <p className="text-xs text-gray-400 text-center mt-1">
                     <span role="img" aria-label="info">🗺️</span> {routeOptimization 
