@@ -8,8 +8,8 @@ const firebaseConfig = {
   projectId: "magicart-d27b7",
   storageBucket: "magicart-d27b7.firebasestorage.app",
   messagingSenderId: "731145279702",
-  appId: "1:731145279702:web:4d4086d6955e31536c1177",
-  measurementId: "G-7S0NKE4M24"
+  appId: "1:731145279702:web:114fe3f6a22faaf26c1177",
+  measurementId: "G-3E57NSC63N"
 };
 
 // Initialize Firebase
