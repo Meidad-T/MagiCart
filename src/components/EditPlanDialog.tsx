@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
-import { Minus, Plus, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import type { ShoppingPlan } from "@/types/database";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 interface EditPlanDialogProps {
   plan: ShoppingPlan;
@@ -27,26 +28,33 @@ interface PlanItemInDialog {
 
 export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDialogProps) {
   const { updatePlan } = useShoppingPlans();
-  const [planName, setPlanName] = useState(plan.name);
-  const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>(plan.frequency);
-  const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
+  const [planName, setPlanName] = useState("");
+  const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>('none');
+  const [customDays, setCustomDays] = useState<string>('30');
   const [loading, setLoading] = useState(false);
-  
-  const [planItems, setPlanItems] = useState<PlanItemInDialog[]>(() => {
-    if (Array.isArray(plan.items)) {
-      return plan.items.map((item: any) => {
-        // Get the price for the specific store of the plan
-        const storePrice = item.prices?.[plan.store_name] ?? 0;
-        
-        return {
-          ...item,
-          price: storePrice, // Add price for UI calculations
-        };
-      });
+  const [planItems, setPlanItems] = useState<PlanItemInDialog[]>([]);
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  useEffect(() => {
+    if (plan) {
+      setPlanName(plan.name);
+      setFrequency(plan.frequency);
+      setCustomDays(String(plan.custom_frequency_days || 30));
+
+      if (Array.isArray(plan.items)) {
+        const itemsWithPrices = plan.items.map((item: any) => {
+          const storePrice = item.prices?.[plan.store_name] ?? 0;
+          return {
+            ...item,
+            price: storePrice,
+          };
+        });
+        setPlanItems(itemsWithPrices);
+      } else {
+        setPlanItems([]);
+      }
     }
-    // If no items, return an empty array.
-    return [];
-  });
+  }, [plan]);
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
@@ -115,6 +123,62 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
     }
   };
 
+  const renderItemCard = (item: PlanItemInDialog) => (
+    <Card key={item.id}>
+      <CardContent className="p-4">
+        <div className="flex items-center gap-4">
+          {item.image_url && (
+            <img
+              src={item.image_url}
+              alt={item.name}
+              className="w-12 h-12 object-cover rounded"
+              onError={(e) => {
+                e.currentTarget.src = '/placeholder.svg';
+              }}
+            />
+          )}
+          
+          <div className="flex-1">
+            <h4 className="font-medium">{item.name}</h4>
+            <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => updateQuantity(item.id, item.quantity - 1)}
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            
+            <span className="w-12 text-center">{item.quantity}</span>
+            
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => updateQuantity(item.id, item.quantity + 1)}
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+            
+            <Button
+              size="sm"
+              variant="destructive"
+              onClick={() => removeItem(item.id)}
+            >
+              <Trash2 className="h-3 w-3" />
+            </Button>
+          </div>
+          
+          <div className="text-right min-w-20">
+            <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -139,61 +203,23 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
           <div>
             <Label className="text-base font-medium">Items in Plan</Label>
             <div className="space-y-3 mt-2">
-              {planItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      {item.image_url && (
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-12 h-12 object-cover rounded"
-                          onError={(e) => {
-                            e.currentTarget.src = '/placeholder.svg';
-                          }}
-                        />
-                      )}
-                      
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item.name}</h4>
-                        <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        >
-                          <Minus className="h-3 w-3" />
-                        </Button>
-                        
-                        <span className="w-12 text-center">{item.quantity}</span>
-                        
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        >
-                          <Plus className="h-3 w-3" />
-                        </Button>
-                        
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={() => removeItem(item.id)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                      
-                      <div className="text-right min-w-20">
-                        <p className="font-medium">${(item.price * item.quantity).toFixed(2)}</p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {planItems.slice(0, 3).map(renderItemCard)}
+
+              {planItems.length > 3 && (
+                <Collapsible open={isExpanded} onOpenChange={setIsExpanded} className="w-full">
+                  <CollapsibleContent className="space-y-3">
+                    {planItems.slice(3).map(renderItemCard)}
+                  </CollapsibleContent>
+                  <div className="flex justify-center mt-2">
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" className="w-full text-sm flex items-center">
+                        {isExpanded ? "Show Less" : `Show ${planItems.length - 3} More Items`}
+                        {isExpanded ? <ChevronUp className="h-4 w-4 ml-1" /> : <ChevronDown className="h-4 w-4 ml-1" />}
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                </Collapsible>
+              )}
               
               {planItems.length === 0 && (
                 <p className="text-gray-500 text-center py-4">No items in this plan.</p>
