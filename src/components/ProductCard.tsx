@@ -77,7 +77,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
           <img 
             src={item.image_url}
             alt={item.name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
           />
           <Badge 
             variant="secondary" 
@@ -115,11 +115,10 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Dropdown for all stores - improved positioning and styling */}
+          {/* Dropdown for all stores - compact version without heading */}
           {showAllStores && (
-            <div className="absolute top-12 right-2 left-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-50 mx-2">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-sm font-semibold text-gray-700">All Available Stores</span>
+            <div className="absolute top-12 right-4 left-4 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50">
+              <div className="flex justify-end mb-1">
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
@@ -127,17 +126,17 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   }}
                   className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <ChevronDown className="h-4 w-4 rotate-180" />
+                  <ChevronDown className="h-3 w-3 rotate-180" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1">
                 {availableStores.map((store, index) => (
                   <div
                     key={`${store.name}-dropdown-${index}`}
-                    className="flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="flex flex-col items-center space-y-1 p-1 rounded-lg hover:bg-gray-50 transition-colors"
                     title={`${store.name.charAt(0).toUpperCase() + store.name.slice(1)} - $${store.price.toFixed(2)}`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
                       <img
                         src={store.logo}
                         alt={`${store.name} logo`}
