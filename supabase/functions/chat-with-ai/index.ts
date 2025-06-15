@@ -60,11 +60,12 @@ Remember: You can chat about anything, but your main job is helping them underst
     // Use the correct Gemini API endpoint with the API key as a query parameter
     const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`;
 
-    // Call Gemini API
+    // Call Gemini API with proper headers including referer
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Referer': 'https://xuwfaljqzvjbxhhrjara.supabase.co',
       },
       body: JSON.stringify({
         contents: [{
