@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,6 +61,67 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const calculateCartHealthScore = () => {
+    if (cart.length === 0) return 0;
+    
+    let totalScore = 0;
+    let totalItems = 0;
+    
+    cart.forEach(item => {
+      let itemScore = 50; // Base score
+      
+      // Category-based scoring
+      const categoryName = item.category.name.toLowerCase();
+      if (categoryName.includes('produce') || categoryName.includes('fruits') || categoryName.includes('vegetables')) {
+        itemScore = 90;
+      } else if (categoryName.includes('dairy')) {
+        itemScore = 70;
+      } else if (categoryName.includes('meat') || categoryName.includes('protein')) {
+        itemScore = 75;
+      } else if (categoryName.includes('bakery') || categoryName.includes('bread')) {
+        itemScore = 60;
+      } else if (categoryName.includes('pantry') || categoryName.includes('grains')) {
+        itemScore = 65;
+      } else if (categoryName.includes('frozen')) {
+        itemScore = 45;
+      } else if (categoryName.includes('snacks') || categoryName.includes('chips')) {
+        itemScore = 25;
+      } else if (categoryName.includes('drinks') || categoryName.includes('beverages')) {
+        itemScore = 30;
+      }
+      
+      // Product name based adjustments
+      const productName = item.name.toLowerCase();
+      if (productName.includes('organic')) itemScore += 10;
+      if (productName.includes('whole grain') || productName.includes('brown rice')) itemScore += 15;
+      if (productName.includes('diet') || productName.includes('sugar free')) itemScore += 5;
+      if (productName.includes('pizza') || productName.includes('processed')) itemScore -= 15;
+      if (productName.includes('fried') || productName.includes('chips')) itemScore -= 20;
+      
+      // Ensure score stays within bounds
+      itemScore = Math.max(0, Math.min(100, itemScore));
+      
+      totalScore += itemScore * item.quantity;
+      totalItems += item.quantity;
+    });
+    
+    const averageScore = Math.round(totalScore / totalItems);
+    return Math.max(0, Math.min(100, averageScore));
+  };
+
+  const getHealthScoreColor = (score: number) => {
+    if (score >= 80) return "text-green-600";
+    if (score >= 60) return "text-yellow-600";
+    return "text-red-600";
+  };
+
+  const getHealthScoreLabel = (score: number) => {
+    if (score >= 80) return "Excellent";
+    if (score >= 60) return "Good";
+    if (score >= 40) return "Fair";
+    return "Needs Improvement";
+  };
 
   const calculateStoreTotals = () => {
     const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
@@ -211,6 +271,8 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const cheapestStore = storeTotals[0]; // First one is cheapest due to sorting
   const cheapestStoreColor = storeColors[cheapestStore?.store as keyof typeof storeColors] || '#3b82f6';
 
+  const healthScore = calculateCartHealthScore();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 py-8">
@@ -241,8 +303,23 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           <div className="md:col-span-2 space-y-4">
             <Card>
               <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Cart Items ({cart.length})</CardTitle>
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="flex items-center gap-4">
+                      <CardTitle>Cart Items ({cart.length})</CardTitle>
+                      {cart.length > 0 && (
+                        <div className="flex items-center gap-2">
+                          <Heart className="h-4 w-4 text-red-500" />
+                          <span className="text-sm font-medium">
+                            Cart Health Score: <span className={getHealthScoreColor(healthScore)}>{healthScore}/100 ({getHealthScoreLabel(healthScore)})</span>
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    {cart.length > 0 && (
+                      <p className="text-xs text-gray-500 mt-1">Health score is AI generated</p>
+                    )}
+                  </div>
                   {/* Expand Button at Top - now shows for 5+ items */}
                   {shouldCollapse && !cartExpanded && (
                     <Button
