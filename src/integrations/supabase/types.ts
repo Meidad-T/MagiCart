@@ -164,6 +164,72 @@ export type Database = {
         }
         Relationships: []
       }
+      store_locations: {
+        Row: {
+          address_line1: string | null
+          address_line2: string | null
+          chain: string
+          city: string | null
+          county: string | null
+          created_at: string | null
+          departments: Json | null
+          division_number: string | null
+          geolocation: unknown | null
+          hours: Json | null
+          id: string
+          latitude: number | null
+          location_id: string | null
+          longitude: number | null
+          name: string
+          phone: string | null
+          state: string | null
+          store_number: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          address_line1?: string | null
+          address_line2?: string | null
+          chain: string
+          city?: string | null
+          county?: string | null
+          created_at?: string | null
+          departments?: Json | null
+          division_number?: string | null
+          geolocation?: unknown | null
+          hours?: Json | null
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          name: string
+          phone?: string | null
+          state?: string | null
+          store_number?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          address_line1?: string | null
+          address_line2?: string | null
+          chain?: string
+          city?: string | null
+          county?: string | null
+          created_at?: string | null
+          departments?: Json | null
+          division_number?: string | null
+          geolocation?: unknown | null
+          hours?: Json | null
+          id?: string
+          latitude?: number | null
+          location_id?: string | null
+          longitude?: number | null
+          name?: string
+          phone?: string | null
+          state?: string | null
+          store_number?: string | null
+          zip_code?: string | null
+        }
+        Relationships: []
+      }
       stores: {
         Row: {
           created_at: string
