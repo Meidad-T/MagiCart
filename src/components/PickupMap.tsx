@@ -1,4 +1,3 @@
-
 import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF, Polyline } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -33,8 +32,8 @@ const getStoreIconUrl = (logo_url?: string) => {
   if (maybeLogo) {
     return maybeLogo;
   }
-  // Fallback to a red map pin icon as requested.
-  return createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#cc0000" />);
+  // Fallback to a purple map pin icon for the pickup location.
+  return createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#9b59b6" />);
 };
 
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
@@ -54,18 +53,18 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
     id: "google-map-script-pickup", // Unique ID for the script
   });
 
-  const isSameStartDest = useMemo(() => 
+  const areSameCoords = useMemo(() => 
     start && dest && start[0] === dest[0] && start[1] === dest[1],
     [start, dest]
   );
 
   // Memoize icons to prevent re-creating them on each render
-  const workPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#007aff" />), []);
-  const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []);
+  const startPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []); // Green for start
+  const destPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#cc0000" />), []); // Red for destination
   const storeIconUrl = useMemo(() => getStoreIconUrl(storeLogoUrl), [storeLogoUrl]);
 
-  const startIconUrl = isSameStartDest ? homePinUrl : workPinUrl;
-  const destIconUrl = homePinUrl;
+  const startIconUrl = areSameCoords ? destPinUrl : startPinUrl;
+  const destIconUrl = destPinUrl;
 
   const onLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
@@ -194,7 +193,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           />
         )}
         
-        {dest && !isSameStartDest && window.google && (
+        {dest && !areSameCoords && window.google && (
           <MarkerF 
             position={{ lat: dest[0], lng: dest[1] }} 
             icon={{ 
@@ -217,22 +216,22 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
       <div className="absolute bottom-2 left-2 bg-white/80 p-2 rounded-lg shadow-md backdrop-blur-sm text-xs">
         <h4 className="font-bold mb-1 text-gray-800">Legend</h4>
         <ul className="space-y-1">
-          {!isSameStartDest && start && (
+          {start && (
             <li className="flex items-center">
-              <img src={startIconUrl} alt="Start Location" className="w-5 h-5 mr-1.5" />
-              <span className="text-gray-700">Work</span>
+              <img src={startIconUrl} alt="Starting Point" className="w-5 h-5 mr-1.5" />
+              <span className="text-gray-700">{areSameCoords ? 'Start & Destination' : 'Starting Point'}</span>
             </li>
           )}
-          {dest && (
+          {dest && !areSameCoords && (
              <li className="flex items-center">
               <img src={destIconUrl} alt="Destination" className="w-5 h-5 mr-1.5" />
-              <span className="text-gray-700">{isSameStartDest ? 'Work & Home' : 'Home'}</span>
+              <span className="text-gray-700">Destination</span>
             </li>
           )}
           {storeLocation && (
             <li className="flex items-center">
-              <img src={storeIconUrl} alt={storeName || 'Store'} className="w-5 h-5 mr-1.5 object-contain" />
-              <span className="text-gray-700">{storeName || 'Store'}</span>
+              <img src={storeIconUrl} alt={storeName || 'Pickup Location'} className="w-5 h-5 mr-1.5 object-contain" />
+              <span className="text-gray-700">{storeName || 'Pickup Location'}</span>
             </li>
           )}
         </ul>
