@@ -49,6 +49,17 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
     // Convert plan items to cart format and add to cart
     const planItems = Array.isArray(plan.items) ? plan.items : [];
     
+    if (planItems.length === 0) {
+      toast({
+        title: "No items in plan",
+        description: "This plan doesn't contain any items to add to cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    let updatedCart = [...cart];
+    
     planItems.forEach((planItem: any) => {
       // Convert plan item to ProductWithPrices format
       const cartItem: ProductWithPrices & { quantity: number } = {
@@ -78,19 +89,21 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
       };
 
       // Check if item already exists in cart
-      const existingItem = cart.find(item => item.name === cartItem.name);
-      if (existingItem) {
-        // Update quantity
-        onUpdateCart(cart.map(item =>
-          item.name === cartItem.name
-            ? { ...item, quantity: item.quantity + cartItem.quantity }
-            : item
-        ));
+      const existingItemIndex = updatedCart.findIndex(item => item.name === cartItem.name);
+      if (existingItemIndex !== -1) {
+        // Update quantity of existing item
+        updatedCart[existingItemIndex] = {
+          ...updatedCart[existingItemIndex],
+          quantity: updatedCart[existingItemIndex].quantity + cartItem.quantity
+        };
       } else {
-        // Add new item
-        onUpdateCart([...cart, cartItem]);
+        // Add new item to cart
+        updatedCart.push(cartItem);
       }
     });
+
+    // Update cart with all items at once
+    onUpdateCart(updatedCart);
 
     toast({
       title: "Plan added to cart!",

@@ -32,42 +32,21 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
-  // Use actual plan items with proper images from database
+  // Use actual plan items from the database with their real images
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (Array.isArray(plan.items)) {
+    if (Array.isArray(plan.items) && plan.items.length > 0) {
       return plan.items.map((item: any) => ({
         id: item.id || Math.random().toString(36).substr(2, 9),
         name: item.name || 'Unknown Item',
         price: item.price || 0,
         quantity: item.quantity || 1,
+        // Use the actual image_url from the plan item, which should come from the database
         image_url: item.image_url || '/placeholder.svg'
       }));
     }
     
-    // Fallback to mock data if plan items are not properly formatted
-    return [
-      {
-        id: '1',
-        name: 'Organic Bananas',
-        price: 2.99,
-        quantity: 2,
-        image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
-      },
-      {
-        id: '2', 
-        name: 'Whole Milk (1 Gallon)',
-        price: 3.49,
-        quantity: 1,
-        image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
-      },
-      {
-        id: '3',
-        name: 'Bread - Whole Wheat',
-        price: 2.79,
-        quantity: 1,
-        image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
-      }
-    ];
+    // If no items in plan, return empty array
+    return [];
   });
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
