@@ -186,6 +186,17 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
         name: recommendation.product.category,
         created_at: new Date().toISOString()
       },
+      category_id: `category-${Date.now()}`,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      prices: {
+        'Walmart': recommendation.product.price,
+        'H-E-B': recommendation.product.price * 1.1,
+        'Aldi': recommendation.product.price * 0.9,
+        'Target': recommendation.product.price * 1.05,
+        'Kroger': recommendation.product.price * 1.08,
+        "Sam's Club": recommendation.product.price * 0.95
+      },
       quantity: 1
     };
 
