@@ -65,75 +65,53 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const calculateCartHealthScore = () => {
     if (cart.length === 0) return 0;
     
-    let totalScore = 0;
-    let totalItems = 0;
     let produceCount = 0;
+    let totalItems = 0;
     
     cart.forEach(item => {
-      let itemScore = 50; // Base score
-      
-      // Category-based scoring
-      const categoryName = item.category.name.toLowerCase();
-      if (categoryName.includes('produce') || categoryName.includes('fruits') || categoryName.includes('vegetables')) {
-        itemScore = 90;
-        produceCount += item.quantity;
-      } else if (categoryName.includes('dairy')) {
-        itemScore = 70;
-      } else if (categoryName.includes('meat') || categoryName.includes('protein')) {
-        itemScore = 75;
-      } else if (categoryName.includes('bakery') || categoryName.includes('bread')) {
-        itemScore = 60;
-      } else if (categoryName.includes('pantry') || categoryName.includes('grains')) {
-        itemScore = 65;
-      } else if (categoryName.includes('frozen')) {
-        itemScore = 45;
-      } else if (categoryName.includes('snacks') || categoryName.includes('chips')) {
-        itemScore = 25;
-      } else if (categoryName.includes('drinks') || categoryName.includes('beverages')) {
-        itemScore = 30;
-      }
-      
-      // Product name based adjustments
-      const productName = item.name.toLowerCase();
-      if (productName.includes('organic')) itemScore += 10;
-      if (productName.includes('whole grain') || productName.includes('brown rice')) itemScore += 15;
-      if (productName.includes('diet') || productName.includes('sugar free')) itemScore += 5;
-      if (productName.includes('pizza') || productName.includes('processed')) itemScore -= 15;
-      if (productName.includes('fried') || productName.includes('chips')) itemScore -= 20;
-      
-      // Ensure score stays within bounds
-      itemScore = Math.max(0, Math.min(100, itemScore));
-      
-      totalScore += itemScore * item.quantity;
       totalItems += item.quantity;
+      
+      // Count produce items
+      const categoryName = item.category.name.toLowerCase();
+      const productName = item.name.toLowerCase();
+      
+      if (categoryName.includes('produce') || 
+          categoryName.includes('fruits') || 
+          categoryName.includes('vegetables') ||
+          productName.includes('organic')) {
+        produceCount += item.quantity;
+      }
     });
     
-    let averageScore = Math.round(totalScore / totalItems);
-    
-    // Apply produce bonus based on your requirements
-    if (produceCount >= 5) {
-      averageScore = 100;
-    } else if (produceCount === 4) {
-      averageScore = Math.max(averageScore, 92);
-    } else if (produceCount === 3) {
-      averageScore = Math.max(averageScore, 86);
-    } else if (produceCount === 2) {
-      averageScore = Math.max(averageScore, 70);
+    // If cart is ONLY produce, return 100
+    if (produceCount === totalItems && produceCount > 0) {
+      return 100;
     }
     
-    return Math.max(0, Math.min(100, averageScore));
+    // New produce-based scoring system
+    if (produceCount === 0) return 20;
+    if (produceCount === 1) return 44;
+    if (produceCount === 2) return 57;
+    if (produceCount === 3) return 70;
+    if (produceCount === 4) return 81;
+    if (produceCount === 5) return 92;
+    if (produceCount === 6) return 98;
+    if (produceCount >= 7) return 100;
+    
+    return 20; // fallback
   };
 
   const getHealthScoreColor = (score: number) => {
-    if (score >= 80) return "text-green-600";
-    if (score >= 60) return "text-yellow-600";
+    if (score >= 85) return "text-green-600";
+    if (score >= 70) return "text-yellow-500";
+    if (score >= 50) return "text-orange-500";
     return "text-red-600";
   };
 
   const getHealthScoreLabel = (score: number) => {
-    if (score >= 80) return "Excellent";
-    if (score >= 60) return "Good";
-    if (score >= 40) return "Fair";
+    if (score >= 85) return "Excellent";
+    if (score >= 70) return "Good";
+    if (score >= 50) return "Fair";
     return "Needs Improvement";
   };
 
@@ -516,8 +494,8 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             {cart.length > 0 && (
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Cart's Health Score</p>
-                <p className="text-4xl font-bold text-green-600">{healthScore}</p>
-                <p className="text-sm text-gray-500 mt-1">Add more healthy foods to increase your cart's health score!</p>
+                <p className={`text-6xl font-bold ${getHealthScoreColor(healthScore)}`}>{healthScore}</p>
+                <p className="text-sm text-gray-500 mt-1">Add healthy foods to increase your cart's health score!</p>
                 <p className="text-xs text-gray-400 mt-1">AI generated health assessment</p>
               </div>
             )}
