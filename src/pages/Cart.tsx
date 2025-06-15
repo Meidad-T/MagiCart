@@ -367,36 +367,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* Continue with Health Recommendations Button */}
-            <Card>
-              <CardContent className="pt-6">
-                <Button
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
-                  onClick={() =>
-                    navigate("/health-recommendations", {
-                      state: { 
-                        shoppingType,
-                        cheapestStore: cheapestStore?.store,
-                        orderTotal: parseFloat(cheapestStore?.total || '0'),
-                        itemCount: cart.length
-                      }
-                    })
-                  }
-                >
-                  Get AI Health Recommendations
-                </Button>
-                <p className="text-sm text-gray-600 text-center mt-2">
-                  Discover personalized healthy additions
-                </p>
-              </CardContent>
-            </Card>
-
             {/* Continue with Cheapest Store Button */}
             <Card>
               <CardContent className="pt-6">
                 <Button
-                  variant="outline"
-                  className="w-full"
+                  className="w-full text-white mb-3"
+                  style={{ backgroundColor: cheapestStoreColor }}
                   onClick={() =>
                     navigate("/checkout-details", {
                       state: { 
@@ -408,13 +384,39 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     })
                   }
                 >
-                  Skip to Checkout
+                  Continue with {cheapestStore?.store}
                 </Button>
                 {cheapestStore && (
-                  <p className="text-sm text-gray-600 text-center mt-2">
-                    Best price: ${cheapestStore.total} at {cheapestStore.store}
+                  <p className="text-sm text-gray-600 text-center">
+                    Best price: ${cheapestStore.total}
                   </p>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* AI Health Recommendations Button */}
+            <Card>
+              <CardContent className="pt-6">
+                <Button
+                  variant="outline"
+                  className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+                  onClick={() =>
+                    navigate("/health-recommendations", {
+                      state: { 
+                        shoppingType,
+                        cheapestStore: cheapestStore?.store,
+                        orderTotal: parseFloat(cheapestStore?.total || '0'),
+                        itemCount: cart.length
+                      }
+                    })
+                  }
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get AI Health Recommendations
+                </Button>
+                <p className="text-sm text-gray-600 text-center mt-2">
+                  Discover personalized healthy additions
+                </p>
               </CardContent>
             </Card>
           </div>

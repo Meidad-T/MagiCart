@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CartItem extends ProductWithPrices {
   quantity: number;
@@ -182,7 +181,11 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
       sams_price: recommendation.product.price * 0.95,
       unit: "each",
       image_url: recommendation.product.image_url,
-      category: { name: recommendation.product.category },
+      category: { 
+        id: `category-${Date.now()}`,
+        name: recommendation.product.category,
+        created_at: new Date().toISOString()
+      },
       quantity: 1
     };
 
@@ -206,8 +209,20 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     return null;
   }
 
+  // Store brand colors
+  const storeColors = {
+    'H-E-B': '#e31837',
+    'Walmart': '#004c91',
+    'Target': '#cc0000',
+    'Kroger': '#0f4c81',
+    'Sam\'s Club': '#00529c',
+    'Aldi': '#ff6900'
+  };
+
+  const cheapestStoreColor = storeColors[cheapestStore as keyof typeof storeColors] || '#3b82f6';
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center mb-8">
@@ -220,11 +235,11 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             Back to Cart
           </Button>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-green-500 to-blue-500 mr-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 mr-4">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold text-gray-900">
                 AI Health Recommendations
               </h1>
               <p className="text-gray-600">Personalized suggestions to boost your nutrition</p>
@@ -234,17 +249,17 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
 
         {/* Analysis Loading */}
         {isAnalyzing && (
-          <Card className="mb-8 border-green-200 bg-green-50">
+          <Card className="mb-8 border-blue-200 bg-blue-50">
             <CardContent className="pt-6">
               <div className="flex items-center space-x-4">
                 <div className="flex space-x-1">
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce"></div>
-                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-3 h-3 bg-green-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce"></div>
+                  <div className="w-3 h-3 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
                 <div>
-                  <p className="font-medium text-green-800">Analyzing your cart...</p>
-                  <p className="text-sm text-green-600">Finding the perfect healthy additions for you</p>
+                  <p className="font-medium text-blue-800">Analyzing your cart...</p>
+                  <p className="text-sm text-blue-600">Finding the perfect healthy additions for you</p>
                 </div>
               </div>
             </CardContent>
@@ -267,7 +282,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
               const isAdded = addedItems.has(rec.product.name);
               
               return (
-                <Card key={index} className="border-green-200 hover:shadow-lg transition-shadow duration-300">
+                <Card key={index} className="border-gray-200 hover:shadow-lg transition-shadow duration-300">
                   <CardContent className="pt-6">
                     <div className="flex items-start space-x-6">
                       {/* Product Image */}
@@ -289,12 +304,13 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                             <div className="flex items-center space-x-2 mt-1">
                               <Badge variant="secondary">{rec.product.category}</Badge>
                               <Badge className="bg-green-100 text-green-700">
+                                <TrendingUp className="h-3 w-3 mr-1" />
                                 {rec.healthScore}% Health Score
                               </Badge>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-green-600">${rec.product.price}</p>
+                            <p className="text-2xl font-bold text-gray-900">${rec.product.price}</p>
                             <p className="text-sm text-gray-500">{rec.priceJustification}</p>
                           </div>
                         </div>
@@ -308,7 +324,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                         {/* Benefits */}
                         <div className="flex flex-wrap gap-2">
                           {rec.product.benefits.map((benefit, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm">
+                            <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm border">
                               {benefit}
                             </span>
                           ))}
@@ -318,7 +334,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                         <Button
                           onClick={() => addToCart(rec)}
                           disabled={isAdded}
-                          className={`w-full ${isAdded ? 'bg-green-600' : 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600'}`}
+                          className={`w-full ${isAdded ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
                         >
                           {isAdded ? (
                             <>
@@ -346,7 +362,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
           <Button 
             onClick={continueToCheckout}
             size="lg"
-            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white px-8 py-3 text-lg"
+            className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 text-lg"
           >
             Continue to Checkout
             <ArrowRight className="h-5 w-5 ml-2" />
