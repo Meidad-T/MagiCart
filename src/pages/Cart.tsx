@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Heart } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -67,6 +68,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     
     let totalScore = 0;
     let totalItems = 0;
+    let produceCount = 0;
     
     cart.forEach(item => {
       let itemScore = 50; // Base score
@@ -75,6 +77,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
       const categoryName = item.category.name.toLowerCase();
       if (categoryName.includes('produce') || categoryName.includes('fruits') || categoryName.includes('vegetables')) {
         itemScore = 90;
+        produceCount += item.quantity;
       } else if (categoryName.includes('dairy')) {
         itemScore = 70;
       } else if (categoryName.includes('meat') || categoryName.includes('protein')) {
@@ -106,7 +109,19 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
       totalItems += item.quantity;
     });
     
-    const averageScore = Math.round(totalScore / totalItems);
+    let averageScore = Math.round(totalScore / totalItems);
+    
+    // Apply produce bonus based on your requirements
+    if (produceCount >= 5) {
+      averageScore = 100;
+    } else if (produceCount === 4) {
+      averageScore = Math.max(averageScore, 92);
+    } else if (produceCount === 3) {
+      averageScore = Math.max(averageScore, 86);
+    } else if (produceCount === 2) {
+      averageScore = Math.max(averageScore, 70);
+    }
+    
     return Math.max(0, Math.min(100, averageScore));
   };
 
@@ -499,6 +514,18 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             </Card>
           </div>
         </div>
+
+        {/* Health Score Display */}
+        {cart.length > 0 && (
+          <div className="mt-6 mb-2 flex justify-end">
+            <div className="text-right">
+              <p className="text-sm text-gray-600 mb-1">Cart's Health Score</p>
+              <p className="text-4xl font-bold text-green-600">{healthScore}</p>
+              <p className="text-sm text-gray-500 mt-1">Add more healthy foods to increase your cart's health score!</p>
+              <p className="text-xs text-gray-400 mt-1">AI generated health assessment</p>
+            </div>
+          </div>
+        )}
 
         {/* Price Comparison Component */}
         <div className="mt-8">
