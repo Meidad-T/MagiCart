@@ -65,7 +65,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
           ))}
         </div>
       )}
-      <style jsx>{`
+      <style>{`
         @keyframes confetti-fall {
           0% {
             transform: translateY(0) rotate(0deg) scale(1);
