@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ShoppingCart, Plus, Edit, Loader, Trash2 } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
+import { useProducts } from "@/hooks/useProducts";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
@@ -20,6 +21,7 @@ interface ShoppingPlansProps {
 
 const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   const { plans, loading, deletePlan } = useShoppingPlans();
+  const { data: products } = useProducts();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingPlan, setEditingPlan] = useState<ShoppingPlan | null>(null);
@@ -74,7 +76,28 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
     navigate('/cart');
   };
 
+  const getStoreKey = (storeName: string): string => {
+    if (!storeName) return '';
+    const lowerCaseName = storeName.toLowerCase();
+    if (lowerCaseName.includes("h-e-b") || lowerCaseName.includes("heb")) return "heb";
+    if (lowerCaseName.includes("sam's club") || lowerCaseName.includes("sams")) return "sams";
+    if (lowerCaseName.includes("walmart")) return "walmart";
+    if (lowerCaseName.includes("target")) return "target";
+    if (lowerCaseName.includes("kroger")) return "kroger";
+    if (lowerCaseName.includes("aldi")) return "aldi";
+    return lowerCaseName;
+  };
+
   const handleAddPlanToCart = (plan: ShoppingPlan) => {
+    if (!products) {
+      toast({
+        title: "Product data is still loading",
+        description: "Please wait a moment and try again.",
+        variant: "default",
+      });
+      return;
+    }
+
     // Use Array.isArray to confirm proper structure
     const planItems = Array.isArray(plan.items) ? plan.items : [];
     if (!planItems.length) {
@@ -86,24 +109,30 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
       return;
     }
 
+    const storeKey = getStoreKey(plan.store_name);
+
     // Add each plan item. The items in the plan should have the same structure as cart items.
     let newCart = [...cart];
     planItems.forEach((planItem: any) => {
+      const fullProductInfo = products.find((p) => p.id === planItem.id);
+      
+      if (!fullProductInfo) {
+        console.warn(`Product with ID ${planItem.id} not found.`);
+        return; // Skip if product info not found
+      }
+
       // Get the price for the specific store of the plan.
-      // The cart component likely expects a 'price' property on each item.
-      const storePrice = planItem.prices?.[plan.store_name] ?? 0;
+      const storePrice = fullProductInfo.prices?.[storeKey] ?? 0;
 
       // Check if this item is already in cart
       const existingItem = newCart.find((i) => i.id === planItem.id);
       
       if (existingItem) {
         // If already in cart, add its quantity.
-        // For simplicity, we don't handle price changes if the plan's store is different
-        // from the store of the item already in the cart.
         existingItem.quantity += planItem.quantity || 1;
       } else {
         // Add the item from the plan, ensuring it has a quantity and the correct price.
-        newCart.push({ ...planItem, quantity: planItem.quantity || 1, price: storePrice });
+        newCart.push({ ...fullProductInfo, quantity: planItem.quantity || 1, price: storePrice });
       }
     });
 

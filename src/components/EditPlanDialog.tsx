@@ -37,16 +37,30 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [planItems, setPlanItems] = useState<PlanItemInDialog[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const getStoreKey = (storeName: string): string => {
+    if (!storeName) return '';
+    const lowerCaseName = storeName.toLowerCase();
+    if (lowerCaseName.includes("h-e-b") || lowerCaseName.includes("heb")) return "heb";
+    if (lowerCaseName.includes("sam's club") || lowerCaseName.includes("sams")) return "sams";
+    if (lowerCaseName.includes("walmart")) return "walmart";
+    if (lowerCaseName.includes("target")) return "target";
+    if (lowerCaseName.includes("kroger")) return "kroger";
+    if (lowerCaseName.includes("aldi")) return "aldi";
+    return lowerCaseName;
+  };
+
   useEffect(() => {
     if (plan && products && products.length > 0) {
       setPlanName(plan.name);
       setFrequency(plan.frequency);
       setCustomDays(String(plan.custom_frequency_days || 30));
 
+      const storeKey = getStoreKey(plan.store_name);
+
       if (Array.isArray(plan.items)) {
         const itemsWithPrices = plan.items.map((item: any) => {
           const fullProductInfo = products.find(p => p.id === item.id);
-          const storePrice = fullProductInfo?.prices?.[plan.store_name] ?? 0;
+          const storePrice = fullProductInfo?.prices?.[storeKey] ?? 0;
           return {
             ...item,
             name: fullProductInfo?.name || item.name,
