@@ -3,6 +3,7 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MapPin, Store } from "lucide-react";
 import mapStyle from "./mapStyle.json";
+import { supabase } from "@/integrations/supabase/client";
 
 type PickupMapProps = {
   start: [number, number] | null; // [lat, lng] - work or home location
@@ -37,17 +38,32 @@ const getStoreIconUrl = (storeName?: string) => {
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
 export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
-  const googleMapsApiKey = "AIzaSyAZtVLp8EY3PBAPo_XZMDl1D4Y1HHAtYpg";
+  const [apiKey, setApiKey] = useState<string | null>(null);
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
-  console.log("Google Maps API Key:", googleMapsApiKey ? "Present" : "Missing");
+  useEffect(() => {
+    const fetchKey = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('get-google-maps-key');
+        if (error) throw error;
+        if (data.apiKey) {
+          setApiKey(data.apiKey);
+        }
+      } catch (error) {
+        console.error("Failed to fetch Google Maps API key:", error);
+      }
+    };
+    fetchKey();
+  }, []);
+
+  console.log("Google Maps API Key:", apiKey ? "Present" : "Missing");
   console.log("Work/Start coords:", start);
   console.log("Home coords:", dest);
   console.log("Store coords:", storeLocation);
 
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey,
+    googleMapsApiKey: apiKey || "",
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
@@ -126,7 +142,7 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     );
   }
 
-  if (!isLoaded || !start || !dest || !storeLocation) {
+  if (!apiKey || !isLoaded || !start || !dest || !storeLocation) {
     return (
       <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
         Map loading…

@@ -154,18 +154,9 @@ export default function CheckoutDetails() {
     geocodeHomeAddress();
   }, [homeStreet, homeCity, homeState, homeZip, shoppingType]);
 
-  // Fetch closest recommended store location from database
+  // Fetch closest recommended store location using Google Places API via Edge Function
   useEffect(() => {
     const userLoc = routeOptimization ? workLoc : singleLoc;
-
-    const getChainName = (storeName: string): string => {
-      const upperCaseName = storeName.toUpperCase();
-      if (upperCaseName.includes("H-E-B") || upperCaseName.includes("HEB")) return "HEB";
-      if (upperCaseName.includes("WALMART")) return "WALMART";
-      if (upperCaseName.includes("TARGET")) return "TARGET";
-      if (upperCaseName.includes("KROGER")) return "KROGER";
-      return upperCaseName;
-    };
 
     async function fetchRecommendedStore() {
       if ((shoppingType === "pickup" || shoppingType === "instore") && userLoc) {
@@ -175,27 +166,27 @@ export default function CheckoutDetails() {
         setIsFetchingStores(true);
 
         try {
-          const chainName = getChainName(cheapestStore);
-          console.log(`Searching for nearby stores for chain: ${chainName} near ${userLoc}`);
+          console.log(`Searching for nearby stores for: ${cheapestStore} near ${userLoc}`);
 
-          const { data: allStores, error } = await supabase
-            .from('store_locations')
-            .select('id, name, address_line1, city, state, zip_code, latitude, longitude')
-            .eq('chain', chainName)
-            .not('latitude', 'is', null)
-            .not('longitude', 'is', null);
-          
+          const { data, error } = await supabase.functions.invoke('find-nearby-stores', {
+            body: {
+              lat: userLoc[0],
+              lng: userLoc[1],
+              keyword: cheapestStore
+            },
+          });
+
           if (error) {
-            console.error('Error fetching store locations:', error);
+            console.error('Error invoking find-nearby-stores function:', error);
             return;
           }
 
-          if (allStores && allStores.length > 0) {
+          if (data && data.stores && data.stores.length > 0) {
             const userLat = userLoc[0];
             const userLon = userLoc[1];
 
-            const storesWithDistance = allStores
-              .map(store => {
+            const storesWithDistance = data.stores
+              .map((store: StoreLocation) => {
                 if (store.latitude && store.longitude) {
                   const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
                   return { ...store, distance };
@@ -206,11 +197,10 @@ export default function CheckoutDetails() {
 
             storesWithDistance.sort((a, b) => a.distance - b.distance);
             
-            const nearby = storesWithDistance.slice(0, 5);
-            setNearbyStores(nearby);
-            console.log(`Found ${nearby.length} nearby stores.`);
+            setNearbyStores(storesWithDistance);
+            console.log(`Found ${storesWithDistance.length} nearby stores via Google.`);
           } else {
-            console.warn(`No stores found for chain: ${chainName}.`);
+            console.warn(`No stores found for chain: ${cheapestStore}.`);
           }
         } catch (error) {
           console.error('Error in fetchRecommendedStore:', error);
