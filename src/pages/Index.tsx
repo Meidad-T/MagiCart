@@ -1,3 +1,4 @@
+
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,10 +50,15 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
   };
 
   const handleExploreClick = () => {
-    // Scroll to product feed section
+    // Scroll to product feed section with offset for navbar
     const productFeed = document.getElementById('product-feed');
     if (productFeed) {
-      productFeed.scrollIntoView({ behavior: 'smooth' });
+      const navbarHeight = 80; // Height of the sticky navbar
+      const elementPosition = productFeed.offsetTop - navbarHeight;
+      window.scrollTo({ 
+        top: elementPosition, 
+        behavior: 'smooth' 
+      });
     }
   };
 

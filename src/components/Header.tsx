@@ -39,7 +39,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             <Button 
               variant="ghost" 
               onClick={() => navigate('/')}
-              className="flex items-center space-x-3 text-white hover:bg-white/10 transition-colors px-2 h-auto"
+              className="flex items-center space-x-3 text-white hover:bg-white/10 hover:text-blue-100 transition-colors px-2 h-auto"
             >
               <img 
                 src="/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png" 

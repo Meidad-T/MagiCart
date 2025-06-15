@@ -25,29 +25,29 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
   useEffect(() => {
     if (!trigger || !textRef.current) return;
 
-    // Get the actual position of the text element
+    // Get the actual position of the text element relative to the viewport
     const rect = textRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
 
-    // Create more confetti particles with bigger spread
+    // Create confetti particles positioned relative to the health score
     const newParticles = Array.from({ length: 24 }, (_, i) => ({
       id: i,
-      x: centerX + (Math.random() * 200 - 100), // Wider spread around text center
-      y: centerY - 50 - Math.random() * 50, // Start above the text
+      x: centerX + (Math.random() * 100 - 50), // Smaller spread around text center
+      y: centerY - 30 - Math.random() * 30, // Start just above the text
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
-      velocityX: (Math.random() - 0.5) * 6, // More horizontal movement
-      velocityY: Math.random() * 3 + 2, // Faster downward movement
-      size: Math.random() * 6 + 4 // Bigger particles (4-10px)
+      velocityX: (Math.random() - 0.5) * 4, // Less horizontal movement
+      velocityY: Math.random() * 2 + 1, // Controlled downward movement
+      size: Math.random() * 4 + 3 // Smaller particles (3-7px)
     }));
 
     setParticles(newParticles);
 
-    // Remove particles after longer animation
+    // Remove particles after animation
     const timer = setTimeout(() => {
       setParticles([]);
-    }, 4000);
+    }, 3000);
 
     return () => clearTimeout(timer);
   }, [trigger]);
@@ -68,10 +68,10 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
                 height: `${particle.size}px`,
                 backgroundColor: particle.color,
                 transform: `rotate(${particle.rotation}deg)`,
-                animation: `confetti-fall 4s ease-out forwards`,
-                animationDelay: `${Math.random() * 0.5}s`,
+                animation: `confetti-fall 3s ease-out forwards`,
+                animationDelay: `${Math.random() * 0.3}s`,
                 borderRadius: '2px',
-                willChange: 'transform, opacity' // Optimize for animations
+                willChange: 'transform, opacity'
               }}
             />
           ))}
@@ -84,7 +84,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
             opacity: 1;
           }
           100% {
-            transform: translateY(100vh) rotate(720deg) scale(0.8);
+            transform: translateY(200px) rotate(360deg) scale(0.8);
             opacity: 0;
           }
         }
