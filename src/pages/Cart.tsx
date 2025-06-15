@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -338,11 +339,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                 <div className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
                     <CardTitle>Cart Items ({cart.length})</CardTitle>
-                    {/* Health Score Tip - with improved wrapping and more spacing below */}
+                    {/* Health Score Tip - with proper wrapping and moved down */}
                     {cart.length > 0 && (
-                      <p className="text-xs text-gray-400 mt-8 max-w-xs"
-                        style={{ wordBreak: "break-word" }}
-                      >
+                      <p className="text-xs text-gray-400 mt-4 pr-40">
                         Add healthy foods to increase your cart's health score! (AI generated assessment)
                       </p>
                     )}
