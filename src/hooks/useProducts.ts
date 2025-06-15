@@ -1,4 +1,5 @@
 
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -96,19 +97,19 @@ export const useProducts = () => {
             'DiGiorno Rising Crust Three Meat Pizza': 'https://live.staticflickr.com/3842/15121649151_9501dbbb1c_b.jpg',
             'DiGiorno Rising Crust Four Cheese Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Rising Crust Supreme Meat Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
-            'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Stuffed Crust Cheese & Three Meat Pizza': 'https://live.staticflickr.com/5626/29914200563_cff7d9a6f3_z.jpg',
             'DiGiorno Stuffed Crust Pepperoni Pizza': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
             'DiGiorno Stuffed Crust Five Cheese Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
-            'DiGiorno Thin Crust Supreme Pizza': 'https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?w=400&h=300&fit=crop&auto=format',
+            'DiGiorno Thin Crust Supreme Pizza': 'https://th.bing.com/th/id/R.d4ec99d4be93b96083ab0216b987f06d?rik=EfmwrhdKkvim2A&riu=http%3a%2f%2ffarm5.staticflickr.com%2f4112%2f5038392280_cb64968bc5_z.jpg&ehk=w%2fmoy%2bXtP1QwikKuicPXpLH47vHqJ1MvNTuT3RArh4Q%3d&risl=&pid=ImgRaw&r=0',
             'DiGiorno Classic Crust Cheese & Pepperoni': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
             'Red Baron Four Cheese Classic Crust Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
-            'Red Baron Four Meat Classic Crust Pizza': 'https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=400&h=300&fit=crop&auto=format',
+            'Red Baron Four Meat Classic Crust Pizza': 'https://th.bing.com/th/id/R.602841e7fd446a4409ae429b0b2ad95e?rik=%2bO7DMMIQesdERg&riu=http%3a%2f%2fwww.becentsable.net%2fwp-content%2fuploads%2f2014%2f08%2fScreen-shot-2014-08-22-at-10.23.23-AM.png&ehk=dJQ9b74M3m6br%2fQAwYXXl%2bYJh%2f0A7DW75VMIjSaiCaE%3d&risl=&pid=ImgRaw&r=0',
             'Red Baron Supreme Classic Crust Pizza': 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?w=400&h=300&fit=crop&auto=format',
             'Tombstone Roadhouse Loaded Double Down Deluxe': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
-            'Stouffers Lasagna with Meat & Sauce': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
-            'Marie Callenders Chicken Pot Pie': 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop&auto=format',
+            'Stouffers Lasagna with Meat & Sauce': 'https://live.staticflickr.com/5809/21693533023_48674fef8c.jpg',
+            'Marie Callenders Chicken Pot Pie': 'https://th.bing.com/th/id/R.5eedcf6ae6683244caa519a88176fd99?rik=sRQ%2bHceNYTf5nw&riu=http%3a%2f%2ffarm4.staticflickr.com%2f3953%2f14927092694_2149533fb6_z.jpg&ehk=RpRWkp%2bvScjB9agNtAfA1RRHC39KczLzM6Uwhf%2bx1Fg%3d&risl=&pid=ImgRaw&r=0',
             'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
-            'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://images.unsplash.com/photo-1559054663-e9b23fdf4726?w=400&h=300&fit=crop&auto=format',
+            'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://th.bing.com/th/id/R.253f46bfde8ea2339840c3588d29951b?rik=qcFb3A9Ig%2fcGGg&pid=ImgRaw&r=0',
             'Great Value Chicken Alfredo Pasta': 'https://images.unsplash.com/photo-1621996346565-e3dbc353d2e5?w=400&h=300&fit=crop&auto=format',
             'Lean Cuisine Chicken Fettuccine Alfredo': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
             'Hungry-Man Boneless Fried Chicken': 'https://images.unsplash.com/photo-1626645738196-c2a7c87a8f58?w=400&h=300&fit=crop&auto=format',
@@ -200,3 +201,4 @@ export const useProducts = () => {
     },
   });
 };
+
