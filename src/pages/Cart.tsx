@@ -367,11 +367,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
-            {/* Continue with Cheapest Store Button */}
+            {/* Combined Checkout & AI Recommendations */}
             <Card>
-              <CardContent className="pt-6">
+              <CardContent className="pt-6 space-y-3">
                 <Button
-                  className="w-full text-white mb-3"
+                  className="w-full text-white"
                   style={{ backgroundColor: cheapestStoreColor }}
                   onClick={() =>
                     navigate("/checkout-details", {
@@ -391,15 +391,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     Best price: ${cheapestStore.total}
                   </p>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* AI Health Recommendations Button */}
-            <Card>
-              <CardContent className="pt-6">
+                
                 <Button
-                  variant="outline"
-                  className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
                   onClick={() =>
                     navigate("/health-recommendations", {
                       state: { 
@@ -414,7 +408,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   <Sparkles className="h-4 w-4 mr-2" />
                   Get AI Health Recommendations
                 </Button>
-                <p className="text-sm text-gray-600 text-center mt-2">
+                <p className="text-sm text-gray-600 text-center">
                   Discover personalized healthy additions
                 </p>
               </CardContent>

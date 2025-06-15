@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Apple, Heart, TrendingUp, CheckCircle, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useProducts } from "@/hooks/useProducts";
 import type { ProductWithPrices } from "@/types/database";
 
 interface CartItem extends ProductWithPrices {
@@ -12,13 +13,7 @@ interface CartItem extends ProductWithPrices {
 }
 
 interface HealthRecommendation {
-  product: {
-    name: string;
-    category: string;
-    price: number;
-    image_url: string;
-    benefits: string[];
-  };
+  product: ProductWithPrices;
   reason: string;
   healthScore: number;
   priceJustification: string;
@@ -33,6 +28,7 @@ interface HealthRecommendationsProps {
 const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProps) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { data: products, isLoading: productsLoading } = useProducts();
   const [recommendations, setRecommendations] = useState<HealthRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
@@ -40,18 +36,29 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
   const { shoppingType, cheapestStore, orderTotal, itemCount } = location.state || {};
 
   useEffect(() => {
-    generateHealthRecommendations();
-  }, [cart]);
+    if (products && !productsLoading) {
+      generateHealthRecommendations();
+    }
+  }, [cart, products, productsLoading]);
 
   const generateHealthRecommendations = async () => {
+    if (!products) return;
+    
     setIsAnalyzing(true);
     
     // Simulate AI analysis delay
     await new Promise(resolve => setTimeout(resolve, 2000));
 
+    // Get only produce items from our actual database
+    const produceItems = products.filter(product => 
+      product.category.name.toLowerCase().includes('fruit') || 
+      product.category.name.toLowerCase().includes('vegetable') ||
+      product.category.name.toLowerCase().includes('produce')
+    );
+
     // Analyze cart for patterns
     const cartAnalysis = analyzeCart(cart);
-    const healthRecs = generateSmartRecommendations(cartAnalysis);
+    const healthRecs = generateSmartRecommendations(cartAnalysis, produceItems);
     
     setRecommendations(healthRecs);
     setIsAnalyzing(false);
@@ -83,85 +90,100 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     };
   };
 
-  const generateSmartRecommendations = (analysis: any): HealthRecommendation[] => {
+  const generateSmartRecommendations = (analysis: any, availableProducts: ProductWithPrices[]): HealthRecommendation[] => {
     const recs: HealthRecommendation[] = [];
+
+    // Filter out items already in cart
+    const cartProductNames = cart.map(item => item.name.toLowerCase());
+    const availableForRecommendation = availableProducts.filter(product => 
+      !cartProductNames.includes(product.name.toLowerCase())
+    );
 
     // Smart recommendations based on cart analysis
     if (analysis.hasFruits && analysis.fruitCount >= 2) {
-      recs.push({
-        product: {
-          name: "Organic Spinach (5 oz)",
-          category: "Vegetables",
-          price: 2.98,
-          image_url: "/lovable-uploads/spinach.jpg",
-          benefits: ["Iron-rich", "Vitamin K", "Folate", "Antioxidants"]
-        },
-        reason: `I noticed you're getting ${analysis.fruitCount} fruit items! Adding leafy greens would create the perfect nutritional balance.`,
-        healthScore: 95,
-        priceJustification: `At $2.98, this fits perfectly within your average item budget of $${analysis.avgItemPrice.toFixed(2)}`,
-        personalizedMessage: `Perfect complement to your fruit choices - the iron in spinach helps your body absorb vitamin C from fruits better! 🌟`
-      });
+      const leafyGreens = availableForRecommendation.filter(p => 
+        p.name.toLowerCase().includes('spinach') || 
+        p.name.toLowerCase().includes('lettuce') ||
+        p.name.toLowerCase().includes('kale')
+      );
+      
+      if (leafyGreens.length > 0) {
+        const product = leafyGreens[0];
+        recs.push({
+          product,
+          reason: `I noticed you're getting ${analysis.fruitCount} fruit items! Adding leafy greens would create the perfect nutritional balance.`,
+          healthScore: 95,
+          priceJustification: `At $${product.walmart_price.toFixed(2)}, this fits perfectly within your average item budget of $${analysis.avgItemPrice.toFixed(2)}`,
+          personalizedMessage: `Perfect complement to your fruit choices - the iron in leafy greens helps your body absorb vitamin C from fruits better! 🌟`
+        });
+      }
     }
 
     if (analysis.hasVegetables && !analysis.hasFruits) {
-      recs.push({
-        product: {
-          name: "Organic Blueberries (6 oz)",
-          category: "Fruits",
-          price: 3.98,
-          image_url: "/lovable-uploads/blueberries.jpg",
-          benefits: ["Antioxidants", "Vitamin C", "Fiber", "Brain health"]
-        },
-        reason: `Great vegetable choices! Adding antioxidant-rich blueberries would boost your immune system.`,
-        healthScore: 92,
-        priceJustification: `Premium superfood at just $3.98 - excellent value for the health benefits`,
-        personalizedMessage: `Your veggie-forward cart shows you care about health. Blueberries are nature's brain food! 🧠`
-      });
+      const berries = availableForRecommendation.filter(p => 
+        p.name.toLowerCase().includes('berries') || 
+        p.name.toLowerCase().includes('blueberr') ||
+        p.name.toLowerCase().includes('strawberr')
+      );
+      
+      if (berries.length > 0) {
+        const product = berries[0];
+        recs.push({
+          product,
+          reason: `Great vegetable choices! Adding antioxidant-rich berries would boost your immune system.`,
+          healthScore: 92,
+          priceJustification: `Premium superfood at just $${product.walmart_price.toFixed(2)} - excellent value for the health benefits`,
+          personalizedMessage: `Your veggie-forward cart shows you care about health. Berries are nature's brain food! 🧠`
+        });
+      }
     }
 
     if (!analysis.hasVegetables && !analysis.hasFruits) {
-      recs.push({
-        product: {
-          name: "Organic Bananas (bunch)",
-          category: "Fruits",
-          price: 1.98,
-          image_url: "/lovable-uploads/bananas.jpg",
-          benefits: ["Potassium", "Vitamin B6", "Energy", "Heart health"]
-        },
-        reason: `Your cart could use some fresh produce! Bananas are an easy, healthy addition.`,
-        healthScore: 88,
-        priceJustification: `Just $1.98 for nature's energy bar - incredible value!`,
-        personalizedMessage: `Starting your healthy journey? Bananas are the perfect first step - convenient and nutritious! 🍌`
-      });
+      const bananas = availableForRecommendation.filter(p => 
+        p.name.toLowerCase().includes('banana')
+      );
+      
+      if (bananas.length > 0) {
+        const product = bananas[0];
+        recs.push({
+          product,
+          reason: `Your cart could use some fresh produce! Bananas are an easy, healthy addition.`,
+          healthScore: 88,
+          priceJustification: `Just $${product.walmart_price.toFixed(2)} for nature's energy bar - incredible value!`,
+          personalizedMessage: `Starting your healthy journey? Bananas are the perfect first step - convenient and nutritious! 🍌`
+        });
+      }
 
-      recs.push({
-        product: {
-          name: "Baby Carrots (1 lb)",
-          category: "Vegetables",
-          price: 1.28,
-          image_url: "/lovable-uploads/carrots.jpg",
-          benefits: ["Beta-carotene", "Vitamin A", "Fiber", "Eye health"]
-        },
-        reason: `Add some crunch and nutrition with these convenient, ready-to-eat vegetables.`,
-        healthScore: 90,
-        priceJustification: `At $1.28, this adds serious nutrition without breaking your budget`,
-        personalizedMessage: `Perfect for snacking - no prep needed! Your future self will thank you. 🥕`
-      });
+      const carrots = availableForRecommendation.filter(p => 
+        p.name.toLowerCase().includes('carrot')
+      );
+      
+      if (carrots.length > 0) {
+        const product = carrots[0];
+        recs.push({
+          product,
+          reason: `Add some crunch and nutrition with these convenient, ready-to-eat vegetables.`,
+          healthScore: 90,
+          priceJustification: `At $${product.walmart_price.toFixed(2)}, this adds serious nutrition without breaking your budget`,
+          personalizedMessage: `Perfect for snacking - no prep needed! Your future self will thank you. 🥕`
+        });
+      }
     }
 
-    if (analysis.totalSpent > 50 && analysis.avgItemPrice > 3) {
-      recs.push({
-        product: {
-          name: "Organic Avocados (2 pack)",
-          category: "Fruits",
-          price: 3.48,
-          image_url: "/lovable-uploads/avocados.jpg",
-          benefits: ["Healthy fats", "Potassium", "Fiber", "Heart health"]
-        },
-        reason: `Your premium shopping choices deserve premium nutrition - avocados are packed with healthy fats.`,
-        healthScore: 94,
-        priceJustification: `Fits your spending pattern perfectly at $3.48 for two premium avocados`,
-        personalizedMessage: `I can see you value quality! These creamy superfruits will elevate any meal. 🥑`
+    // If we still don't have enough recommendations, add some general healthy options
+    if (recs.length < 3) {
+      const remainingProducts = availableForRecommendation.filter(p => 
+        !recs.some(rec => rec.product.id === p.id)
+      );
+      
+      remainingProducts.slice(0, 3 - recs.length).forEach(product => {
+        recs.push({
+          product,
+          reason: `This nutritious option would be a great addition to your healthy lifestyle.`,
+          healthScore: 85,
+          priceJustification: `At $${product.walmart_price.toFixed(2)}, it's a smart investment in your health`,
+          personalizedMessage: `A healthy choice that fits perfectly with your shopping preferences! 🌱`
+        });
       });
     }
 
@@ -169,34 +191,8 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
   };
 
   const addToCart = (recommendation: HealthRecommendation) => {
-    // Create a mock product to add to cart
     const newProduct: CartItem = {
-      id: `health-rec-${Date.now()}`,
-      name: recommendation.product.name,
-      walmart_price: recommendation.product.price,
-      heb_price: recommendation.product.price * 1.1,
-      aldi_price: recommendation.product.price * 0.9,
-      target_price: recommendation.product.price * 1.05,
-      kroger_price: recommendation.product.price * 1.08,
-      sams_price: recommendation.product.price * 0.95,
-      unit: "each",
-      image_url: recommendation.product.image_url,
-      category: { 
-        id: `category-${Date.now()}`,
-        name: recommendation.product.category,
-        created_at: new Date().toISOString()
-      },
-      category_id: `category-${Date.now()}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      prices: {
-        'Walmart': recommendation.product.price,
-        'H-E-B': recommendation.product.price * 1.1,
-        'Aldi': recommendation.product.price * 0.9,
-        'Target': recommendation.product.price * 1.05,
-        'Kroger': recommendation.product.price * 1.08,
-        "Sam's Club": recommendation.product.price * 0.95
-      },
+      ...recommendation.product,
       quantity: 1
     };
 
@@ -204,12 +200,20 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     setAddedItems(prev => new Set([...prev, recommendation.product.name]));
   };
 
+  const calculateNewCartTotal = () => {
+    const addedProductsTotal = recommendations
+      .filter(rec => addedItems.has(rec.product.name))
+      .reduce((sum, rec) => sum + rec.product.walmart_price, 0);
+    
+    return (orderTotal || 0) + addedProductsTotal;
+  };
+
   const continueToCheckout = () => {
     navigate("/checkout-details", {
       state: { 
         shoppingType,
         cheapestStore,
-        orderTotal,
+        orderTotal: calculateNewCartTotal(),
         itemCount: cart.length
       }
     });
@@ -219,18 +223,6 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     navigate('/');
     return null;
   }
-
-  // Store brand colors
-  const storeColors = {
-    'H-E-B': '#e31837',
-    'Walmart': '#004c91',
-    'Target': '#cc0000',
-    'Kroger': '#0f4c81',
-    'Sam\'s Club': '#00529c',
-    'Aldi': '#ff6900'
-  };
-
-  const cheapestStoreColor = storeColors[cheapestStore as keyof typeof storeColors] || '#3b82f6';
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -246,7 +238,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             Back to Cart
           </Button>
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 mr-4">
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-green-500 mr-4">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -257,6 +249,26 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             </div>
           </div>
         </div>
+
+        {/* Cart Summary */}
+        <Card className="mb-6 bg-gradient-to-r from-blue-50 to-green-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-lg font-semibold text-gray-800">Current Cart: ${orderTotal?.toFixed(2) || '0.00'}</p>
+                <p className="text-sm text-gray-600">{cart.length} items</p>
+              </div>
+              {addedItems.size > 0 && (
+                <div className="text-right">
+                  <p className="text-lg font-semibold text-green-600">
+                    New Total: ${calculateNewCartTotal().toFixed(2)}
+                  </p>
+                  <p className="text-sm text-green-600">+{addedItems.size} healthy additions</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Analysis Loading */}
         {isAnalyzing && (
@@ -298,13 +310,11 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                     <div className="flex items-start space-x-6">
                       {/* Product Image */}
                       <div className="flex-shrink-0">
-                        <div className="w-24 h-24 bg-gray-100 rounded-lg flex items-center justify-center">
-                          {rec.product.category === 'Fruits' ? (
-                            <Apple className="h-12 w-12 text-green-500" />
-                          ) : (
-                            <Heart className="h-12 w-12 text-red-500" />
-                          )}
-                        </div>
+                        <img 
+                          src={rec.product.image_url}
+                          alt={rec.product.name}
+                          className="w-24 h-24 object-cover rounded-lg"
+                        />
                       </div>
 
                       {/* Content */}
@@ -313,39 +323,29 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                           <div>
                             <h3 className="text-xl font-semibold text-gray-800">{rec.product.name}</h3>
                             <div className="flex items-center space-x-2 mt-1">
-                              <Badge variant="secondary">{rec.product.category}</Badge>
+                              <Badge variant="secondary">{rec.product.category.name}</Badge>
                               <Badge className="bg-green-100 text-green-700">
-                                <TrendingUp className="h-3 w-3 mr-1" />
                                 {rec.healthScore}% Health Score
                               </Badge>
                             </div>
                           </div>
                           <div className="text-right">
-                            <p className="text-2xl font-bold text-gray-900">${rec.product.price}</p>
+                            <p className="text-2xl font-bold text-gray-900">${rec.product.walmart_price.toFixed(2)}</p>
                             <p className="text-sm text-gray-500">{rec.priceJustification}</p>
                           </div>
                         </div>
 
                         {/* AI Reasoning */}
-                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg p-4">
                           <p className="text-blue-800 font-medium mb-2">{rec.reason}</p>
                           <p className="text-blue-700 text-sm italic">{rec.personalizedMessage}</p>
-                        </div>
-
-                        {/* Benefits */}
-                        <div className="flex flex-wrap gap-2">
-                          {rec.product.benefits.map((benefit, idx) => (
-                            <span key={idx} className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm border">
-                              {benefit}
-                            </span>
-                          ))}
                         </div>
 
                         {/* Add Button */}
                         <Button
                           onClick={() => addToCart(rec)}
                           disabled={isAdded}
-                          className={`w-full ${isAdded ? 'bg-green-600 hover:bg-green-600' : 'bg-blue-500 hover:bg-blue-600'} text-white`}
+                          className={`w-full ${isAdded ? 'bg-green-600 hover:bg-green-600' : 'bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600'} text-white`}
                         >
                           {isAdded ? (
                             <>
@@ -355,7 +355,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                           ) : (
                             <>
                               <Plus className="h-4 w-4 mr-2" />
-                              Add to Cart
+                              Add to Cart - ${rec.product.walmart_price.toFixed(2)}
                             </>
                           )}
                         </Button>
@@ -373,7 +373,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
           <Button 
             onClick={continueToCheckout}
             size="lg"
-            className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 text-lg"
+            className="bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white px-8 py-3 text-lg"
           >
             Continue to Checkout
             <ArrowRight className="h-5 w-5 ml-2" />
