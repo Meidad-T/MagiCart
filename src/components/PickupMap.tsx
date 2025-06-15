@@ -1,4 +1,3 @@
-
 import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -19,10 +18,26 @@ const createLucideIcon = (icon: React.ReactElement) => {
   return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 };
 
+const storeBrandColors: { [key: string]: { color: string, initial: string } } = {
+  'h-e-b': { color: '#e31837', initial: 'H' },
+  'walmart': { color: '#004c91', initial: 'W' },
+  'kroger': { color: '#0f4c81', initial: 'K' },
+  'costco': { color: '#00529c', initial: 'C' },
+  'whole foods': { color: '#00a844', initial: 'W' },
+  'trader joe': { color: '#d2202b', initial: 'T' },
+  'safeway': { color: '#ff6900', initial: 'S' },
+  'publix': { color: '#008542', initial: 'P' },
+  'wegmans': { color: '#ff6900', initial: 'W' },
+  'aldi': { color: '#00559f', initial: 'A' },
+  "sam's club": { color: '#008844', initial: 'S' }
+};
+
 // Returns a dynamic store icon URL
 const getStoreIconUrl = (storeName?: string) => {
+  const lowerCaseStoreName = storeName?.toLowerCase() || '';
+
   // Use a custom Target logo if the store is Target
-  if (storeName?.toLowerCase().includes('target')) {
+  if (lowerCaseStoreName.includes('target')) {
     const targetIconSvg = `
       <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="24" cy="24" r="22" fill="#cc0000" stroke="white" stroke-width="2"/>
@@ -32,6 +47,21 @@ const getStoreIconUrl = (storeName?: string) => {
     `;
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(targetIconSvg)}`;
   }
+  
+  // Check for other known stores and create a simple logo
+  for (const brandName in storeBrandColors) {
+    if (lowerCaseStoreName.includes(brandName)) {
+      const { color, initial } = storeBrandColors[brandName];
+      const brandIconSvg = `
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="22" fill="${color}" stroke="white" stroke-width="2"/>
+          <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="white">${initial}</text>
+        </svg>
+      `;
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(brandIconSvg)}`;
+    }
+  }
+
   // Fallback to a generic store icon for other stores
   return createLucideIcon(<Store size={40} color="#4A4A4A" strokeWidth={2} />);
 };
