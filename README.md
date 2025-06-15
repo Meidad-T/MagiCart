@@ -42,6 +42,15 @@ There's a common misconception that eating healthy is a luxury only the wealthy 
   - PostgreSQL database
   - Real-time subscriptions
   - Row Level Security (RLS)
+  - Edge Functions for server-side logic
+
+### APIs & External Services
+- **Google Gemini API** - Advanced AI for intelligent product recommendations and chat assistance
+- **Google Places API** - Store location discovery and details
+- **Google Maps API** - Interactive maps and location services
+- **Google Geocoding API** - Address to coordinates conversion
+- **Google Maps Datasets API** - Enhanced location data and mapping features
+- **Firebase** - Additional backend services and real-time database
 
 ### State Management & Data Fetching
 - **TanStack Query (React Query)** - Powerful data synchronization
@@ -82,6 +91,30 @@ There's a common misconception that eating healthy is a luxury only the wealthy 
 - Personal shopping lists and preferences
 - Order history and favorite products
 
+## Revenue Generation Strategy
+
+### Sustainable Business Model
+MagiCart is designed to remain **completely free for end users** while generating revenue through strategic partnerships and affiliate programs:
+
+#### 🤝 Affiliate Partnerships
+- **"Order at [Store Name]" Links** - Affiliate links that provide us with a small percentage of each order's total
+- Commission-based revenue from major grocery chains
+- Performance-based partnerships that incentivize quality service
+
+#### 🏪 Store Partnerships & Premium Features
+- **Featured Store Placement** - Premium positioning for grocery chains wanting increased consumer exposure
+- **Weekly Flyer Integration** - Partnering with stores to showcase their weekly ads and special offers
+- **Data Insights** - Providing anonymized consumer behavior insights to retail partners
+- **Enhanced Store Profiles** - Premium store listings with additional features and visibility
+
+#### 💡 Value Proposition for Partners
+- **Increased Customer Acquisition** - Direct access to budget-conscious shoppers
+- **Enhanced Brand Visibility** - Prominent placement on our platform
+- **Competitive Intelligence** - Market positioning insights
+- **Customer Retention** - Tools to improve customer loyalty through better pricing
+
+This model ensures that MagiCart remains accessible to students and families while creating sustainable revenue streams that benefit all stakeholders - users save money, stores gain customers, and we maintain a high-quality, ad-free experience.
+
 ## Getting Started
 
 ### Prerequisites
@@ -103,9 +136,11 @@ npm install
 
 3. Set up environment variables
 ```bash
-# Create a .env file with your Supabase credentials
+# Create a .env file with your API credentials
 VITE_SUPABASE_URL=your_supabase_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_GEMINI_API_KEY=your_gemini_api_key
+GOOGLE_MAPS_API_KEY=your_google_maps_api_key
 ```
 
 4. Start the development server
@@ -142,6 +177,7 @@ We built MagiCart because we believe that:
 - 📱 **Mobile app** - Native iOS and Android applications
 - 🤝 **Store partnerships** - Direct integration with retailer APIs
 - 🌟 **Community features** - User reviews and price submissions
+- 🎯 **Personalized deals** - AI-curated offers based on shopping history
 
 ## Contributing
 
@@ -157,6 +193,7 @@ Special thanks to:
 - **Texas State University** for fostering innovation and providing resources
 - **Lovable AI** for making rapid development possible
 - **Supabase** for providing excellent backend services
+- **Google** for their comprehensive API ecosystem
 - **The open-source community** for the amazing tools and libraries
 - **Our fellow international students** who inspired this project
 
