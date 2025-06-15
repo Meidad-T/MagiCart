@@ -173,14 +173,14 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
 
     // Fallback to hardcoded logos for stores not in database
     const stores = {
-      'Walmart': { logo: '/lovable-uploads/626c14cb-fdb3-4472-8f02-7f33de90f3e0.png', displayName: 'Walmart' },
-      'H-E-B': { logo: '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png', displayName: 'H-E-B' },
-      'HEB': { logo: '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png', displayName: 'H-E-B' },
-      'Target': { logo: '🎯', displayName: 'Target' },
-      'Kroger': { logo: '🛍️', displayName: 'Kroger' },
-      'Aldi': { logo: '🏪', displayName: 'Aldi' },
-      'Sams': { logo: '🏢', displayName: "Sam's Club" },
-      "Sam's Club": { logo: '🏢', displayName: "Sam's Club" }
+      'Walmart': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUSA49zzU6Xh1gUBZdrOVKb6wL0A_Y1zrlmw&s', displayName: 'Walmart' },
+      'H-E-B': { logo: 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg', displayName: 'H-E-B' },
+      'HEB': { logo: 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg', displayName: 'H-E-B' },
+      'Target': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtCnXrPfrnBYZU7Vh1km8eJIehxLGbFYgmpA&s', displayName: 'Target' },
+      'Kroger': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSacwkiztC747C6ZcQVa5_g0iSbq7O0sNEaoQ&s', displayName: 'Kroger' },
+      'Aldi': { logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWykpVvw51CCXNUut3oNfgsJ1T7u9RQBK0bQ&s', displayName: 'Aldi' },
+      'Sams': { logo: 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png', displayName: "Sam's Club" },
+      "Sam's Club": { logo: 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png', displayName: "Sam's Club" }
     };
     return stores[storeName as keyof typeof stores] || { logo: '🏪', displayName: storeName };
   };
