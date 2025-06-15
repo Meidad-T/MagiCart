@@ -60,3 +60,22 @@ export interface ShoppingSession {
   created_at: string;
   updated_at: string;
 }
+
+export interface ShoppingPlan {
+  id: string;
+  user_id: string;
+  name: string;
+  items: any[];
+  frequency: 'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom';
+  custom_frequency_days?: number;
+  store_name: string;
+  store_address?: string;
+  shopping_type: 'pickup' | 'delivery' | 'instore';
+  delivery_address?: string;
+  pickup_time?: string;
+  estimated_total: number;
+  item_count: number;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}

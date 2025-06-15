@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, MapPin, Clock, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import ShoppingPlanForm from "@/components/ShoppingPlanForm";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -49,6 +51,7 @@ const fallbackAddresses = {
 export default function OrderSummary() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
   const state = location.state as LocationState | null;
   
   const shoppingType: ShoppingType = state?.shoppingType || 'delivery';
@@ -95,6 +98,16 @@ export default function OrderSummary() {
     
     fetchStoreAddress();
   }, [storeName, shoppingType]);
+
+  const orderData = {
+    storeName,
+    storeAddress,
+    shoppingType,
+    deliveryAddress,
+    pickupTime,
+    orderTotal,
+    itemCount,
+  };
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
@@ -165,6 +178,16 @@ export default function OrderSummary() {
               Final total may vary based on store prices and availability
             </p>
           </div>
+
+          {/* Shopping Plan Form - Only show for authenticated users */}
+          {user && (
+            <ShoppingPlanForm 
+              orderData={orderData}
+              onPlanCreated={(plan) => {
+                console.log('Plan created:', plan);
+              }}
+            />
+          )}
 
           {/* Store Order Button */}
           <div className="text-center space-y-4">

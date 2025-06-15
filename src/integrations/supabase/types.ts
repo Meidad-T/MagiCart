@@ -134,6 +134,63 @@ export type Database = {
         }
         Relationships: []
       }
+      shopping_plans: {
+        Row: {
+          created_at: string
+          custom_frequency_days: number | null
+          delivery_address: string | null
+          estimated_total: number
+          frequency: string
+          id: string
+          is_active: boolean
+          item_count: number
+          items: Json
+          name: string
+          pickup_time: string | null
+          shopping_type: string
+          store_address: string | null
+          store_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_frequency_days?: number | null
+          delivery_address?: string | null
+          estimated_total?: number
+          frequency: string
+          id?: string
+          is_active?: boolean
+          item_count?: number
+          items?: Json
+          name: string
+          pickup_time?: string | null
+          shopping_type: string
+          store_address?: string | null
+          store_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_frequency_days?: number | null
+          delivery_address?: string | null
+          estimated_total?: number
+          frequency?: string
+          id?: string
+          is_active?: boolean
+          item_count?: number
+          items?: Json
+          name?: string
+          pickup_time?: string | null
+          shopping_type?: string
+          store_address?: string | null
+          store_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       shopping_sessions: {
         Row: {
           created_at: string
