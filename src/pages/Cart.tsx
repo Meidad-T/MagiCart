@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,7 +112,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           case 'kroger':
             storeFee = subtotal >= 35 ? 0 : 4.95;
             break;
-          // Target and Sam's Club delivery fees not specified
+          case 'target':
+            storeFee = subtotal >= 35 ? 0 : 9.99;
+            break;
+          case 'sams':
+            storeFee = subtotal >= 50 ? 0 : 12.00;
+            break;
         }
       }
       // In-store shopping has no additional fees
@@ -370,6 +376,26 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             {/* Combined Checkout & AI Recommendations */}
             <Card>
               <CardContent className="pt-6 space-y-3">
+                <p className="text-sm text-gray-600 text-center">
+                  Discover affordable and health additions
+                </p>
+                <Button
+                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
+                  onClick={() =>
+                    navigate("/health-recommendations", {
+                      state: { 
+                        shoppingType,
+                        cheapestStore: cheapestStore?.store,
+                        orderTotal: parseFloat(cheapestStore?.total || '0'),
+                        itemCount: cart.length
+                      }
+                    })
+                  }
+                >
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Get AI Health Recommendations
+                </Button>
+                
                 <Button
                   className="w-full text-white"
                   style={{ backgroundColor: cheapestStoreColor }}
@@ -391,26 +417,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     Best price: ${cheapestStore.total}
                   </p>
                 )}
-                
-                <Button
-                  className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
-                  onClick={() =>
-                    navigate("/health-recommendations", {
-                      state: { 
-                        shoppingType,
-                        cheapestStore: cheapestStore?.store,
-                        orderTotal: parseFloat(cheapestStore?.total || '0'),
-                        itemCount: cart.length
-                      }
-                    })
-                  }
-                >
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Get AI Health Recommendations
-                </Button>
-                <p className="text-sm text-gray-600 text-center">
-                  Discover personalized healthy additions
-                </p>
               </CardContent>
             </Card>
           </div>

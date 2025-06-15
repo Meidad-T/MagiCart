@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle } from "lucide-react";
+import { ArrowLeft, ArrowRight, Sparkles, Plus, CheckCircle, Minus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,7 +30,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
   const { data: products, isLoading: productsLoading } = useProducts();
   const [recommendations, setRecommendations] = useState<HealthRecommendation[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState(true);
-  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  const [addedItems, setAddedItems] = useState<Record<string, number>>({}); // Changed to track quantities
 
   const { shoppingType, cheapestStore, orderTotal, itemCount } = location.state || {};
 
@@ -190,20 +189,48 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
     return recs.slice(0, 3); // Return top 3 recommendations
   };
 
-  const addToCart = (recommendation: HealthRecommendation) => {
-    const newProduct: CartItem = {
-      ...recommendation.product,
-      quantity: 1
-    };
+  const addToCart = (recommendation: HealthRecommendation, quantity: number = 1) => {
+    const existingItemIndex = cart.findIndex(item => item.id === recommendation.product.id);
+    
+    if (existingItemIndex >= 0) {
+      // Update existing item
+      const updatedCart = [...cart];
+      updatedCart[existingItemIndex].quantity += quantity;
+      onUpdateCart(updatedCart);
+    } else {
+      // Add new item
+      const newProduct: CartItem = {
+        ...recommendation.product,
+        quantity: quantity
+      };
+      onUpdateCart([...cart, newProduct]);
+    }
+    
+    setAddedItems(prev => ({
+      ...prev,
+      [recommendation.product.name]: (prev[recommendation.product.name] || 0) + quantity
+    }));
+  };
 
-    onUpdateCart([...cart, newProduct]);
-    setAddedItems(prev => new Set([...prev, recommendation.product.name]));
+  const updateQuantity = (productName: string, newQuantity: number) => {
+    if (newQuantity <= 0) {
+      setAddedItems(prev => {
+        const updated = { ...prev };
+        delete updated[productName];
+        return updated;
+      });
+    } else {
+      setAddedItems(prev => ({
+        ...prev,
+        [productName]: newQuantity
+      }));
+    }
   };
 
   const calculateNewCartTotal = () => {
     const addedProductsTotal = recommendations
-      .filter(rec => addedItems.has(rec.product.name))
-      .reduce((sum, rec) => sum + rec.product.walmart_price, 0);
+      .filter(rec => addedItems[rec.product.name])
+      .reduce((sum, rec) => sum + (rec.product.walmart_price * addedItems[rec.product.name]), 0);
     
     return (orderTotal || 0) + addedProductsTotal;
   };
@@ -258,12 +285,12 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                 <p className="text-lg font-semibold text-gray-800">Current Cart: ${orderTotal?.toFixed(2) || '0.00'}</p>
                 <p className="text-sm text-gray-600">{cart.length} items</p>
               </div>
-              {addedItems.size > 0 && (
+              {Object.keys(addedItems).length > 0 && (
                 <div className="text-right">
                   <p className="text-lg font-semibold text-green-600">
                     New Total: ${calculateNewCartTotal().toFixed(2)}
                   </p>
-                  <p className="text-sm text-green-600">+{addedItems.size} healthy additions</p>
+                  <p className="text-sm text-green-600">+{Object.keys(addedItems).length} healthy additions</p>
                 </div>
               )}
             </div>
@@ -302,7 +329,8 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
             </div>
 
             {recommendations.map((rec, index) => {
-              const isAdded = addedItems.has(rec.product.name);
+              const addedQuantity = addedItems[rec.product.name] || 0;
+              const isAdded = addedQuantity > 0;
               
               return (
                 <Card key={index} className="border-gray-200 hover:shadow-lg transition-shadow duration-300">
@@ -341,24 +369,42 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                           <p className="text-blue-700 text-sm italic">{rec.personalizedMessage}</p>
                         </div>
 
-                        {/* Add Button */}
-                        <Button
-                          onClick={() => addToCart(rec)}
-                          disabled={isAdded}
-                          className={`w-full ${isAdded ? 'bg-green-600 hover:bg-green-600' : 'bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600'} text-white`}
-                        >
-                          {isAdded ? (
-                            <>
+                        {/* Add Button or Quantity Controls */}
+                        {!isAdded ? (
+                          <Button
+                            onClick={() => addToCart(rec, 1)}
+                            className="w-full bg-gradient-to-r from-blue-500 to-green-500 hover:from-blue-600 hover:to-green-600 text-white"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Add to Cart - ${rec.product.walmart_price.toFixed(2)}
+                          </Button>
+                        ) : (
+                          <div className="flex items-center space-x-4">
+                            <div className="flex items-center bg-green-100 text-green-700 px-3 py-2 rounded-lg">
                               <CheckCircle className="h-4 w-4 mr-2" />
-                              Added to Cart
-                            </>
-                          ) : (
-                            <>
-                              <Plus className="h-4 w-4 mr-2" />
-                              Add to Cart - ${rec.product.walmart_price.toFixed(2)}
-                            </>
-                          )}
-                        </Button>
+                              Added
+                            </div>
+                            <div className="flex items-center space-x-2 bg-gray-100 rounded-lg px-3 py-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(rec.product.name, addedQuantity - 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <span className="text-sm font-medium w-8 text-center">{addedQuantity}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => updateQuantity(rec.product.name, addedQuantity + 1)}
+                                className="h-8 w-8 p-0"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
