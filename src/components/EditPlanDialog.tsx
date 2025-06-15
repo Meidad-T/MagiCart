@@ -32,20 +32,20 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
-  // Use actual plan items from the database with their real images
+  // Use actual plan items from the database with their complete product information
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
     if (Array.isArray(plan.items) && plan.items.length > 0) {
       return plan.items.map((item: any) => ({
         id: item.id || Math.random().toString(36).substr(2, 9),
         name: item.name || 'Unknown Item',
+        // Use the stored price for this specific store/plan
         price: item.price || 0,
         quantity: item.quantity || 1,
-        // Use the actual image_url from the plan item, which should come from the database
+        // Use the actual image_url that was saved with the product
         image_url: item.image_url || '/placeholder.svg'
       }));
     }
     
-    // If no items in plan, return empty array
     return [];
   });
 
@@ -85,13 +85,25 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
     setLoading(true);
     try {
+      // Preserve the complete product information when updating
+      const updatedItems = cartItems.map(cartItem => {
+        // Find the original item to preserve all product data
+        const originalItem = plan.items.find((item: any) => item.id === cartItem.id);
+        
+        return {
+          ...originalItem, // Keep all original product data
+          quantity: cartItem.quantity, // Update only the quantity
+          price: cartItem.price // Keep the price
+        };
+      });
+
       const updates = {
         name: planName.trim(),
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         estimated_total: calculateTotal(),
         item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-        items: cartItems
+        items: updatedItems
       };
 
       await updatePlan(plan.id, updates);
