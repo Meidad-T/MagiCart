@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,11 +21,12 @@ interface OrderData {
 }
 
 interface ShoppingPlanFormProps {
-  orderData: OrderData;
+  cart: Array<any>; // Accepts the real cart array as a prop
+  orderData: OrderData; // Keep for order summary details
   onPlanCreated?: (plan: any) => void;
 }
 
-export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingPlanFormProps) {
+export default function ShoppingPlanForm({ cart, orderData, onPlanCreated }: ShoppingPlanFormProps) {
   const { createPlan, plans } = useShoppingPlans();
   const { user } = useAuth();
   const [savePlan, setSavePlan] = useState(false);
@@ -85,9 +85,29 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
 
     setLoading(true);
     try {
+      // Instead of using mockCartItems, map cart to extract all fields needed for saving
+      const planItems = (cart || []).map((item) => ({
+        id: item.id,
+        name: item.name,
+        image_url: item.image_url,
+        quantity: item.quantity,
+        // Add all major store prices: these field names match ProductWithPrices
+        walmart_price: item.walmart_price,
+        heb_price: item.heb_price,
+        aldi_price: item.aldi_price,
+        target_price: item.target_price,
+        kroger_price: item.kroger_price,
+        sams_price: item.sams_price,
+        prices: item.prices, // Preserve all prices if present
+        description: item.description,
+        unit: item.unit,
+        category_id: item.category_id,
+        // ... add fields as needed from the main product/carts structure
+      }));
+
       const planData = {
         name: planName.trim(),
-        items: mockCartItems,
+        items: planItems,
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         store_name: orderData.storeName,

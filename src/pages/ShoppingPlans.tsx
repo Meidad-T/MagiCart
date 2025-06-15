@@ -50,14 +50,14 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
     const planItems = Array.isArray(plan.items) ? plan.items : [];
     
     planItems.forEach((planItem: any) => {
-      // Convert plan item to ProductWithPrices format
+      // Carefully preserve all detailed fields for cart
       const cartItem: ProductWithPrices & { quantity: number } = {
-        id: planItem.id || Math.random().toString(36).substr(2, 9),
+        id: planItem.id,
         name: planItem.name,
         description: planItem.description || '',
-        image_url: planItem.image_url || '/placeholder.svg',
-        unit: planItem.unit || 'each',
-        category_id: planItem.category_id || '',
+        image_url: planItem.image_url,
+        unit: planItem.unit,
+        category_id: planItem.category_id,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         category: {
@@ -65,24 +65,29 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
           name: 'General',
           created_at: new Date().toISOString()
         },
-        prices: {
-          [plan.store_name]: planItem.price || 0
+        prices: planItem.prices || {
+          Walmart: planItem.walmart_price || 0,
+          "H-E-B": planItem.heb_price || 0,
+          Aldi: planItem.aldi_price || 0,
+          Target: planItem.target_price || 0,
+          Kroger: planItem.kroger_price || 0,
+          "Sam's Club": planItem.sams_price || 0,
         },
-        walmart_price: plan.store_name === 'Walmart' ? (planItem.price || 0) : 0,
-        heb_price: (plan.store_name === 'H-E-B' || plan.store_name === 'HEB') ? (planItem.price || 0) : 0,
-        aldi_price: plan.store_name === 'Aldi' ? (planItem.price || 0) : 0,
-        target_price: plan.store_name === 'Target' ? (planItem.price || 0) : 0,
-        kroger_price: plan.store_name === 'Kroger' ? (planItem.price || 0) : 0,
-        sams_price: (plan.store_name === 'Sams' || plan.store_name === "Sam's Club") ? (planItem.price || 0) : 0,
+        walmart_price: planItem.walmart_price || 0,
+        heb_price: planItem.heb_price || 0,
+        aldi_price: planItem.aldi_price || 0,
+        target_price: planItem.target_price || 0,
+        kroger_price: planItem.kroger_price || 0,
+        sams_price: planItem.sams_price || 0,
         quantity: planItem.quantity || 1
       };
 
       // Check if item already exists in cart
-      const existingItem = cart.find(item => item.name === cartItem.name);
+      const existingItem = cart.find(item => item.id === cartItem.id);
       if (existingItem) {
         // Update quantity
         onUpdateCart(cart.map(item =>
-          item.name === cartItem.name
+          item.id === cartItem.id
             ? { ...item, quantity: item.quantity + cartItem.quantity }
             : item
         ));

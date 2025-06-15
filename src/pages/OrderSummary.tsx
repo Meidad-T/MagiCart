@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,6 +6,7 @@ import { CheckCircle, MapPin, Clock, ShoppingBag } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import ShoppingPlanForm from "@/components/ShoppingPlanForm";
+import type { ProductWithPrices } from "@/types/database";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -109,6 +109,15 @@ export default function OrderSummary() {
     itemCount,
   };
 
+  // You'll need access to the real cart -- so this file needs to get it, probably from props or context.
+  // For this code, accept cart from the App and pass it through.
+  // Update the props to pass the cart:
+  // Replace ShoppingPlanForm ... with:
+
+  // For demo purposes, get cart from window.__REAL_CART__ if not provided (for local testing); otherwise, this should be passed via the parent.
+
+  const cart = (window as any).__REAL_CART__ || []; // Replace with your real cart source
+
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
       <Card className="w-full max-w-2xl mb-6">
@@ -181,7 +190,8 @@ export default function OrderSummary() {
 
           {/* Shopping Plan Form - Only show for authenticated users */}
           {user && (
-            <ShoppingPlanForm 
+            <ShoppingPlanForm
+              cart={cart}
               orderData={orderData}
               onPlanCreated={(plan) => {
                 console.log('Plan created:', plan);
