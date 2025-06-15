@@ -297,20 +297,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="flex items-center gap-4">
-                      <CardTitle>Cart Items ({cart.length})</CardTitle>
-                      {cart.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <Heart className="h-4 w-4 text-red-500" />
-                          <span className="text-sm font-medium">
-                            Cart Health Score: <span className={getHealthScoreColor(healthScore)}>{healthScore}/100 ({getHealthScoreLabel(healthScore)})</span>
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                    {cart.length > 0 && (
-                      <p className="text-xs text-gray-500 mt-1">Health score is AI generated</p>
-                    )}
+                    <CardTitle>Cart Items ({cart.length})</CardTitle>
                   </div>
                   {/* Expand Button at Top - now shows for 5+ items */}
                   {shouldCollapse && !cartExpanded && (
