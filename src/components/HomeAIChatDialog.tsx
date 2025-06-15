@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Bot, User, Sparkles, Clock } from "lucide-react";
+import { Send, Bot, User, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices } from "@/types/database";
 
@@ -18,6 +18,27 @@ interface HomeAIChatDialogProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
   isOpen?: boolean;
   setIsOpen?: (open: boolean) => void;
+}
+
+// Types reused from AIChatDialog
+interface StoreTotalData {
+  store: string;
+  storeKey: string;
+  subtotal: string;
+  taxesAndFees: string;
+  total: string;
+}
+interface RecommendationData {
+  store: StoreTotalData;
+  reason: string;
+  confidence: number;
+  metrics: {
+    reviewScore: number;
+    freshness: number;
+    availability: number;
+    service: number;
+  };
+  savings?: string;
 }
 
 export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogProps) => {
@@ -39,101 +60,152 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
   const [rateLimitEndTime, setRateLimitEndTime] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
 
-  // Real-time countdown effect
+  // We'll use 'pickup' as the shoppingType default for the home dialog
+  const shoppingType = "pickup";
+
+  // -- START: storeTotals and recommendation logic (copied/adapted from Cart) --
+
+  const storeNames = {
+    walmart: 'Walmart',
+    heb: 'H-E-B',
+    aldi: 'Aldi',
+    target: 'Target',
+    kroger: 'Kroger',
+    sams: "Sam's Club"
+  };
+
+  // Compute store totals for all available stores in exactly the same way as Cart page
+  const storeTotals: StoreTotalData[] = useMemo(() => {
+    if (!cart || cart.length === 0) return [];
+    const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
+    return stores.map(store => {
+      const subtotal = cart.reduce((sum, item) => {
+        const price = item[`${store}_price` as keyof ProductWithPrices] as number;
+        return sum + (price * item.quantity);
+      }, 0);
+      const taxesAndFees = subtotal * 0.0875; // 8.75% tax rate
+      // Only 'pickup' fees for home dialog (like Cart default)
+      let storeFee = 0;
+      if (shoppingType === 'pickup') {
+        if (store === 'walmart') storeFee = 1.99;
+        if (store === 'sams') storeFee = subtotal >= 50 ? 0 : 4.99;
+        if (store === 'heb') storeFee = 0;
+      }
+      // In-store/delivery logic omitted on home page
+      const total = subtotal + taxesAndFees + storeFee;
+      return {
+        store: storeNames[store as keyof typeof storeNames],
+        storeKey: store,
+        subtotal: subtotal.toFixed(2),
+        taxesAndFees: (taxesAndFees + storeFee).toFixed(2),
+        total: total.toFixed(2)
+      };
+    }).sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+  }, [cart]);
+
+  // Simple inference: recommend the store with the lowest total, explain why (like Cart page does)
+  const recommendedStore = storeTotals.length > 0 ? storeTotals[0] : null;
+
+  // Example static store quality metrics (since we have no real reviews here)
+  const storeMetrics = {
+    reviewScore: 4.6,
+    freshness: 4.4,
+    availability: 4.2,
+    service: 4.3,
+  };
+
+  // Fallback reason explanation
+  const reason = recommendedStore
+    ? `it offers the best value for this cart with strong quality ratings`
+    : "I analyzed your cart items and chose the best fit.";
+
+  // The Cart page includes some confidence/savings logic, but it's not visible to user or Gemini. We'll match the type:
+  const recommendation: RecommendationData = recommendedStore
+    ? {
+        store: recommendedStore,
+        reason,
+        confidence: 0.85,
+        metrics: storeMetrics,
+        savings: undefined
+      }
+    : // fallback for empty cart so Gemini doesn't fail
+      {
+        store: {
+          store: "",
+          storeKey: "",
+          subtotal: "0",
+          taxesAndFees: "0",
+          total: "0"
+        },
+        reason: "",
+        confidence: 0.5,
+        metrics: storeMetrics
+      };
+
+  // -- END: storeTotals and recommendation logic --
+
+  // Real-time countdown effect for rate limits (unchanged)
   useEffect(() => {
     let interval: NodeJS.Timeout;
-    
     if (rateLimitEndTime) {
       interval = setInterval(() => {
         const now = Date.now();
         const remaining = Math.max(0, Math.ceil((rateLimitEndTime - now) / 1000));
-        
         setCountdown(remaining);
-        
         if (remaining <= 0) {
           setRateLimitEndTime(null);
           setCountdown(0);
         }
       }, 1000);
     }
-    
-    return () => {
-      if (interval) clearInterval(interval);
-    };
+    return () => { if (interval) clearInterval(interval); };
   }, [rateLimitEndTime]);
 
   const checkRateLimit = (): boolean => {
     const now = Date.now();
     const oneMinuteAgo = now - 60000; // 60 seconds ago
-    
-    // Filter out timestamps older than 1 minute
     const recentMessages = messageTimestamps.filter(timestamp => timestamp > oneMinuteAgo);
-    
-    // Update the timestamps array
     setMessageTimestamps(recentMessages);
-    
-    // Check if we've hit the limit
     if (recentMessages.length >= 4) {
       const oldestRecentMessage = Math.min(...recentMessages);
       const endTime = oldestRecentMessage + 60000;
-      
       setRateLimitEndTime(endTime);
       setCountdown(Math.ceil((endTime - now) / 1000));
-      
       return false;
     }
-    
     return true;
   };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
-
-    // Check rate limit
-    if (!checkRateLimit()) {
-      return;
-    }
-
+    if (!checkRateLimit()) return;
     const userMessage: Message = {
       id: Date.now().toString(),
       content: inputMessage,
       isUser: true,
       timestamp: new Date()
     };
-
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
-
-    // Add this message timestamp to our tracking
     setMessageTimestamps(prev => [...prev, Date.now()]);
-
     try {
-      // Create a mock health/dietary recommendation context
-      const healthContext = {
-        userMessage: inputMessage,
-        cart: cart.map(item => ({
-          name: item.name,
-          category: item.category.name,
-          quantity: item.quantity
-        })),
-        chatType: 'health_recommendations'
-      };
-
-      // Call Supabase Edge Function for secure AI response
+      // IMPORTANT: This now matches the API call of Cart AIChatDialog exactly!
       const { data, error } = await supabase.functions.invoke('chat-with-ai', {
-        body: healthContext
+        body: {
+          userMessage: inputMessage,
+          recommendation,
+          storeTotals,
+          shoppingType,
+        }
       });
-
-      if (error) throw error;
-
+      if (error || !data?.response) throw error || new Error('No AI response');
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "I'm here to help with health and dietary recommendations! Feel free to tell me about any allergies, dietary restrictions, or health goals you have.",
+        content: data.response,
         isUser: false,
         timestamp: new Date()
       };
-
       setMessages(prev => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -181,7 +253,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
             </span>
           </DialogTitle>
         </DialogHeader>
-        
         <ScrollArea className="flex-1 px-4">
           <div className="space-y-4 py-4">
             {messages.map((message) => (
@@ -198,7 +269,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
                     </div>
                   </div>
                 )}
-                
                 <div
                   className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                     message.isUser
@@ -211,7 +281,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </div>
                 </div>
-                
                 {message.isUser && (
                   <div className="flex-shrink-0 mt-1">
                     <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-500 shadow-sm">
@@ -221,7 +290,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
                 )}
               </div>
             ))}
-            
             {isLoading && (
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-1">
@@ -238,7 +306,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
                 </div>
               </div>
             )}
-
             {isRateLimited && (
               <div className="flex items-start space-x-3">
                 <div className="flex-shrink-0 mt-1">
@@ -255,7 +322,6 @@ export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogPr
             )}
           </div>
         </ScrollArea>
-        
         <div className="flex space-x-3 p-4 bg-white/80 backdrop-blur-sm border-t">
           <Input
             value={inputMessage}
