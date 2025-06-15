@@ -115,9 +115,9 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   const getStoreInfo = (storeName: string) => {
     // Store logos and display names
     const stores = {
-      'Walmart': { logo: '🏪', displayName: 'Walmart' },
-      'H-E-B': { logo: '🛒', displayName: 'H-E-B' },
-      'HEB': { logo: '🛒', displayName: 'H-E-B' },
+      'Walmart': { logo: '/lovable-uploads/626c14cb-fdb3-4472-8f02-7f33de90f3e0.png', displayName: 'Walmart' },
+      'H-E-B': { logo: '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png', displayName: 'H-E-B' },
+      'HEB': { logo: '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png', displayName: 'H-E-B' },
       'Target': { logo: '🎯', displayName: 'Target' },
       'Kroger': { logo: '🛍️', displayName: 'Kroger' },
       'Aldi': { logo: '🏪', displayName: 'Aldi' },
@@ -213,7 +213,11 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
                 <Card key={plan.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3 mb-2">
-                      <span className="text-2xl">{storeInfo.logo}</span>
+                      {storeInfo.logo.startsWith('/') ? (
+                        <img src={storeInfo.logo} alt={storeInfo.displayName} className="w-8 h-8 object-contain" />
+                      ) : (
+                        <span className="text-2xl">{storeInfo.logo}</span>
+                      )}
                       <div>
                         <h3 className="font-medium text-gray-900">{storeInfo.displayName}</h3>
                         <p className="text-sm text-gray-500">{plan.store_address}</p>
