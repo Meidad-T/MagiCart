@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -81,7 +82,7 @@ export const useProducts = () => {
             
             // Drinks - better bottle/container images
             '3 Liter Coke Bottle': 'https://live.staticflickr.com/7318/13933195050_6016499339.jpg',
-            '3 Liter Mountain Dew Bottle': 'https://thumbs.dreamstime.com/b/bottles-mountain-mtn-dew-soda-beverage-drinks-shelf-store-380152595.jpg',
+            '3 Liter Sprite Bottle': 'https://www.foodista.com/sites/default/files/styles/featured/public/field/image/12.jpg',
             '3 Liter Dr Pepper Bottle': 'https://c2.staticflickr.com/4/3215/2978925649_d7ca56738f_b.jpg',
             'Bottled water 1 Gallon': 'https://th.bing.com/th/id/R.30251710d09b6bad7d87e3f3468ae5f2?rik=A4MsrMnhAi%2btMQ&riu=http%3a%2f%2fboxingcoachmike.com%2fwp-content%2fuploads%2f2010%2f12%2ffesting.jpg&ehk=sjtB9pTD46UBtTp2MIb40eyR8ODrcwF1CZdDZ8NFGLQ%3d&risl=&pid=ImgRaw&r=0',
             
@@ -101,11 +102,11 @@ export const useProducts = () => {
             'DiGiorno Thin Crust Supreme Pizza': 'https://th.bing.com/th/id/R.d4ec99d4be93b96083ab0216b987f06d?rik=EfmwrhdKkvim2A&riu=http%3a%2f%2ffarm5.staticflickr.com%2f4112%2f5038392280_cb64968bc5_z.jpg&ehk=w%2fmoy%2bXtP1QwikKuicPXpLH47vHqJ1MvNTuT3RArh4Q%3d&risl=&pid=ImgRaw&r=0',
             'DiGiorno Classic Crust Cheese & Pepperoni': 'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=400&h=300&fit=crop&auto=format',
             'Red Baron Four Cheese Classic Crust Pizza': 'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=400&h=300&fit=crop&auto=format',
-            'Red Baron Four Meat Classic Crust Pizza': 'https://th.bing.com/th/id/R.602841e7fd446a4409ae429b0b2ad95e?rik=%2bO7DMMIQesdERg&pid=ImgRaw&r=0',
+            'Red Baron Four Meat Classic Crust Pizza': 'https://th.bing.com/th/id/R.602841e7fd446a4409ae429b0b2ad95e?rik=%2bO7DMMIQesdERg&riu=http%3a%2f%2fwww.becentsable.net%2fwp-content%2fuploads%2f2014%2f08%2fScreen-shot-2014-08-22-at-10.23.23-AM.png&ehk=dJQ9b74M3m6br%2fQAwYXXl%2bYJh%2f0A7DW75VMIjSaiCaE%3d&risl=&pid=ImgRaw&r=0',
             'Red Baron Supreme Classic Crust Pizza': 'https://live.staticflickr.com/2848/12946693435_f11b47a69f_b.jpg',
             'Tombstone Roadhouse Loaded Double Down Deluxe': 'https://images.unsplash.com/photo-1520201163981-8cc95007dd2a?w=400&h=300&fit=crop&auto=format',
             'Stouffers Lasagna with Meat & Sauce': 'https://live.staticflickr.com/5809/21693533023_48674fef8c.jpg',
-            'Marie Callenders Chicken Pot Pie': 'https://th.bing.com/th/id/R.5eedcf6ae6683244caa519a88176fd99?rik=sRQ%2bHceNYTf5nw&riu=http%3a%2ffarm4.staticflickr.com%2f3953%2f14927092694_2149533fb6_z.jpg&ehk=RpRWkp%2bvScjB9agNtAfA1RRHC39KczLzM6Uwhf%2bx1Fg%3d&risl=&pid=ImgRaw&r=0',
+            'Marie Callenders Chicken Pot Pie': 'https://th.bing.com/th/id/R.5eedcf6ae6683244caa519a88176fd99?rik=sRQ%2bHceNYTf5nw&riu=http%3a%2f%2ffarm4.staticflickr.com%2f3953%2f14927092694_2149533fb6_z.jpg&ehk=RpRWkp%2bvScjB9agNtAfA1RRHC39KczLzM6Uwhf%2bx1Fg%3d&risl=&pid=ImgRaw&r=0',
             'Healthy Choice Cafe Steamers Grilled Chicken Marinara': 'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&h=300&fit=crop&auto=format',
             'Banquet Mega Bowls Buffalo Chicken Mac & Cheese': 'https://th.bing.com/th/id/R.253f46bfde8ea2339840c3588d29951b?rik=qcFb3A9Ig%2fcGGg&pid=ImgRaw&r=0',
             'Great Value Chicken Alfredo Pasta': 'https://live.staticflickr.com/7706/17106533558_8bd82f8463_z.jpg',
