@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Bot, User } from "lucide-react";
+import { MessageCircle, Send, Bot, User, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StoreTotalData {
@@ -46,7 +46,7 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `Hi! I'm your shopping AI assistant. I recommended ${recommendation.store.store} for your shopping trip. Feel free to ask me why I made this choice or any questions about the store comparison!`,
+      content: `Hi! I'm your AI shopping assistant. I recommended ${recommendation.store.store} for your shopping trip. Feel free to ask me why I made this choice or any questions about the store comparison!`,
       isUser: false,
       timestamp: new Date()
     }
@@ -113,61 +113,78 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-auto">
-          <MessageCircle className="h-4 w-4 mr-2" />
-          Chat with AI
+        <Button variant="outline" size="sm" className="ml-auto bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 hover:from-blue-100 hover:to-purple-100 transition-all duration-200">
+          <Sparkles className="h-4 w-4 mr-2 text-blue-600" />
+          <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-medium">
+            Chat with AI
+          </span>
         </Button>
       </DialogTrigger>
       
-      <DialogContent className="max-w-md h-[500px] flex flex-col">
-        <DialogHeader>
-          <DialogTitle className="flex items-center">
-            <Bot className="h-5 w-5 mr-2 text-blue-600" />
-            AI Shopping Assistant
+      <DialogContent className="max-w-md h-[600px] flex flex-col p-0 bg-gradient-to-br from-slate-50 to-blue-50/50">
+        <DialogHeader className="px-6 py-4 border-b bg-white/80 backdrop-blur-sm">
+          <DialogTitle className="flex items-center text-lg">
+            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 mr-3">
+              <Bot className="h-4 w-4 text-white" />
+            </div>
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent font-semibold">
+              AI Shopping Assistant
+            </span>
           </DialogTitle>
         </DialogHeader>
         
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4">
+        <ScrollArea className="flex-1 px-4">
+          <div className="space-y-4 py-4">
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex items-start space-x-2 ${
+                className={`flex items-start space-x-3 ${
                   message.isUser ? 'justify-end' : 'justify-start'
                 }`}
               >
                 {!message.isUser && (
-                  <div className="flex-shrink-0">
-                    <Bot className="h-6 w-6 text-blue-600" />
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-sm">
+                      <Bot className="h-4 w-4 text-white" />
+                    </div>
                   </div>
                 )}
                 
                 <div
-                  className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
+                  className={`max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
                     message.isUser
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-900'
+                      ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white ml-auto'
+                      : 'bg-white border border-gray-100 text-gray-800'
                   }`}
                 >
-                  {message.content}
+                  <p className="whitespace-pre-wrap">{message.content}</p>
+                  <div className={`text-xs mt-2 ${message.isUser ? 'text-blue-100' : 'text-gray-500'}`}>
+                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </div>
                 </div>
                 
                 {message.isUser && (
-                  <div className="flex-shrink-0">
-                    <User className="h-6 w-6 text-gray-600" />
+                  <div className="flex-shrink-0 mt-1">
+                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gray-500 shadow-sm">
+                      <User className="h-4 w-4 text-white" />
+                    </div>
                   </div>
                 )}
               </div>
             ))}
             
             {isLoading && (
-              <div className="flex items-start space-x-2">
-                <Bot className="h-6 w-6 text-blue-600" />
-                <div className="bg-gray-100 rounded-lg px-3 py-2 text-sm">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 shadow-sm">
+                    <Bot className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+                <div className="bg-white border border-gray-100 rounded-2xl px-4 py-3 shadow-sm">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                   </div>
                 </div>
               </div>
@@ -175,19 +192,20 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
           </div>
         </ScrollArea>
         
-        <div className="flex space-x-2 pt-4 border-t">
+        <div className="flex space-x-3 p-4 bg-white/80 backdrop-blur-sm border-t">
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me about this recommendation..."
             disabled={isLoading}
-            className="flex-1"
+            className="flex-1 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl"
           />
           <Button 
             onClick={handleSendMessage} 
             disabled={!inputMessage.trim() || isLoading}
             size="sm"
+            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl px-4 shadow-sm transition-all duration-200"
           >
             <Send className="h-4 w-4" />
           </Button>
