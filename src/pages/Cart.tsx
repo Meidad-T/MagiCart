@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Pencil, CircleDollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -138,6 +137,10 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   useEffect(() => {
     if (cart.length <= 3 && cartExpanded) {
       setCartExpanded(false);
+    }
+    if (cart.length === 0) {
+      setAiRecommendedStore(null);
+      setCheckoutStore(null);
     }
   }, [cart.length, cartExpanded]);
 
@@ -333,14 +336,16 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     
     const storeMap = new Map(storeTotals.map(s => [s.storeKey, {...s, icons: new Set<string>()}]));
 
-    storeMap.get(cheapestStore.storeKey)?.icons.add('money');
+    if (cheapestStore) {
+      storeMap.get(cheapestStore.storeKey)?.icons.add('money');
+    }
 
     if (aiRecommendedStore) {
         storeMap.get(aiRecommendedStore.storeKey)?.icons.add('sparkles');
     }
 
     const getScore = (storeKey: string) => {
-        const isCheapest = storeKey === cheapestStore.storeKey;
+        const isCheapest = storeKey === cheapestStore?.storeKey;
         const isAI = storeKey === aiRecommendedStore?.storeKey;
         if (isCheapest && isAI) return 3;
         if (isCheapest) return 2;
