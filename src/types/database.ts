@@ -35,6 +35,7 @@ export interface ProductPrice {
 export interface ProductWithPrices extends Product {
   category: Category;
   prices: Record<string, number>; // store name -> price
+  price?: number; // To hold the specific price when item is added to cart
   walmart_price: number;
   heb_price: number;
   aldi_price: number;
