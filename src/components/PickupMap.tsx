@@ -1,6 +1,6 @@
-
 import { GoogleMap, DirectionsRenderer, useLoadScript } from "@react-google-maps/api";
 import { useState, useEffect } from "react";
+import mapStyle from "./mapStyle.json";
 
 type PickupMapProps = {
   start: [number, number] | null, // [lat, lng] - work location
@@ -13,7 +13,9 @@ type PickupMapProps = {
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
 export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
-  const googleMapsApiKey = import.meta.env.VITE_PUBLIC_GOOGLE_MAPS_API_KEY || "";
+  // Using the new public Google Maps API key as requested.
+  // This key is typically restricted by domain on the Google Cloud dashboard for security.
+  const googleMapsApiKey = "AIzaSyAZtVLp8EY3PBAPo_XZMDl1D4Y1HHAtYpg";
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
 
   // Debug logging
@@ -74,7 +76,7 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
       <div className="bg-red-100 h-36 rounded-xl flex items-center justify-center text-red-600 p-4">
         <div className="text-center">
           <p className="font-semibold">Map failed to load</p>
-          <p className="text-sm mt-1">Check API key and domain restrictions</p>
+          <p className="text-sm mt-1">Something went wrong. We'll try to fix this soon!</p>
         </div>
       </div>
     );
@@ -102,6 +104,10 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
         mapContainerStyle={{ width: "100%", height: "100%" }}
         zoom={12}
         center={{ lat: centerLat, lng: centerLng }}
+        options={{
+          styles: mapStyle,
+          disableDefaultUI: true,
+        }}
       >
         {/* Show optimized route with custom styling */}
         {directionsResult && (
@@ -110,9 +116,8 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
             options={{
               suppressMarkers: false, // Show default Google Maps markers
               polylineOptions: {
-                strokeColor: "#4285F4", // Google's default blue
-                strokeWeight: 6,
-                strokeOpacity: 0.8,
+                strokeColor: "#007aff", // Apple-style blue
+                strokeWeight: 5,
               },
             }}
           />
