@@ -260,15 +260,7 @@ export const IntelligentRecommendation = ({
 
               {/* Continue with recommended store button */}
               <div className="flex justify-between items-center pt-3 border-t border-blue-100">
-                <div className="flex items-center gap-2">
-                  <AIChatDialog 
-                    recommendation={recommendation}
-                    storeTotals={storeTotals}
-                    shoppingType={shoppingType}
-                  />
-                </div>
-                
-                {otherLocations.length > 0 && (
+                {otherLocations.length > 0 ? (
                   <StoreLocationPicker
                       locations={otherLocations}
                       onSelectLocation={handleLocationSelect}
@@ -279,7 +271,13 @@ export const IntelligentRecommendation = ({
                           </Button>
                       }
                   />
-                )}
+                ) : <div />}
+                
+                <AIChatDialog 
+                  recommendation={recommendation}
+                  storeTotals={storeTotals}
+                  shoppingType={shoppingType}
+                />
               </div>
             </div>
           </div>
