@@ -1,49 +1,86 @@
-import { GoogleMap, DirectionsRenderer, useLoadScript } from "@react-google-maps/api";
-import { useState, useEffect } from "react";
+
+import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF } from "@react-google-maps/api";
+import { useState, useEffect, useMemo } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { Home, Store } from "lucide-react";
 import mapStyle from "./mapStyle.json";
 
 type PickupMapProps = {
-  start: [number, number] | null, // [lat, lng] - work location
+  start: [number, number] | null, // [lat, lng] - work or home location
   dest: [number, number] | null,  // [lat, lng] - home location
   storeLocation?: [number, number] | null; // [lat, lng] - store location
   storeName?: string;
 };
 
-// Move libraries array outside component to prevent reloading
+// Helper to create a data URI from a React component (for map markers)
+const createLucideIcon = (icon: React.ReactElement) => {
+  const svg = renderToStaticMarkup(icon);
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+};
+
+// Returns a dynamic store icon URL
+const getStoreIconUrl = (storeName?: string) => {
+  // Use a custom Target logo if the store is Target
+  if (storeName?.toLowerCase().includes('target')) {
+    const targetIconSvg = `
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="24" cy="24" r="22" fill="#cc0000" stroke="white" stroke-width="2"/>
+        <circle cx="24" cy="24" r="14" fill="white"/>
+        <circle cx="24" cy="24" r="7" fill="#cc0000"/>
+      </svg>
+    `;
+    return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(targetIconSvg)}`;
+  }
+  // Fallback to a generic store icon for other stores
+  return createLucideIcon(<Store size={40} color="#ff3b30" strokeWidth={2} />);
+};
+
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
 export default function PickupMap({ start, dest, storeLocation, storeName }: PickupMapProps) {
-  // Using the new public Google Maps API key as requested.
-  // This key is typically restricted by domain on the Google Cloud dashboard for security.
   const googleMapsApiKey = "AIzaSyAZtVLp8EY3PBAPo_XZMDl1D4Y1HHAtYpg";
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
 
-  // Debug logging
   console.log("Google Maps API Key:", googleMapsApiKey ? "Present" : "Missing");
-  console.log("Work coords:", start);
+  console.log("Work/Start coords:", start);
   console.log("Home coords:", dest);
   console.log("Store coords:", storeLocation);
 
-  // All hooks MUST be called unconditionally, before any early returns
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey,
     libraries: GOOGLE_MAPS_LIBRARIES,
   });
 
-  // Log any load errors
+  const isSameStartDest = useMemo(() => 
+    start && dest && start[0] === dest[0] && start[1] === dest[1],
+    [start, dest]
+  );
+
+  // Memoize icons to prevent re-creating them on each render
+  const startIconUrl = useMemo(() => {
+    if (isSameStartDest) {
+      // User's single address (home)
+      return createLucideIcon(<Home size={40} color="#007aff" strokeWidth={2} />);
+    }
+    // Starting location (e.g., work), represented by a building icon
+    return createLucideIcon(<Store size={40} color="#5856d6" strokeWidth={2} />);
+  }, [isSameStartDest]);
+
+  const destIconUrl = useMemo(() => createLucideIcon(<Home size={40} color="#007aff" strokeWidth={2} />), []);
+  const storeIconUrl = useMemo(() => getStoreIconUrl(storeName), [storeName]);
+
+
   useEffect(() => {
     if (loadError) {
       console.error("Google Maps load error:", loadError);
     }
   }, [loadError]);
 
-  // Calculate directions when start/dest/store change
   useEffect(() => {
     if (isLoaded && start && dest && storeLocation && window.google) {
       console.log("Attempting to calculate multi-stop route...");
       const directionsService = new window.google.maps.DirectionsService();
       
-      // Create route: Work → Store → Home
       directionsService.route(
         {
           origin: { lat: start[0], lng: start[1] },
@@ -70,7 +107,6 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     }
   }, [isLoaded, start, dest, storeLocation]);
 
-  // Handle load error
   if (loadError) {
     return (
       <div className="bg-red-100 h-36 rounded-xl flex items-center justify-center text-red-600 p-4">
@@ -82,7 +118,6 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     );
   }
 
-  // Now it's safe to conditionally render
   if (!isLoaded || !start || !dest || !storeLocation) {
     return (
       <div className="bg-gray-100 h-36 rounded-xl flex items-center justify-center text-gray-400">
@@ -91,7 +126,6 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     );
   }
 
-  // Calculate center point for all three locations
   const centerLat = (start[0] + dest[0] + storeLocation[0]) / 3;
   const centerLng = (start[1] + dest[1] + storeLocation[1]) / 3;
 
@@ -102,24 +136,54 @@ export default function PickupMap({ start, dest, storeLocation, storeName }: Pic
     >
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
-        zoom={12}
+        zoom={11} // Adjusted zoom for a better overview
         center={{ lat: centerLat, lng: centerLng }}
         options={{
           styles: mapStyle,
           disableDefaultUI: true,
         }}
       >
-        {/* Show optimized route with custom styling */}
         {directionsResult && (
           <DirectionsRenderer
             directions={directionsResult}
             options={{
-              suppressMarkers: false, // Show default Google Maps markers
+              suppressMarkers: true, // Hide default markers to use custom ones
               polylineOptions: {
                 strokeColor: "#007aff", // Apple-style blue
                 strokeWeight: 5,
               },
             }}
+          />
+        )}
+
+        {/* Custom Markers */}
+        {start && window.google && (
+          <MarkerF 
+            position={{ lat: start[0], lng: start[1] }} 
+            icon={{ 
+              url: startIconUrl,
+              scaledSize: new window.google.maps.Size(48, 48)
+            }} 
+          />
+        )}
+        
+        {dest && !isSameStartDest && window.google && (
+          <MarkerF 
+            position={{ lat: dest[0], lng: dest[1] }} 
+            icon={{ 
+              url: destIconUrl,
+              scaledSize: new window.google.maps.Size(48, 48)
+            }} 
+          />
+        )}
+        
+        {storeLocation && window.google && (
+          <MarkerF 
+            position={{ lat: storeLocation[0], lng: storeLocation[1] }} 
+            icon={{ 
+              url: storeIconUrl,
+              scaledSize: new window.google.maps.Size(48, 48)
+            }} 
           />
         )}
       </GoogleMap>
