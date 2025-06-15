@@ -1,7 +1,10 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, MapPin, Clock, ShoppingBag } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -29,6 +32,20 @@ const storeColors = {
   'Wegmans': '#ff6900'
 };
 
+// Fallback addresses for each store in Austin area
+const fallbackAddresses = {
+  'H-E-B': '1000 E 41st St, Austin, TX 78751',
+  'Walmart': '2700 S Lamar Blvd, Austin, TX 78704',
+  'Target': '1000 Research Blvd, Austin, TX 78759',
+  'Kroger': '9070 Research Blvd, Austin, TX 78758',
+  'Costco': '4301 W William Cannon Dr, Austin, TX 78749',
+  'Whole Foods': '525 N Lamar Blvd, Austin, TX 78703',
+  'Trader Joes': '2525 W Anderson Ln, Austin, TX 78757',
+  'Safeway': '1000 E 12th St, Austin, TX 78702',
+  'Publix': '2200 Ranch Road 620 S, Austin, TX 78734',
+  'Wegmans': '11066 Pecan Park Blvd, Austin, TX 78750'
+};
+
 export default function OrderSummary() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -36,14 +53,48 @@ export default function OrderSummary() {
   
   const shoppingType: ShoppingType = state?.shoppingType || 'delivery';
   const storeName = state?.storeName || 'H-E-B';
-  const storeAddress = state?.storeAddress || '1234 Main St, Austin, TX';
   const deliveryAddress = state?.deliveryAddress || 'Your Address';
   const pickupTime = state?.pickupTime || 'ASAP';
   const orderTotal = state?.orderTotal || 45.67;
   const itemCount = state?.itemCount || 8;
   
+  const [storeAddress, setStoreAddress] = useState(state?.storeAddress || '');
+  
   const storeColor = storeColors[storeName as keyof typeof storeColors] || '#e31837';
   const storeSite = storeName.toLowerCase().replace(/[^a-z]/g, '') + '.com';
+
+  // Fetch actual store address from database
+  useEffect(() => {
+    async function fetchStoreAddress() {
+      if (shoppingType === 'delivery') return; // No store address needed for delivery
+      
+      try {
+        const { data: storeData, error } = await supabase
+          .from('store_locations')
+          .select('address_line1, city, state, zip_code')
+          .ilike('name', `%${storeName}%`)
+          .not('address_line1', 'is', null)
+          .limit(1)
+          .single();
+
+        if (error || !storeData) {
+          console.log('No store found in database, using fallback address');
+          setStoreAddress(fallbackAddresses[storeName as keyof typeof fallbackAddresses] || '1234 Main St, Austin, TX');
+          return;
+        }
+
+        // Build full address from database data
+        const fullAddress = `${storeData.address_line1}, ${storeData.city}, ${storeData.state} ${storeData.zip_code}`;
+        setStoreAddress(fullAddress);
+        console.log('Found store address in database:', fullAddress);
+      } catch (error) {
+        console.error('Error fetching store address:', error);
+        setStoreAddress(fallbackAddresses[storeName as keyof typeof fallbackAddresses] || '1234 Main St, Austin, TX');
+      }
+    }
+    
+    fetchStoreAddress();
+  }, [storeName, shoppingType]);
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">

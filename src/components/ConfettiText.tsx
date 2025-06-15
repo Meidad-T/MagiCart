@@ -27,19 +27,19 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
 
     // Get the container dimensions for relative positioning
     const rect = textRef.current.getBoundingClientRect();
-    const containerWidth = rect.width * 2; // Double the width for spreading
+    const containerWidth = rect.width;
     const containerHeight = rect.height;
 
-    // Create confetti particles positioned to span twice the container width
+    // Create confetti particles positioned within the container width
     const newParticles = Array.from({ length: 24 }, (_, i) => ({
       id: i,
-      x: (Math.random() * containerWidth) - (containerWidth * 0.25), // Spread from -25% to 175% of container width
+      x: Math.random() * containerWidth, // Spread within container width only
       y: 0, // Start at the very top of the container
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
       velocityX: (Math.random() - 0.5) * 3,
       velocityY: Math.random() * 2 + 1,
-      size: Math.random() * 12 + 8 // Increased from 8 + 6 to 12 + 8
+      size: Math.random() * 6 + 4 // Reduced from 12 + 8 to 6 + 4
     }));
 
     setParticles(newParticles);
@@ -47,7 +47,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
     // Remove particles after animation
     const timer = setTimeout(() => {
       setParticles([]);
-    }, 4000); // Slightly longer duration
+    }, 2000); // Reduced from 4000 to 2000
 
     return () => clearTimeout(timer);
   }, [trigger]);
@@ -59,8 +59,8 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
         <div className="absolute pointer-events-none overflow-visible" 
              style={{ 
                top: 0, 
-               left: '-50%', 
-               width: '200%', 
+               left: 0, 
+               width: '100%', 
                height: '200%',
                zIndex: 9999 
              }}>
@@ -75,7 +75,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
                 height: `${particle.size}px`,
                 backgroundColor: particle.color,
                 transform: `rotate(${particle.rotation}deg)`,
-                animation: `confetti-fall 4s ease-out forwards`,
+                animation: `confetti-fall 2s ease-out forwards`, // Reduced from 4s to 2s
                 animationDelay: `${Math.random() * 0.3}s`,
                 borderRadius: '2px',
                 willChange: 'transform, opacity'
@@ -94,7 +94,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
             opacity: 1;
           }
           100% {
-            transform: translateY(220px) rotate(360deg) scale(0.8);
+            transform: translateY(110px) rotate(360deg) scale(0.8); /* Reduced from 220px to 110px */
             opacity: 0;
           }
         }
