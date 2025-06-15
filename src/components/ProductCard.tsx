@@ -1,3 +1,4 @@
+
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -122,7 +123,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             </div>
           )}
           {/* Shadow overlay for readability */}
-          <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/25 to-transparent pointer-events-none rounded-t-lg" />
+          <div className="absolute top-0 inset-x-0 h-20 bg-gradient-to-b from-black/40 to-transparent pointer-events-none rounded-t-lg" />
           <Badge 
             variant="secondary" 
             className="absolute top-2 left-2 bg-white/90 text-gray-700 backdrop-blur-sm"
