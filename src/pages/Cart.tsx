@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -112,9 +111,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   const healthScore = calculateCartHealthScore();
 
-  // Trigger confetti when health score reaches 100
+  // Trigger confetti when health score reaches excellent (85+)
   useEffect(() => {
-    if (healthScore === 100 && previousHealthScore !== 100) {
+    if (healthScore >= 85 && previousHealthScore < 85) {
       setConfettiTrigger(true);
       // Reset the trigger after a short delay
       setTimeout(() => setConfettiTrigger(false), 100);
