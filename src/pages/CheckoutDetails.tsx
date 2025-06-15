@@ -56,7 +56,7 @@ export default function CheckoutDetails() {
     }
   }
   // Save session data on each update
-  function saveSessionData(updates: Record<string, string>) {
+  function saveSessionData(updates: Record<string, any>) {
     const prev = loadSessionData();
     const next = { ...prev, ...updates };
     sessionStorage.setItem(getSessionKey(), JSON.stringify(next));
@@ -339,7 +339,11 @@ export default function CheckoutDetails() {
                 id="delivery-adr"
                 placeholder="Enter your delivery address"
                 value={deliveryAddress}
-                onChange={e => setDeliveryAddress(e.target.value)}
+                onChange={e => {
+                  const value = e.target.value;
+                  setDeliveryAddress(value);
+                  saveSessionData({ deliveryAddress: value });
+                }}
               />
               <div className="pt-4">
                 <Label htmlFor="delivery-notes">Delivery Notes (optional)</Label>
@@ -347,7 +351,11 @@ export default function CheckoutDetails() {
                   id="delivery-notes"
                   placeholder="Gate code, dropoff instructions, etc."
                   value={notes}
-                  onChange={e => setNotes(e.target.value)}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setNotes(value);
+                    saveSessionData({ notes: value });
+                  }}
                 />
               </div>
             </>
@@ -367,7 +375,10 @@ export default function CheckoutDetails() {
                   <Switch
                     id="route-optimization"
                     checked={routeOptimization}
-                    onCheckedChange={setRouteOptimization}
+                    onCheckedChange={checked => {
+                      setRouteOptimization(checked);
+                      saveSessionData({ routeOptimization: checked });
+                    }}
                   />
                 </div>
               </div>
@@ -383,23 +394,39 @@ export default function CheckoutDetails() {
                       id="single-street"
                       placeholder="Street Address"
                       value={singleStreet}
-                      onChange={e => setSingleStreet(e.target.value)}
+                      onChange={e => {
+                        const value = e.target.value;
+                        setSingleStreet(value);
+                        saveSessionData({ singleStreet: value });
+                      }}
                     />
                     <Input
                       placeholder="City"
                       value={singleCity}
-                      onChange={e => setSingleCity(e.target.value)}
+                      onChange={e => {
+                        const value = e.target.value;
+                        setSingleCity(value);
+                        saveSessionData({ singleCity: value });
+                      }}
                     />
                     <div className="grid grid-cols-2 gap-4">
                       <Input
                         placeholder="ZIP Code"
                         value={singleZip}
-                        onChange={e => setSingleZip(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setSingleZip(value);
+                          saveSessionData({ singleZip: value });
+                        }}
                       />
                       <Input
                         placeholder="State"
                         value={singleState}
-                        onChange={e => setSingleState(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setSingleState(value);
+                          saveSessionData({ singleState: value });
+                        }}
                       />
                     </div>
                   </div>
@@ -417,24 +444,40 @@ export default function CheckoutDetails() {
                         id="work-street"
                         placeholder="Starting Location Street Address"
                         value={workStreet}
-                        onChange={e => setWorkStreet(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setWorkStreet(value);
+                          saveSessionData({ workStreet: value });
+                        }}
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <Input
                           placeholder="City"
                           value={workCity}
-                          onChange={e => setWorkCity(e.target.value)}
+                          onChange={e => {
+                            const value = e.target.value;
+                            setWorkCity(value);
+                            saveSessionData({ workCity: value });
+                          }}
                         />
                         <Input
                           placeholder="State"
                           value={workState}
-                          onChange={e => setWorkState(e.target.value)}
+                          onChange={e => {
+                            const value = e.target.value;
+                            setWorkState(value);
+                            saveSessionData({ workState: value });
+                          }}
                         />
                       </div>
                       <Input
                         placeholder="ZIP Code"
                         value={workZip}
-                        onChange={e => setWorkZip(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setWorkZip(value);
+                          saveSessionData({ workZip: value });
+                        }}
                       />
                     </div>
                   </div>
@@ -450,24 +493,40 @@ export default function CheckoutDetails() {
                         id="home-street"
                         placeholder="Home Street Address"
                         value={homeStreet}
-                        onChange={e => setHomeStreet(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setHomeStreet(value);
+                          saveSessionData({ homeStreet: value });
+                        }}
                       />
                       <div className="grid grid-cols-2 gap-4">
                         <Input
                           placeholder="City"
                           value={homeCity}
-                          onChange={e => setHomeCity(e.target.value)}
+                          onChange={e => {
+                            const value = e.target.value;
+                            setHomeCity(value);
+                            saveSessionData({ homeCity: value });
+                          }}
                         />
                         <Input
                           placeholder="State"
                           value={homeState}
-                          onChange={e => setHomeState(e.target.value)}
+                          onChange={e => {
+                            const value = e.target.value;
+                            setHomeState(value);
+                            saveSessionData({ homeState: value });
+                          }}
                         />
                       </div>
                       <Input
                         placeholder="ZIP Code"
                         value={homeZip}
-                        onChange={e => setHomeZip(e.target.value)}
+                        onChange={e => {
+                          const value = e.target.value;
+                          setHomeZip(value);
+                          saveSessionData({ homeZip: value });
+                        }}
                       />
                     </div>
                   </div>
@@ -546,7 +605,11 @@ export default function CheckoutDetails() {
                   id="pickup-time"
                   type="time"
                   value={pickupTime}
-                  onChange={e => setPickupTime(e.target.value)}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setPickupTime(value);
+                    saveSessionData({ pickupTime: value });
+                  }}
                 />
               </div>
               
@@ -565,7 +628,11 @@ export default function CheckoutDetails() {
                   id="pickup-notes"
                   placeholder="Anything to help the store staff?"
                   value={notes}
-                  onChange={e => setNotes(e.target.value)}
+                  onChange={e => {
+                    const value = e.target.value;
+                    setNotes(value);
+                    saveSessionData({ notes: value });
+                  }}
                 />
               </div>
               
