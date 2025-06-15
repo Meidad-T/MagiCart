@@ -9,6 +9,7 @@ import { Switch } from "@/components/ui/switch";
 import PickupMap from "@/components/PickupMap";
 import { supabase } from "@/integrations/supabase/client";
 import StoreHoursAlert, { validateStoreHours } from "@/components/StoreHoursAlert";
+import { getDistance } from "@/utils/geo";
 
 type ShoppingType = 'pickup' | 'delivery' | 'instore';
 
@@ -143,45 +144,70 @@ export default function CheckoutDetails() {
     geocodeHomeAddress();
   }, [homeStreet, homeCity, homeState, homeZip, shoppingType]);
 
-  // Fetch actual recommended store location from database
+  // Fetch closest recommended store location from database
   useEffect(() => {
+    const userLoc = routeOptimization ? workLoc : singleLoc;
+
+    const getChainName = (storeName: string): string => {
+      const upperCaseName = storeName.toUpperCase();
+      if (upperCaseName.includes("H-E-B") || upperCaseName.includes("HEB")) return "HEB";
+      if (upperCaseName.includes("WALMART")) return "WALMART";
+      if (upperCaseName.includes("TARGET")) return "TARGET";
+      if (upperCaseName.includes("KROGER")) return "KROGER";
+      return upperCaseName;
+    };
+
     async function fetchRecommendedStore() {
-      if (shoppingType === "pickup" || shoppingType === "instore") {
+      if ((shoppingType === "pickup" || shoppingType === "instore") && userLoc) {
+        setStoreLoc(null); // Reset store location while searching
         try {
-          // Get store location from database based on the recommended store name
-          const { data: storeData, error } = await supabase
+          const chainName = getChainName(cheapestStore);
+          console.log(`Searching for closest store for chain: ${chainName} near ${userLoc}`);
+
+          const { data: allStores, error } = await supabase
             .from('store_locations')
             .select('latitude, longitude, name, address_line1, city, state')
-            .ilike('name', `%${cheapestStore}%`)
+            .eq('chain', chainName)
             .not('latitude', 'is', null)
-            .not('longitude', 'is', null)
-            .limit(1)
-            .single();
-
+            .not('longitude', 'is', null);
+          
           if (error) {
-            console.error('Error fetching store location:', error);
-            // Fallback to Austin central location if store not found
-            setStoreLoc([30.2672, -97.7431]);
+            console.error('Error fetching store locations:', error);
             return;
           }
 
-          if (storeData && storeData.latitude && storeData.longitude) {
-            setStoreLoc([storeData.latitude, storeData.longitude]);
-            setActualStoreName(storeData.name);
-            console.log('Found recommended store:', storeData.name, 'at', [storeData.latitude, storeData.longitude]);
+          if (allStores && allStores.length > 0) {
+            const userLat = userLoc[0];
+            const userLon = userLoc[1];
+
+            let closestStore: typeof allStores[0] | null = null;
+            let minDistance = Infinity;
+
+            for (const store of allStores) {
+              if (store.latitude && store.longitude) {
+                const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
+                if (distance < minDistance) {
+                  minDistance = distance;
+                  closestStore = store;
+                }
+              }
+            }
+
+            if (closestStore && closestStore.latitude && closestStore.longitude) {
+              setStoreLoc([closestStore.latitude, closestStore.longitude]);
+              setActualStoreName(closestStore.name);
+              console.log('Found closest store:', closestStore.name, 'at', [closestStore.latitude, closestStore.longitude], 'distance:', minDistance.toFixed(2), 'miles');
+            }
           } else {
-            // Fallback to Austin central location
-            setStoreLoc([30.2672, -97.7431]);
+            console.warn(`No stores found for chain: ${chainName}.`);
           }
         } catch (error) {
           console.error('Error in fetchRecommendedStore:', error);
-          // Fallback to Austin central location
-          setStoreLoc([30.2672, -97.7431]);
         }
       }
     }
     fetchRecommendedStore();
-  }, [shoppingType, cheapestStore]);
+  }, [shoppingType, cheapestStore, workLoc, singleLoc, routeOptimization]);
 
   const storeHoursValidation = validateStoreHours(actualStoreName, pickupTime);
 
