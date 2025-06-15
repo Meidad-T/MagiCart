@@ -1,3 +1,4 @@
+
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
 import HeroBanner from "@/components/HeroBanner";
 import { useState } from "react";
+import { HomeAIChatDialog } from "@/components/HomeAIChatDialog";
 
 interface IndexProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -21,6 +23,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [showToast, setShowToast] = useState(false);
+  const [healthChatOpen, setHealthChatOpen] = useState(false);
 
   const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -65,9 +68,8 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
     }
   };
 
-  const handleHealthRecommendationsClick = () => {
-    navigate('/health-recommendations');
-  };
+  // Remove unused function and navigation for health page.
+  // Health chat is now in-dialog instead.
 
   if (productsLoading) {
     return (
@@ -135,12 +137,19 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
+              {/* Button now opens green health AI chat dialog */}
               <Button 
-                onClick={handleHealthRecommendationsClick}
+                onClick={() => setHealthChatOpen(true)}
                 className="bg-green-600 hover:bg-green-700 text-white whitespace-normal text-center leading-tight"
               >
                 Get AI Health Recommendations
               </Button>
+              <HomeAIChatDialog 
+                cart={cart}
+                // Pass the open and setOpen props to control dialog from the button
+                isOpen={healthChatOpen}
+                setIsOpen={setHealthChatOpen}
+              />
             </div>
           </div>
         </div>
@@ -195,3 +204,4 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 };
 
 export default Index;
+

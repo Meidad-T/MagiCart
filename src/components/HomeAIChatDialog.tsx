@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -17,10 +16,15 @@ interface Message {
 
 interface HomeAIChatDialogProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
+  isOpen?: boolean;
+  setIsOpen?: (open: boolean) => void;
 }
 
-export const HomeAIChatDialog = ({ cart }: HomeAIChatDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const HomeAIChatDialog = ({ cart, isOpen, setIsOpen }: HomeAIChatDialogProps) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const dialogOpen = isOpen !== undefined ? isOpen : internalOpen;
+  const handleOpenChange = setIsOpen ? setIsOpen : setInternalOpen;
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -155,16 +159,17 @@ export const HomeAIChatDialog = ({ cart }: HomeAIChatDialogProps) => {
   const isRateLimited = rateLimitEndTime !== null && countdown > 0;
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="ml-auto bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:from-green-100 hover:to-emerald-100 transition-all duration-200">
-          <Sparkles className="h-4 w-4 mr-2 text-green-600" />
-          <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-medium">
-            Chat with AI
-          </span>
-        </Button>
-      </DialogTrigger>
-      
+    <Dialog open={dialogOpen} onOpenChange={handleOpenChange}>
+      {!isOpen && (
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" className="ml-auto bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:from-green-100 hover:to-emerald-100 transition-all duration-200">
+            <Sparkles className="h-4 w-4 mr-2 text-green-600" />
+            <span className="bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent font-medium">
+              Chat with AI
+            </span>
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="max-w-md h-[600px] flex flex-col p-0 bg-gradient-to-br from-slate-50 to-green-50/50">
         <DialogHeader className="px-6 py-4 border-b bg-white/80 backdrop-blur-sm">
           <DialogTitle className="flex items-center text-lg">
