@@ -187,6 +187,20 @@ export default function CheckoutDetails() {
           }
 
           if (data && data.stores && data.stores.length > 0) {
+            // Fetch store logos to match with locations
+            const { data: storesWithLogos } = await supabase
+              .from('stores')
+              .select('name, logo_url');
+
+            const logoMap = new Map<string, string | null>();
+            if (storesWithLogos) {
+              for (const s of storesWithLogos) {
+                if (s.name && s.logo_url) {
+                  logoMap.set(s.name, s.logo_url);
+                }
+              }
+            }
+
             const userLat = userLoc[0];
             const userLon = userLoc[1];
 
@@ -194,7 +208,8 @@ export default function CheckoutDetails() {
               .map((store: StoreLocation) => {
                 if (store.latitude && store.longitude) {
                   const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
-                  return { ...store, distance };
+                  const logo_url = logoMap.get(store.chain) || undefined;
+                  return { ...store, distance, logo_url };
                 }
                 return null;
               })
