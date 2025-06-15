@@ -442,6 +442,7 @@ export default function CheckoutDetails() {
                     <div className="space-y-4">
                       <StoreRecommendation
                         store={selectedStore}
+                        onClick={() => handleSelectStore(selectedStore)}
                         onModify={() => {
                           setShowAllStores(false); // Reset 'show all' view
                           setIsChoosingAlternateStore(true);
