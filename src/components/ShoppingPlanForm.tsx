@@ -6,37 +6,75 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { toast } from "@/hooks/use-toast";
+import { CheckCircle } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
-import { ShoppingPlan } from "@/types/database";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
+
+interface OrderData {
+  storeName: string;
+  storeAddress: string;
+  shoppingType: 'pickup' | 'delivery' | 'instore';
+  deliveryAddress?: string;
+  pickupTime?: string;
+  orderTotal: number;
+  itemCount: number;
+}
 
 interface ShoppingPlanFormProps {
-  orderData: {
-    storeName: string;
-    storeAddress?: string;
-    shoppingType: 'pickup' | 'delivery' | 'instore';
-    deliveryAddress?: string;
-    pickupTime?: string;
-    orderTotal: number;
-    itemCount: number;
-  };
-  onPlanCreated?: (plan: any) => void; // Changed from ShoppingPlan to any to handle Supabase response
+  orderData: OrderData;
+  onPlanCreated?: (plan: any) => void;
 }
 
 export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingPlanFormProps) {
-  const [showForm, setShowForm] = useState(false);
+  const { createPlan } = useShoppingPlans();
+  const { user } = useAuth();
+  const [savePlan, setSavePlan] = useState(false);
   const [planName, setPlanName] = useState("");
   const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>('none');
-  const [customDays, setCustomDays] = useState<number>(30);
+  const [customDays, setCustomDays] = useState<string>("30");
   const [loading, setLoading] = useState(false);
-  const { createPlan } = useShoppingPlans();
+  const [planSaved, setPlanSaved] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!planName.trim()) {
+  // Mock cart items - in a real app, this would come from the actual cart
+  const mockCartItems = [
+    {
+      id: '1',
+      name: 'Organic Bananas',
+      price: 2.99,
+      quantity: 2,
+      image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
+    },
+    {
+      id: '2', 
+      name: 'Whole Milk (1 Gallon)',
+      price: 3.49,
+      quantity: 1,
+      image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
+    },
+    {
+      id: '3',
+      name: 'Bread - Whole Wheat',
+      price: 2.79,
+      quantity: 1,
+      image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
+    }
+  ];
+
+  const handleSavePlan = async () => {
+    if (!savePlan || !planName.trim()) {
       toast({
         title: "Plan name required",
         description: "Please enter a name for your shopping plan",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!user) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save shopping plans",
         variant: "destructive",
       });
       return;
@@ -46,36 +84,34 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
     try {
       const planData = {
         name: planName.trim(),
-        items: [], // Empty array for now - in a real app, this would contain the cart items
+        items: mockCartItems,
         frequency,
-        custom_frequency_days: frequency === 'custom' ? customDays : null,
+        custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         store_name: orderData.storeName,
         store_address: orderData.storeAddress,
         shopping_type: orderData.shoppingType,
-        delivery_address: orderData.deliveryAddress,
-        pickup_time: orderData.pickupTime,
+        delivery_address: orderData.deliveryAddress || null,
+        pickup_time: orderData.pickupTime || null,
         estimated_total: orderData.orderTotal,
         item_count: orderData.itemCount,
         is_active: true,
       };
 
-      const createdPlan = await createPlan(planData);
+      const result = await createPlan(planData);
       
+      setPlanSaved(true);
       toast({
-        title: "Shopping plan created!",
+        title: "Plan saved!",
         description: `Your plan "${planName}" has been saved successfully.`,
       });
 
-      // Reset form
-      setPlanName("");
-      setFrequency('none');
-      setCustomDays(30);
-      setShowForm(false);
-
-      onPlanCreated?.(createdPlan);
+      if (onPlanCreated) {
+        onPlanCreated(result);
+      }
     } catch (error) {
+      console.error('Error saving plan:', error);
       toast({
-        title: "Error creating plan",
+        title: "Error saving plan",
         description: "There was an error saving your shopping plan. Please try again.",
         variant: "destructive",
       });
@@ -84,36 +120,57 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
     }
   };
 
+  const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string or numbers only
+    if (value === '' || /^\d+$/.test(value)) {
+      setCustomDays(value);
+    }
+  };
+
+  if (planSaved) {
+    return (
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-blue-600">
+            <CheckCircle className="h-6 w-6" />
+            <div>
+              <p className="font-medium">Plan Saved Successfully!</p>
+              <p className="text-sm text-blue-500">Your shopping plan "{planName}" has been saved and can be found in your Shopping Plans.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <Card className="mt-6">
+    <Card className="border-blue-200">
       <CardHeader>
+        <CardTitle className="text-lg">Save as Shopping Plan</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
         <div className="flex items-center space-x-2">
           <Checkbox
             id="save-plan"
-            checked={showForm}
-            onCheckedChange={(checked) => setShowForm(!!checked)}
+            checked={savePlan}
+            onCheckedChange={(checked) => setSavePlan(!!checked)}
           />
-          <Label htmlFor="save-plan" className="text-base font-medium">
-            Save as Shopping Plan
+          <Label htmlFor="save-plan" className="text-sm font-medium">
+            Save this order as a recurring shopping plan
           </Label>
         </div>
-        <p className="text-sm text-gray-600">
-          Create a recurring shopping plan to get notified when it's time to reorder
-        </p>
-      </CardHeader>
 
-      {showForm && (
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+        {savePlan && (
+          <div className="space-y-4 pl-6 border-l-2 border-blue-100">
             <div>
               <Label htmlFor="plan-name">Plan Name</Label>
               <Input
                 id="plan-name"
                 type="text"
-                placeholder="e.g., Weekly Groceries"
                 value={planName}
                 onChange={(e) => setPlanName(e.target.value)}
-                required
+                placeholder="e.g., Weekly Groceries"
               />
             </div>
 
@@ -141,29 +198,25 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
                 <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
                 <Input
                   id="custom-days"
-                  type="number"
-                  min="1"
+                  type="text"
+                  inputMode="numeric"
                   value={customDays}
-                  onChange={(e) => setCustomDays(parseInt(e.target.value) || 30)}
+                  onChange={handleCustomDaysChange}
+                  placeholder="30"
                 />
               </div>
             )}
 
-            <div className="flex gap-2">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Saving..." : "Save Plan"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowForm(false)}
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      )}
+            <Button 
+              onClick={handleSavePlan}
+              disabled={loading || !planName.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700"
+            >
+              {loading ? "Saving..." : "Save Plan"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
     </Card>
   );
 }

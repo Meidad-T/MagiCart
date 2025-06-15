@@ -17,15 +17,19 @@ export const useShoppingPlans = () => {
     }
 
     try {
+      console.log('Fetching shopping plans for user:', user.id);
       const { data, error } = await supabase
         .from('shopping_plans')
         .select('*')
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching shopping plans:', error);
         return;
       }
+
+      console.log('Fetched plans:', data);
 
       // Transform the data to match our interface
       const transformedData = (data || []).map(plan => ({
@@ -45,6 +49,7 @@ export const useShoppingPlans = () => {
     if (!user) throw new Error('User must be authenticated');
 
     try {
+      console.log('Creating plan with data:', planData);
       const { data, error } = await supabase
         .from('shopping_plans')
         .insert([{
@@ -59,6 +64,7 @@ export const useShoppingPlans = () => {
         throw error;
       }
 
+      console.log('Plan created successfully:', data);
       await fetchPlans(); // Refresh the plans list
       return data;
     } catch (error) {

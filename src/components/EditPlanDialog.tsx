@@ -29,7 +29,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const { updatePlan } = useShoppingPlans();
   const [planName, setPlanName] = useState(plan.name);
   const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>(plan.frequency);
-  const [customDays, setCustomDays] = useState<number>(plan.custom_frequency_days || 30);
+  const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
   // Mock cart items - in a real app, this would come from the plan.items
@@ -75,6 +75,14 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
     return cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   };
 
+  const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string or numbers only
+    if (value === '' || /^\d+$/.test(value)) {
+      setCustomDays(value);
+    }
+  };
+
   const handleSave = async () => {
     if (!planName.trim()) {
       toast({
@@ -90,7 +98,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
       const updates = {
         name: planName.trim(),
         frequency,
-        custom_frequency_days: frequency === 'custom' ? customDays : null,
+        custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         estimated_total: calculateTotal(),
         item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
         // In a real app, you would also update the items array
@@ -230,10 +238,11 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
               <Input
                 id="custom-days"
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
                 value={customDays}
-                onChange={(e) => setCustomDays(parseInt(e.target.value) || 30)}
+                onChange={handleCustomDaysChange}
+                placeholder="30"
               />
             </div>
           )}
