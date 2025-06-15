@@ -43,7 +43,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
     });
     if (item.target_price > 0) stores.push({ 
       name: 'target', 
-      logo: 'https://gimgs2.nohat.cc/thumb/f/640/target-logo-target-corporation-logo-retail-bullseye-sales-target-logo-transparent-background-png-clipart--comhiclipartigfyx.jpg' 
+      logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKNmB5nJUsmZrzYReef02aW3lauKEKeAYAyw&s' 
     });
     if (item.kroger_price > 0) stores.push({ 
       name: 'kroger', 
