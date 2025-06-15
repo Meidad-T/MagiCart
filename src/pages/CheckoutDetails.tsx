@@ -78,6 +78,7 @@ export default function CheckoutDetails() {
   const [isFetchingStores, setIsFetchingStores] = useState(false);
   const [nearbyStores, setNearbyStores] = useState<StoreWithDistance[]>([]);
   const [selectedStore, setSelectedStore] = useState<StoreWithDistance | null>(null);
+  const [showAllStores, setShowAllStores] = useState(false);
 
   // Geocode single address (when route optimization is off)
   useEffect(() => {
@@ -163,6 +164,7 @@ export default function CheckoutDetails() {
         setStoreLoc(null); // Reset store location
         setSelectedStore(null);
         setNearbyStores([]);
+        setShowAllStores(false); // Reset on new search
         setIsFetchingStores(true);
 
         try {
@@ -420,17 +422,22 @@ export default function CheckoutDetails() {
                   ) : nearbyStores.length > 0 ? (
                     <div className="space-y-2">
                       <p className="text-sm text-gray-600">We found these stores near you. Please select one.</p>
-                      {nearbyStores.map(store => (
+                      {(showAllStores ? nearbyStores : nearbyStores.slice(0, 2)).map(store => (
                         <div 
                           key={store.id}
                           onClick={() => handleSelectStore(store)}
                           className={`p-3 border rounded-lg cursor-pointer transition-colors ${selectedStore?.id === store.id ? 'border-primary bg-primary/10' : 'border-gray-200 hover:border-gray-300'}`}
                         >
                           <div className="font-semibold">{store.name}</div>
-                          <div className="text-sm text-gray-500">{store.address_line1}, {store.city}</div>
+                          <div className="text-sm text-gray-500">{store.address_line1}{store.city ? `, ${store.city}` : ''}</div>
                           <div className="text-sm font-medium text-primary">{store.distance.toFixed(1)} miles away</div>
                         </div>
                       ))}
+                      {nearbyStores.length > 2 && !showAllStores && (
+                        <Button variant="link" className="p-0 h-auto text-blue-600" onClick={() => setShowAllStores(true)}>
+                          Show {nearbyStores.length - 2} more stores...
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500">No stores found for {cheapestStore} near the provided address. Please try a different address.</p>
