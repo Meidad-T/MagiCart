@@ -40,57 +40,75 @@ export const IntelligentRecommendation = ({
     // Only calculate recommendation if we haven't set one yet
     if (storeTotals.length === 0 || hasSetRecommendation.current) return;
 
+    const storeReviewData = {
+      'H-E-B': {
+        reviewScore: 4.5,
+        reviewReasoning: "Excellent private label products and high-quality meat department.",
+        freshness: 4.8,
+        freshnessReasoning: "Signature strength; consistently high-quality produce and meat.",
+        availability: 4.2,
+        availabilityReasoning: "Accurate in-app stock reporting, but some out-of-stocks for online orders.",
+        service: 4.3,
+        serviceReasoning: "Friendly in-store service, but digital/delivery support can be frustrating."
+      },
+      'Kroger': {
+        reviewScore: 4.1,
+        reviewReasoning: "Satisfaction guarantee on its extensive private label brands.",
+        freshness: 4.0,
+        freshnessReasoning: "Strong commitment to quality with its 'Freshness Guarantee'.",
+        availability: 4.0,
+        availabilityReasoning: "Consistent and reliable stock levels for a full-service grocer.",
+        service: 4.2,
+        serviceReasoning: "Robust customer service with 'super friendly' and helpful staff."
+      },
+      'Target': {
+        reviewScore: 4.4,
+        reviewReasoning: "Products perceived as very high quality.",
+        freshness: 4.1,
+        freshnessReasoning: "Strong brand perception for freshness, despite isolated incidents.",
+        availability: 4.5,
+        availabilityReasoning: "Excels with powerful, user-friendly tools to check real-time stock.",
+        service: 2.8,
+        serviceReasoning: "Significant service gap; frustrating online order fulfillment and unhelpful representatives."
+      },
+      "Sam's Club": {
+        reviewScore: 3.2,
+        reviewReasoning: "Good value on Member's Mark brand, but inconsistent quality.",
+        freshness: 2.5,
+        freshnessReasoning: "Frequent complaints about spoiled or moldy produce.",
+        availability: 3.0,
+        availabilityReasoning: "Limited selection due to bulk-item warehouse model.",
+        service: 1.8,
+        serviceReasoning: "Major customer frustration; lack of staff, over-reliance on self-checkout."
+      },
+      'Walmart': {
+        reviewScore: 2.1,
+        reviewReasoning: "Low quality score, particularly for groceries.",
+        freshness: 1.9,
+        freshnessReasoning: "Significant weakness; consistent issues with moldy or damaged produce.",
+        availability: 4.6,
+        availabilityReasoning: "Key strength; vast product selection and high availability.",
+        service: 2.2,
+        serviceReasoning: "Poor online order picking and unhelpful support."
+      },
+      'Aldi': {
+        reviewScore: 3.3,
+        reviewReasoning: "Value-driven, but some notable complaints about items like packaged chicken.",
+        freshness: 3.1,
+        freshnessReasoning: "Inconsistent; some customers find it excellent, others are disappointed.",
+        availability: 2.4,
+        availabilityReasoning: "Frequent out-of-stock items are a widely reported issue.",
+        service: 2.9,
+        serviceReasoning: "High-efficiency model leads to long checkout lines and lack of floor staff."
+      }
+    };
+
     // Intelligent algorithm to choose store
     const calculateStoreScore = (store: StoreTotalData, index: number) => {
       const price = parseFloat(store.total);
-      const cheapestPrice = parseFloat(storeTotals[0].total);
-      const priceRatio = price / cheapestPrice;
-
-      // Store-specific data (simulated review scores and metrics)
-      const storeMetrics = {
-        'H-E-B': {
-          reviewScore: 4.6,
-          freshness: 4.8,
-          availability: 4.5,
-          service: 4.7
-        },
-        'Walmart': {
-          reviewScore: 4.1,
-          freshness: 4.0,
-          availability: 4.6,
-          service: 4.0
-        },
-        'Target': {
-          reviewScore: 4.4,
-          freshness: 4.2,
-          availability: 4.3,
-          service: 4.5
-        },
-        'Kroger': {
-          reviewScore: 4.3,
-          freshness: 4.4,
-          availability: 4.2,
-          service: 4.3
-        },
-        'Aldi': {
-          reviewScore: 4.2,
-          freshness: 4.3,
-          availability: 3.9,
-          service: 4.1
-        },
-        "Sam's Club": {
-          reviewScore: 4.0,
-          freshness: 4.1,
-          availability: 4.4,
-          service: 3.9
-        }
-      };
-
-      const metrics = storeMetrics[store.store as keyof typeof storeMetrics] || {
-        reviewScore: 4.0,
-        freshness: 4.0,
-        availability: 4.0,
-        service: 4.0
+      
+      const metrics = storeReviewData[store.store as keyof typeof storeReviewData] || {
+        reviewScore: 4.0, freshness: 4.0, availability: 4.0, service: 4.0
       };
 
       // Complex scoring algorithm
@@ -127,8 +145,7 @@ export const IntelligentRecommendation = ({
       return {
         store,
         score,
-        metrics,
-        priceRatio
+        metrics
       };
     };
 
@@ -140,21 +157,21 @@ export const IntelligentRecommendation = ({
 
     // Generate reason based on why this store was chosen
     let reason = "";
-    const isCheapest = bestStore.store === storeTotals[0];
+    const isCheapest = bestStore.store.store === storeTotals[0].store;
     const metrics = bestStore.metrics;
 
-    if (isCheapest && bestStore.score > 85) {
-      reason = `offers the best overall value with ${metrics.reviewScore}★ reviews and competitive pricing`;
-    } else if (!isCheapest && metrics.reviewScore >= 4.4) {
-      reason = `excels in customer satisfaction (${metrics.reviewScore}★ rating) and product quality, making it worth the slight premium`;
-    } else if (shoppingType === 'pickup' && bestStore.store.store === 'H-E-B') {
-      reason = `provides free curbside pickup with excellent fresh produce quality (${metrics.freshness}★ rating)`;
-    } else if (shoppingType === 'delivery' && bestStore.store.store === 'Walmart') {
-      reason = `delivers consistently with ${metrics.availability}★ availability rating and reliable fulfillment`;
+    if (isCheapest && metrics.reviewScore > 4.0 && metrics.freshness > 4.0) {
+      reason = `offers the best overall value with excellent reviews (${metrics.reviewScore}★) and freshness (${metrics.freshness}★).`;
     } else if (metrics.freshness >= 4.5) {
-      reason = `guarantees superior freshness quality (${metrics.freshness}★) especially for produce and perishables`;
+      reason = `is highly recommended for its exceptional freshness (${metrics.freshness}★), perfect for produce lovers.`;
+    } else if (metrics.availability >= 4.5) {
+      reason = `has outstanding item availability (${metrics.availability}★), so you're likely to find everything on your list.`;
+    } else if (metrics.reviewScore >= 4.4 && !isCheapest) {
+      reason = `is worth the slight premium for its superior product quality and customer ratings (${metrics.reviewScore}★).`;
+    } else if (isCheapest) {
+        reason = `is the most affordable option, while maintaining a reasonable quality rating of ${metrics.reviewScore}★.`;
     } else {
-      reason = `provides optimal balance of price, quality (${metrics.reviewScore}★), and ${shoppingType} convenience`;
+      reason = `provides an optimal balance of price and quality, with a solid ${metrics.reviewScore}★ review score.`;
     }
 
     const priceDifference = parseFloat(bestStore.store.total) - parseFloat(storeTotals[0].total);
