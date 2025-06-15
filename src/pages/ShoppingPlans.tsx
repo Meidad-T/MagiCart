@@ -60,14 +60,20 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
         category_id: planItem.category_id || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        prices: [{
-          id: Math.random().toString(36).substr(2, 9),
-          product_id: planItem.id || '',
-          store_id: '',
-          price: planItem.price || 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        }],
+        category: {
+          id: planItem.category_id || '',
+          name: 'General',
+          created_at: new Date().toISOString()
+        },
+        prices: {
+          [plan.store_name]: planItem.price || 0
+        },
+        walmart_price: plan.store_name === 'Walmart' ? (planItem.price || 0) : 0,
+        heb_price: (plan.store_name === 'H-E-B' || plan.store_name === 'HEB') ? (planItem.price || 0) : 0,
+        aldi_price: plan.store_name === 'Aldi' ? (planItem.price || 0) : 0,
+        target_price: plan.store_name === 'Target' ? (planItem.price || 0) : 0,
+        kroger_price: plan.store_name === 'Kroger' ? (planItem.price || 0) : 0,
+        sams_price: (plan.store_name === 'Sams' || plan.store_name === "Sam's Club") ? (planItem.price || 0) : 0,
         quantity: planItem.quantity || 1
       };
 
