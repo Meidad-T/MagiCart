@@ -367,12 +367,36 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </Card>
             )}
 
+            {/* Continue with Health Recommendations Button */}
+            <Card>
+              <CardContent className="pt-6">
+                <Button
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white"
+                  onClick={() =>
+                    navigate("/health-recommendations", {
+                      state: { 
+                        shoppingType,
+                        cheapestStore: cheapestStore?.store,
+                        orderTotal: parseFloat(cheapestStore?.total || '0'),
+                        itemCount: cart.length
+                      }
+                    })
+                  }
+                >
+                  Get AI Health Recommendations
+                </Button>
+                <p className="text-sm text-gray-600 text-center mt-2">
+                  Discover personalized healthy additions
+                </p>
+              </CardContent>
+            </Card>
+
             {/* Continue with Cheapest Store Button */}
             <Card>
               <CardContent className="pt-6">
                 <Button
-                  className="w-full text-white hover:opacity-90 transition-opacity"
-                  style={{ backgroundColor: cheapestStoreColor }}
+                  variant="outline"
+                  className="w-full"
                   onClick={() =>
                     navigate("/checkout-details", {
                       state: { 
@@ -384,11 +408,11 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     })
                   }
                 >
-                  Continue with {cheapestStore?.store}
+                  Skip to Checkout
                 </Button>
                 {cheapestStore && (
                   <p className="text-sm text-gray-600 text-center mt-2">
-                    Best price: ${cheapestStore.total}
+                    Best price: ${cheapestStore.total} at {cheapestStore.store}
                   </p>
                 )}
               </CardContent>
