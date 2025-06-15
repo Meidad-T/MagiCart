@@ -69,28 +69,30 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const remainingCount = availableStores.length - 2;
 
   return (
-    <Card className="group hover:shadow-lg transition-shadow duration-200 relative overflow-hidden">
+    <Card className="group card-hover relative overflow-hidden bg-white border-0 shadow-md rounded-2xl">
       <CardContent className="p-0">
         {/* Product Image */}
-        <div className="relative overflow-hidden rounded-t-lg">
+        <div className="relative overflow-hidden rounded-t-2xl">
           <img 
             src={item.image_url}
             alt={item.name}
-            className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200"
+            className="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-700"
           />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
           <Badge 
             variant="secondary" 
-            className="absolute top-2 left-2 bg-white/90 text-gray-700 backdrop-blur-sm"
+            className="absolute top-4 left-4 bg-white/95 text-gray-700 backdrop-blur-sm border-0 shadow-md font-medium px-3 py-1 rounded-full"
           >
             {item.category.name}
           </Badge>
           
           {/* Store Availability Logos - Randomized with max 2 + "+X" */}
-          <div className="absolute top-2 right-2 flex flex-wrap gap-1 max-w-20">
+          <div className="absolute top-4 right-4 flex flex-wrap gap-2 max-w-20">
             {storesToShow.map((store, index) => (
               <div
                 key={`${store.name}-${index}`}
-                className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-white shadow-lg border-2 border-white overflow-hidden flex items-center justify-center transform hover:scale-110 transition-transform duration-200"
                 title={`Available at ${store.name.charAt(0).toUpperCase() + store.name.slice(1)}`}
               >
                 <img
@@ -102,36 +104,39 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             ))}
             {remainingCount > 0 && (
               <div 
-                className="w-6 h-6 rounded-full bg-gray-100 shadow-sm border border-gray-200 flex items-center justify-center"
+                className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 shadow-lg border-2 border-white flex items-center justify-center transform hover:scale-110 transition-transform duration-200"
                 title={`Available at ${remainingCount} more store${remainingCount !== 1 ? 's' : ''}`}
               >
-                <span className="text-xs font-medium text-gray-600">+{remainingCount}</span>
+                <span className="text-xs font-bold text-white">+{remainingCount}</span>
               </div>
             )}
           </div>
         </div>
 
         {/* Product Info */}
-        <div className="p-4">
-          <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 min-h-[2.5rem]">
+        <div className="p-6">
+          <h3 className="font-playfair font-semibold text-gray-900 mb-3 line-clamp-2 min-h-[3rem] text-lg leading-tight group-hover:text-blue-700 transition-colors duration-200">
             {item.name}
           </h3>
           
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-6">
             <div className="flex-1">
-              <p className="text-lg font-bold text-green-600">
-                From ${bestPrice.toFixed(2)}
+              <p className="text-2xl font-bold text-green-600 mb-1">
+                ${bestPrice.toFixed(2)}
               </p>
-              <p className="text-sm text-gray-500">per {item.unit}</p>
+              <p className="text-sm text-gray-500 font-medium">per {item.unit}</p>
             </div>
-            <div className="text-xs text-gray-400">
-              {availableStores.length} store{availableStores.length !== 1 ? 's' : ''}
+            <div className="text-right">
+              <p className="text-xs text-gray-400 mb-1">Available at</p>
+              <p className="text-sm font-semibold text-gray-600">
+                {availableStores.length} store{availableStores.length !== 1 ? 's' : ''}
+              </p>
             </div>
           </div>
 
           <Button
             size="sm"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-md transition-colors duration-200"
+            className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold py-3 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 group-hover:from-indigo-600 group-hover:to-indigo-700"
             onClick={() => onAddToCart(item)}
           >
             <ShoppingCart className="h-4 w-4 mr-2" />
