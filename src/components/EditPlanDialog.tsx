@@ -32,21 +32,42 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [customDays, setCustomDays] = useState<string>(String(plan.custom_frequency_days || 30));
   const [loading, setLoading] = useState(false);
   
-  // Use actual plan items from the database with their complete product information
+  // Use actual plan items with proper images from database
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    if (Array.isArray(plan.items) && plan.items.length > 0) {
+    if (Array.isArray(plan.items)) {
       return plan.items.map((item: any) => ({
         id: item.id || Math.random().toString(36).substr(2, 9),
         name: item.name || 'Unknown Item',
-        // Use the stored price for this specific store/plan
         price: item.price || 0,
         quantity: item.quantity || 1,
-        // Use the actual image_url that was saved with the product
         image_url: item.image_url || '/placeholder.svg'
       }));
     }
     
-    return [];
+    // Fallback to mock data if plan items are not properly formatted
+    return [
+      {
+        id: '1',
+        name: 'Organic Bananas',
+        price: 2.99,
+        quantity: 2,
+        image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
+      },
+      {
+        id: '2', 
+        name: 'Whole Milk (1 Gallon)',
+        price: 3.49,
+        quantity: 1,
+        image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
+      },
+      {
+        id: '3',
+        name: 'Bread - Whole Wheat',
+        price: 2.79,
+        quantity: 1,
+        image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
+      }
+    ];
   });
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
@@ -85,25 +106,13 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
     setLoading(true);
     try {
-      // Preserve the complete product information when updating
-      const updatedItems = cartItems.map(cartItem => {
-        // Find the original item to preserve all product data
-        const originalItem = plan.items.find((item: any) => item.id === cartItem.id);
-        
-        return {
-          ...originalItem, // Keep all original product data
-          quantity: cartItem.quantity, // Update only the quantity
-          price: cartItem.price // Keep the price
-        };
-      });
-
       const updates = {
         name: planName.trim(),
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         estimated_total: calculateTotal(),
         item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
-        items: updatedItems
+        items: cartItems
       };
 
       await updatePlan(plan.id, updates);

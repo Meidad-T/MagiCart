@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -45,23 +46,13 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   };
 
   const handleAddPlanToCart = (plan: ShoppingPlan) => {
+    // Convert plan items to cart format and add to cart
     const planItems = Array.isArray(plan.items) ? plan.items : [];
     
-    if (planItems.length === 0) {
-      toast({
-        title: "No items in plan",
-        description: "This plan doesn't contain any items to add to cart.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    let updatedCart = [...cart];
-    
     planItems.forEach((planItem: any) => {
-      // Convert plan item back to full ProductWithPrices format using stored data
+      // Convert plan item to ProductWithPrices format
       const cartItem: ProductWithPrices & { quantity: number } = {
-        id: planItem.id,
+        id: planItem.id || Math.random().toString(36).substr(2, 9),
         name: planItem.name,
         description: planItem.description || '',
         image_url: planItem.image_url || '/placeholder.svg',
@@ -69,38 +60,37 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
         category_id: planItem.category_id || '',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        category: planItem.category || {
+        category: {
           id: planItem.category_id || '',
           name: 'General',
           created_at: new Date().toISOString()
         },
-        prices: planItem.prices || {},
-        // Use the stored price information from when the plan was created
-        walmart_price: planItem.walmart_price || 0,
-        heb_price: planItem.heb_price || 0,
-        aldi_price: planItem.aldi_price || 0,
-        target_price: planItem.target_price || 0,
-        kroger_price: planItem.kroger_price || 0,
-        sams_price: planItem.sams_price || 0,
+        prices: {
+          [plan.store_name]: planItem.price || 0
+        },
+        walmart_price: plan.store_name === 'Walmart' ? (planItem.price || 0) : 0,
+        heb_price: (plan.store_name === 'H-E-B' || plan.store_name === 'HEB') ? (planItem.price || 0) : 0,
+        aldi_price: plan.store_name === 'Aldi' ? (planItem.price || 0) : 0,
+        target_price: plan.store_name === 'Target' ? (planItem.price || 0) : 0,
+        kroger_price: plan.store_name === 'Kroger' ? (planItem.price || 0) : 0,
+        sams_price: (plan.store_name === 'Sams' || plan.store_name === "Sam's Club") ? (planItem.price || 0) : 0,
         quantity: planItem.quantity || 1
       };
 
       // Check if item already exists in cart
-      const existingItemIndex = updatedCart.findIndex(item => item.id === cartItem.id);
-      if (existingItemIndex !== -1) {
-        // Update quantity of existing item
-        updatedCart[existingItemIndex] = {
-          ...updatedCart[existingItemIndex],
-          quantity: updatedCart[existingItemIndex].quantity + cartItem.quantity
-        };
+      const existingItem = cart.find(item => item.name === cartItem.name);
+      if (existingItem) {
+        // Update quantity
+        onUpdateCart(cart.map(item =>
+          item.name === cartItem.name
+            ? { ...item, quantity: item.quantity + cartItem.quantity }
+            : item
+        ));
       } else {
-        // Add new item to cart
-        updatedCart.push(cartItem);
+        // Add new item
+        onUpdateCart([...cart, cartItem]);
       }
     });
-
-    // Update cart with all items at once
-    onUpdateCart(updatedCart);
 
     toast({
       title: "Plan added to cart!",

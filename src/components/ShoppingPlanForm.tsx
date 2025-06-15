@@ -1,86 +1,71 @@
 
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
-import { Minus, Plus, Trash2 } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
-import type { ProductWithPrices } from "@/types/database";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
-interface ShoppingPlanFormProps {
-  cart: Array<ProductWithPrices & { quantity: number }>;
+interface OrderData {
   storeName: string;
-  storeAddress?: string;
+  storeAddress: string;
   shoppingType: 'pickup' | 'delivery' | 'instore';
   deliveryAddress?: string;
   pickupTime?: string;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onPlanSaved?: () => void;
+  orderTotal: number;
+  itemCount: number;
 }
 
-export default function ShoppingPlanForm({
-  cart,
-  storeName,
-  storeAddress,
-  shoppingType,
-  deliveryAddress,
-  pickupTime,
-  open,
-  onOpenChange,
-  onPlanSaved
-}: ShoppingPlanFormProps) {
-  const { createPlan } = useShoppingPlans();
-  const [planName, setPlanName] = useState('');
+interface ShoppingPlanFormProps {
+  orderData: OrderData;
+  onPlanCreated?: (plan: any) => void;
+}
+
+export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingPlanFormProps) {
+  const { createPlan, plans } = useShoppingPlans();
+  const { user } = useAuth();
+  const [savePlan, setSavePlan] = useState(false);
+  const [planName, setPlanName] = useState("");
   const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>('none');
-  const [customDays, setCustomDays] = useState<string>('30');
+  const [customDays, setCustomDays] = useState<string>("30");
   const [loading, setLoading] = useState(false);
-  
-  const [cartItems, setCartItems] = useState(cart);
+  const [planSaved, setPlanSaved] = useState(false);
 
-  const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      setCartItems(cartItems.filter(item => item.id !== itemId));
-    } else {
-      setCartItems(cartItems.map(item =>
-        item.id === itemId ? { ...item, quantity: newQuantity } : item
-      ));
+  // Check if plan limit is reached
+  const planLimitReached = plans.length >= 10;
+
+  // Mock cart items - in a real app, this would come from the actual cart
+  const mockCartItems = [
+    {
+      id: '1',
+      name: 'Organic Bananas',
+      price: 2.99,
+      quantity: 2,
+      image_url: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png'
+    },
+    {
+      id: '2', 
+      name: 'Whole Milk (1 Gallon)',
+      price: 3.49,
+      quantity: 1,
+      image_url: '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png'
+    },
+    {
+      id: '3',
+      name: 'Bread - Whole Wheat',
+      price: 2.79,
+      quantity: 1,
+      image_url: '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png'
     }
-  };
+  ];
 
-  const removeItem = (itemId: string) => {
-    setCartItems(cartItems.filter(item => item.id !== itemId));
-  };
-
-  const calculateTotal = () => {
-    return cartItems.reduce((sum, item) => {
-      // Get the price for the current store
-      let price = 0;
-      const storeKey = storeName.toLowerCase().replace(/[^a-z0-9]/g, '');
-      
-      if (storeKey === 'walmart') price = item.walmart_price;
-      else if (storeKey === 'heb' || storeKey === 'h-e-b') price = item.heb_price;
-      else if (storeKey === 'aldi') price = item.aldi_price;
-      else if (storeKey === 'target') price = item.target_price;
-      else if (storeKey === 'kroger') price = item.kroger_price;
-      else if (storeKey === 'sams' || storeKey === "sam's club") price = item.sams_price;
-      else price = item.prices[storeName] || 0;
-      
-      return sum + (price * item.quantity);
-    }, 0);
-  };
-
-  const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCustomDays(value);
-  };
-
-  const handleSave = async () => {
-    if (!planName.trim()) {
+  const handleSavePlan = async () => {
+    if (!savePlan || !planName.trim()) {
       toast({
         title: "Plan name required",
         description: "Please enter a name for your shopping plan",
@@ -89,10 +74,10 @@ export default function ShoppingPlanForm({
       return;
     }
 
-    if (cartItems.length === 0) {
+    if (!user) {
       toast({
-        title: "No items in cart",
-        description: "Please add items to your cart before saving a plan",
+        title: "Authentication required",
+        description: "Please sign in to save shopping plans",
         variant: "destructive",
       });
       return;
@@ -100,62 +85,34 @@ export default function ShoppingPlanForm({
 
     setLoading(true);
     try {
-      // Save complete product information including all necessary fields for proper display and pricing
-      const planItems = cartItems.map(item => ({
-        id: item.id,
-        name: item.name,
-        description: item.description,
-        image_url: item.image_url,
-        unit: item.unit,
-        category_id: item.category_id,
-        quantity: item.quantity,
-        // Store all price information
-        walmart_price: item.walmart_price,
-        heb_price: item.heb_price,
-        aldi_price: item.aldi_price,
-        target_price: item.target_price,
-        kroger_price: item.kroger_price,
-        sams_price: item.sams_price,
-        prices: item.prices,
-        // Store the current price for this specific store
-        price: (() => {
-          const storeKey = storeName.toLowerCase().replace(/[^a-z0-9]/g, '');
-          if (storeKey === 'walmart') return item.walmart_price;
-          if (storeKey === 'heb' || storeKey === 'h-e-b') return item.heb_price;
-          if (storeKey === 'aldi') return item.aldi_price;
-          if (storeKey === 'target') return item.target_price;
-          if (storeKey === 'kroger') return item.kroger_price;
-          if (storeKey === 'sams' || storeKey === "sam's club") return item.sams_price;
-          return item.prices[storeName] || 0;
-        })(),
-        category: item.category
-      }));
-
       const planData = {
         name: planName.trim(),
-        items: planItems,
+        items: mockCartItems,
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
-        store_name: storeName,
-        store_address: storeAddress || '',
-        shopping_type: shoppingType,
-        delivery_address: deliveryAddress || null,
-        pickup_time: pickupTime || null,
-        estimated_total: calculateTotal(),
-        item_count: cartItems.reduce((sum, item) => sum + item.quantity, 0),
+        store_name: orderData.storeName,
+        store_address: orderData.storeAddress,
+        shopping_type: orderData.shoppingType,
+        delivery_address: orderData.deliveryAddress || null,
+        pickup_time: orderData.pickupTime || null,
+        estimated_total: orderData.orderTotal,
+        item_count: orderData.itemCount,
         is_active: true,
       };
 
-      await createPlan(planData);
+      const result = await createPlan(planData);
       
+      setPlanSaved(true);
       toast({
         title: "Plan saved!",
         description: `Your plan "${planName}" has been saved successfully.`,
       });
 
-      onOpenChange(false);
-      onPlanSaved?.();
+      if (onPlanCreated) {
+        onPlanCreated(result);
+      }
     } catch (error) {
+      console.error('Error saving plan:', error);
       toast({
         title: "Error saving plan",
         description: "There was an error saving your shopping plan. Please try again.",
@@ -166,165 +123,119 @@ export default function ShoppingPlanForm({
     }
   };
 
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Save Shopping Plan</DialogTitle>
-        </DialogHeader>
+  const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // Allow empty string or numbers only
+    if (value === '' || /^\d+$/.test(value)) {
+      setCustomDays(value);
+    }
+  };
 
-        <div className="space-y-6">
-          {/* Plan Name */}
-          <div>
-            <Label htmlFor="plan-name">Plan Name</Label>
-            <Input
-              id="plan-name"
-              type="text"
-              value={planName}
-              onChange={(e) => setPlanName(e.target.value)}
-              placeholder="e.g., Weekly Groceries"
-            />
-          </div>
-
-          {/* Cart Items */}
-          <div>
-            <Label className="text-base font-medium">Cart Items</Label>
-            <div className="space-y-3 mt-2">
-              {cartItems.map((item) => {
-                // Get the price for the current store
-                let price = 0;
-                const storeKey = storeName.toLowerCase().replace(/[^a-z0-9]/g, '');
-                
-                if (storeKey === 'walmart') price = item.walmart_price;
-                else if (storeKey === 'heb' || storeKey === 'h-e-b') price = item.heb_price;
-                else if (storeKey === 'aldi') price = item.aldi_price;
-                else if (storeKey === 'target') price = item.target_price;
-                else if (storeKey === 'kroger') price = item.kroger_price;
-                else if (storeKey === 'sams' || storeKey === "sam's club") price = item.sams_price;
-                else price = item.prices[storeName] || 0;
-
-                return (
-                  <Card key={item.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-4">
-                        {item.image_url && (
-                          <img
-                            src={item.image_url}
-                            alt={item.name}
-                            className="w-12 h-12 object-cover rounded"
-                            onError={(e) => {
-                              e.currentTarget.src = '/placeholder.svg';
-                            }}
-                          />
-                        )}
-                        
-                        <div className="flex-1">
-                          <h4 className="font-medium">{item.name}</h4>
-                          <p className="text-sm text-gray-600">${price.toFixed(2)} each</p>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          >
-                            <Minus className="h-3 w-3" />
-                          </Button>
-                          
-                          <span className="w-12 text-center">{item.quantity}</span>
-                          
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          >
-                            <Plus className="h-3 w-3" />
-                          </Button>
-                          
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => removeItem(item.id)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
-                        </div>
-                        
-                        <div className="text-right min-w-20">
-                          <p className="font-medium">${(price * item.quantity).toFixed(2)}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-              
-              {cartItems.length === 0 && (
-                <p className="text-gray-500 text-center py-4">No items in cart</p>
-              )}
-              
-              {cartItems.length > 0 && (
-                <div className="text-right pt-4 border-t">
-                  <p className="text-lg font-bold">Total: ${calculateTotal().toFixed(2)}</p>
-                </div>
-              )}
+  if (planSaved) {
+    return (
+      <Card className="border-blue-200 bg-blue-50">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-blue-600">
+            <CheckCircle className="h-6 w-6" />
+            <div>
+              <p className="font-medium">Plan Saved Successfully!</p>
+              <p className="text-sm text-blue-500">Your shopping plan "{planName}" has been saved and can be found in your Shopping Plans.</p>
             </div>
           </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-          {/* Purchase Frequency */}
-          <div>
-            <Label htmlFor="frequency">Purchase Frequency</Label>
-            <Select value={frequency} onValueChange={(value: any) => setFrequency(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="bi-weekly">Bi-weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
-              </SelectContent>
-            </Select>
-            <p className="text-xs text-gray-500 mt-1">
-              You will be notified by email when it's time to reorder
-            </p>
-          </div>
-
-          {frequency === 'custom' && (
+  if (planLimitReached && user) {
+    return (
+      <Card className="border-red-200 bg-red-50">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-red-600">
+            <AlertTriangle className="h-6 w-6" />
             <div>
-              <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
+              <p className="font-medium">Plan Limit Reached!</p>
+              <p className="text-sm text-red-500">You have reached the maximum of 10 saved plans. Please go back and delete some plans to save new ones.</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-blue-200">
+      <CardHeader>
+        <CardTitle className="text-lg">Save as Shopping Plan</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="save-plan"
+            checked={savePlan}
+            onCheckedChange={(checked) => setSavePlan(!!checked)}
+          />
+          <Label htmlFor="save-plan" className="text-sm font-medium">
+            Save this order as a recurring shopping plan
+          </Label>
+        </div>
+
+        {savePlan && (
+          <div className="space-y-4 pl-6 border-l-2 border-blue-100">
+            <div>
+              <Label htmlFor="plan-name">Plan Name</Label>
               <Input
-                id="custom-days"
-                type="number"
-                min="1"
-                value={customDays}
-                onChange={handleCustomDaysChange}
-                placeholder="30"
+                id="plan-name"
+                type="text"
+                value={planName}
+                onChange={(e) => setPlanName(e.target.value)}
+                placeholder="e.g., Weekly Groceries"
               />
             </div>
-          )}
 
-          {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+            <div>
+              <Label htmlFor="frequency">Purchase Frequency</Label>
+              <Select value={frequency} onValueChange={(value: any) => setFrequency(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">None</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="bi-weekly">Bi-weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                You will be notified by email when it's time to reorder
+              </p>
+            </div>
+
+            {frequency === 'custom' && (
+              <div>
+                <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
+                <Input
+                  id="custom-days"
+                  type="text"
+                  inputMode="numeric"
+                  value={customDays}
+                  onChange={handleCustomDaysChange}
+                  placeholder="30"
+                />
+              </div>
+            )}
+
             <Button 
-              variant="outline" 
-              onClick={() => onOpenChange(false)}
-              className="flex-1 bg-gray-100 hover:bg-gray-200"
-            >
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleSave}
-              disabled={loading}
-              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              onClick={handleSavePlan}
+              disabled={loading || !planName.trim()}
+              className="w-full bg-blue-600 hover:bg-blue-700"
             >
               {loading ? "Saving..." : "Save Plan"}
             </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        )}
+      </CardContent>
+    </Card>
   );
 }
