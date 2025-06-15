@@ -1,4 +1,5 @@
-import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF } from "@react-google-maps/api";
+
+import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF, Polyline } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MapPin } from "lucide-react";
@@ -40,6 +41,7 @@ const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization
 
 const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }: PickupMapProps & { apiKey: string, storeLogoUrl?: string }) => {
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
+  const [simplifiedPath, setSimplifiedPath] = useState<google.maps.LatLng[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
 
   console.log("Work/Start coords:", start);
@@ -101,9 +103,13 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           console.log("Directions result:", { result, status });
           if (status === window.google.maps.DirectionsStatus.OK && result) {
             setDirectionsResult(result);
+            if (result.routes?.[0]?.overview_path) {
+              setSimplifiedPath(result.routes[0].overview_path);
+            }
           } else {
             console.error("Directions request failed:", status);
             setDirectionsResult(null);
+            setSimplifiedPath([]);
           }
         }
       );
@@ -140,7 +146,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
 
   return (
     <div
-      className="w-full rounded-xl overflow-hidden border border-gray-300 shadow mb-2"
+      className="relative w-full rounded-xl overflow-hidden border border-gray-300 shadow mb-2"
       style={{ height: 300 }}
     >
       <GoogleMap
@@ -159,13 +165,23 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
             directions={directionsResult}
             options={{
               suppressMarkers: true, // Hide default markers to use custom ones
-              polylineOptions: {
-                strokeColor: "#007aff", // Apple-style blue
-                strokeWeight: 5,
-              },
+              suppressPolylines: true, // Hide default route to draw our own
             }}
           />
         )}
+        
+        {/* Custom, simplified polyline */}
+        {simplifiedPath.length > 0 && (
+          <Polyline
+            path={simplifiedPath}
+            options={{
+              strokeColor: "#007aff", // Apple-style blue
+              strokeWeight: 6,
+              strokeOpacity: 0.8,
+            }}
+          />
+        )}
+
 
         {/* Custom Markers */}
         {start && window.google && (
@@ -198,6 +214,29 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           />
         )}
       </GoogleMap>
+      <div className="absolute bottom-2 left-2 bg-white/80 p-2 rounded-lg shadow-md backdrop-blur-sm text-xs">
+        <h4 className="font-bold mb-1 text-gray-800">Legend</h4>
+        <ul className="space-y-1">
+          {!isSameStartDest && start && (
+            <li className="flex items-center">
+              <img src={startIconUrl} alt="Start Location" className="w-5 h-5 mr-1.5" />
+              <span className="text-gray-700">Work</span>
+            </li>
+          )}
+          {dest && (
+             <li className="flex items-center">
+              <img src={destIconUrl} alt="Destination" className="w-5 h-5 mr-1.5" />
+              <span className="text-gray-700">{isSameStartDest ? 'Work & Home' : 'Home'}</span>
+            </li>
+          )}
+          {storeLocation && (
+            <li className="flex items-center">
+              <img src={storeIconUrl} alt={storeName || 'Store'} className="w-5 h-5 mr-1.5 object-contain" />
+              <span className="text-gray-700">{storeName || 'Store'}</span>
+            </li>
+          )}
+        </ul>
+      </div>
     </div>
   );
 }
