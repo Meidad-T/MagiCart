@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Pencil, CircleDollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -39,6 +40,130 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [aiRecommendedStore, setAiRecommendedStore] = useState<StoreTotalData | null>(null);
   const [checkoutStore, setCheckoutStore] = useState<StoreTotalData | null>(null);
   const [popoverOpen, setPopoverOpen] = useState(false);
+
+  // Safe cart check to prevent crashes
+  const safeCart = cart || [];
+  const isCartEmpty = safeCart.length === 0;
+
+  // Calculate store totals with error handling
+  const storeTotals = useMemo(() => {
+    if (isCartEmpty) return [];
+    
+    try {
+      const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
+      const storeNames = {
+        walmart: 'Walmart',
+        heb: 'H-E-B',
+        aldi: 'Aldi',
+        target: 'Target',
+        kroger: 'Kroger',
+        sams: "Sam's Club"
+      };
+
+      const totals = stores.map(store => {
+        const subtotal = safeCart.reduce((sum, cartItem) => {
+          const price = cartItem[`${store}_price` as keyof ProductWithPrices] as number;
+          return sum + (price * cartItem.quantity);
+        }, 0);
+
+        const taxesAndFees = subtotal * 0.0875;
+        let storeFee = 0;
+        
+        if (shoppingType === 'pickup') {
+          switch (store) {
+            case 'walmart':
+              storeFee = 1.99;
+              break;
+            case 'sams':
+              storeFee = subtotal >= 50 ? 0 : 4.99;
+              break;
+            case 'heb':
+              storeFee = 0;
+              break;
+          }
+        } else if (shoppingType === 'delivery') {
+          switch (store) {
+            case 'walmart':
+              storeFee = subtotal >= 35 ? 0 : 7.95;
+              break;
+            case 'heb':
+              storeFee = 4.95;
+              break;
+            case 'aldi':
+              storeFee = subtotal >= 35 ? 0 : 3.99;
+              break;
+            case 'kroger':
+              storeFee = subtotal >= 35 ? 0 : 4.95;
+              break;
+            case 'target':
+              storeFee = subtotal >= 35 ? 0 : 9.99;
+              break;
+            case 'sams':
+              storeFee = subtotal >= 50 ? 0 : 12.00;
+              break;
+          }
+        }
+
+        const totalFeesAndTaxes = taxesAndFees + storeFee;
+        const total = subtotal + totalFeesAndTaxes;
+
+        return {
+          store: storeNames[store as keyof typeof storeNames],
+          storeKey: store,
+          subtotal: subtotal.toFixed(2),
+          taxesAndFees: totalFeesAndTaxes.toFixed(2),
+          total: total.toFixed(2)
+        };
+      });
+
+      return totals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
+    } catch (error) {
+      console.error('Error calculating store totals:', error);
+      return [];
+    }
+  }, [safeCart, shoppingType, isCartEmpty]);
+
+  // Calculate health score with error handling
+  const healthScore = useMemo(() => {
+    if (isCartEmpty) return 0;
+    
+    try {
+      let produceCount = 0;
+      let totalItems = 0;
+      
+      safeCart.forEach(item => {
+        totalItems += item.quantity;
+        
+        const categoryName = item.category?.name?.toLowerCase() || '';
+        const productName = item.name?.toLowerCase() || '';
+        
+        if (categoryName.includes('produce') || 
+            categoryName.includes('fruits') || 
+            categoryName.includes('vegetables') ||
+            productName.includes('organic')) {
+          produceCount += item.quantity;
+        }
+      });
+      
+      if (produceCount === totalItems && produceCount > 0) {
+        return 100;
+      }
+      
+      if (produceCount === 0) return 20;
+      if (produceCount === 1) return 44;
+      if (produceCount === 2) return 57;
+      if (produceCount === 3) return 70;
+      if (produceCount === 4) return 81;
+      if (produceCount === 5) return 92;
+      if (produceCount === 6) return 98;
+      if (produceCount >= 7) return 100;
+      
+      return 20;
+    } catch (error) {
+      console.error('Error calculating health score:', error);
+      return 0;
+    }
+  }, [safeCart, isCartEmpty]);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -82,52 +207,10 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  const calculateCartHealthScore = () => {
-    if (cart.length === 0) return 0;
-    
-    let produceCount = 0;
-    let totalItems = 0;
-    
-    cart.forEach(item => {
-      totalItems += item.quantity;
-      
-      // Count produce items
-      const categoryName = item.category.name.toLowerCase();
-      const productName = item.name.toLowerCase();
-      
-      if (categoryName.includes('produce') || 
-          categoryName.includes('fruits') || 
-          categoryName.includes('vegetables') ||
-          productName.includes('organic')) {
-        produceCount += item.quantity;
-      }
-    });
-    
-    // If cart is ONLY produce, return 100
-    if (produceCount === totalItems && produceCount > 0) {
-      return 100;
-    }
-    
-    // New produce-based scoring system
-    if (produceCount === 0) return 20;
-    if (produceCount === 1) return 44;
-    if (produceCount === 2) return 57;
-    if (produceCount === 3) return 70;
-    if (produceCount === 4) return 81;
-    if (produceCount === 5) return 92;
-    if (produceCount === 6) return 98;
-    if (produceCount >= 7) return 100;
-    
-    return 20; // fallback
-  };
-
-  const healthScore = calculateCartHealthScore();
-
   // Trigger confetti when health score reaches excellent (85+)
   useEffect(() => {
     if (healthScore >= 85 && previousHealthScore < 85) {
       setConfettiTrigger(true);
-      // Reset the trigger after a short delay
       setTimeout(() => setConfettiTrigger(false), 100);
     }
     setPreviousHealthScore(healthScore);
@@ -135,14 +218,55 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   // Auto-collapse when cart items reduce below the expand threshold
   useEffect(() => {
-    if (cart.length <= 3 && cartExpanded) {
+    if (safeCart.length <= 3 && cartExpanded) {
       setCartExpanded(false);
     }
-    if (cart.length === 0) {
+    if (isCartEmpty) {
       setAiRecommendedStore(null);
       setCheckoutStore(null);
     }
-  }, [cart.length, cartExpanded]);
+  }, [safeCart.length, cartExpanded, isCartEmpty]);
+
+  // Sorted stores for popover with error handling
+  const sortedStoresForPopover = useMemo(() => {
+    if (isCartEmpty || storeTotals.length === 0) return [];
+    
+    try {
+      const cheapestStore = storeTotals[0];
+      if (!cheapestStore) return [];
+      
+      const storeMap = new Map(storeTotals.map(s => [s.storeKey, {...s, icons: new Set<string>()}]));
+
+      if (cheapestStore) {
+        storeMap.get(cheapestStore.storeKey)?.icons.add('money');
+      }
+
+      if (aiRecommendedStore) {
+          storeMap.get(aiRecommendedStore.storeKey)?.icons.add('sparkles');
+      }
+
+      const getScore = (storeKey: string) => {
+          const isCheapest = storeKey === cheapestStore?.storeKey;
+          const isAI = storeKey === aiRecommendedStore?.storeKey;
+          if (isCheapest && isAI) return 3;
+          if (isCheapest) return 2;
+          if (isAI) return 1;
+          return 0;
+      };
+
+      const sorted = Array.from(storeMap.values()).sort((a, b) => {
+          const scoreA = getScore(a.storeKey);
+          const scoreB = getScore(b.storeKey);
+          if (scoreA !== scoreB) return scoreB - scoreA;
+          return parseFloat(a.total) - parseFloat(b.total);
+      });
+
+      return sorted.map(s => ({...s, icons: Array.from(s.icons) as ('money'|'sparkles')[]}));
+    } catch (error) {
+      console.error('Error sorting stores for popover:', error);
+      return [];
+    }
+  }, [storeTotals, aiRecommendedStore, isCartEmpty]);
 
   const getHealthScoreColor = (score: number) => {
     if (score >= 85) return "text-green-600";
@@ -172,104 +296,36 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     return "shadow-red-500/30";
   };
 
-  const calculateStoreTotals = () => {
-    const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
-    const storeNames = {
-      walmart: 'Walmart',
-      heb: 'H-E-B',
-      aldi: 'Aldi',
-      target: 'Target',
-      kroger: 'Kroger',
-      sams: "Sam's Club"
-    };
-
-    const storeTotals = stores.map(store => {
-      const subtotal = cart.reduce((sum, cartItem) => {
-        const price = cartItem[`${store}_price` as keyof ProductWithPrices] as number;
-        return sum + (price * cartItem.quantity);
-      }, 0);
-
-      const taxesAndFees = subtotal * 0.0875; // 8.75% tax rate
-
-      // Calculate store-specific fees based on shopping type
-      let storeFee = 0;
-      
-      if (shoppingType === 'pickup') {
-        switch (store) {
-          case 'walmart':
-            storeFee = 1.99;
-            break;
-          case 'sams':
-            storeFee = subtotal >= 50 ? 0 : 4.99;
-            break;
-          case 'heb':
-            storeFee = 0; // Free curbside pickup
-            break;
-          // Aldi, Target, Kroger have no pickup fees mentioned
-        }
-      } else if (shoppingType === 'delivery') {
-        switch (store) {
-          case 'walmart':
-            storeFee = subtotal >= 35 ? 0 : 7.95;
-            break;
-          case 'heb':
-            storeFee = 4.95;
-            break;
-          case 'aldi':
-            storeFee = subtotal >= 35 ? 0 : 3.99;
-            break;
-          case 'kroger':
-            storeFee = subtotal >= 35 ? 0 : 4.95;
-            break;
-          case 'target':
-            storeFee = subtotal >= 35 ? 0 : 9.99;
-            break;
-          case 'sams':
-            storeFee = subtotal >= 50 ? 0 : 12.00;
-            break;
-        }
-      }
-      // In-store shopping has no additional fees
-
-      const totalFeesAndTaxes = taxesAndFees + storeFee;
-      const total = subtotal + totalFeesAndTaxes;
-
-      return {
-        store: storeNames[store as keyof typeof storeNames],
-        storeKey: store,
-        subtotal: subtotal.toFixed(2),
-        taxesAndFees: totalFeesAndTaxes.toFixed(2),
-        total: total.toFixed(2)
-      };
-    });
-
-    return storeTotals.sort((a, b) => parseFloat(a.total) - parseFloat(b.total));
-  };
-
   const removeFromCart = (itemId: string) => {
-    const updatedCart = cart.filter(item => item.id !== itemId);
-    onUpdateCart(updatedCart);
+    try {
+      const updatedCart = safeCart.filter(item => item.id !== itemId);
+      onUpdateCart(updatedCart);
+    } catch (error) {
+      console.error('Error removing item from cart:', error);
+    }
   };
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
-    if (newQuantity <= 0) {
-      removeFromCart(itemId);
-      return;
+    try {
+      if (newQuantity <= 0) {
+        removeFromCart(itemId);
+        return;
+      }
+      
+      const updatedCart = safeCart.map(item =>
+        item.id === itemId ? { ...item, quantity: newQuantity } : item
+      );
+      onUpdateCart(updatedCart);
+    } catch (error) {
+      console.error('Error updating quantity:', error);
     }
-    
-    const updatedCart = cart.map(item =>
-      item.id === itemId ? { ...item, quantity: newQuantity } : item
-    );
-    onUpdateCart(updatedCart);
   };
 
   const handleSignIn = () => {
     navigate('/auth');
   };
 
-  const storeTotals = calculateStoreTotals();
-
-  // Store brand colors
+  // Store brand colors and logos
   const storeColors = {
     'H-E-B': '#e31837',
     'Walmart': '#004c91',
@@ -289,11 +345,21 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   };
 
   // Fixed logic: Always show max 3 items when collapsed, regardless of total count
-  const shouldShowExpandButton = cart.length > 3;
-  const itemsToShow = cartExpanded ? cart : cart.slice(0, 3);
-  const hiddenItemsCount = cart.length - 3;
+  const shouldShowExpandButton = safeCart.length > 3;
+  const itemsToShow = cartExpanded ? safeCart : safeCart.slice(0, 3);
+  const hiddenItemsCount = safeCart.length - 3;
 
-  if (cart.length === 0) {
+  const getUserFirstName = () => {
+    if (!userProfile?.full_name) return '';
+    return userProfile.full_name.split(' ')[0];
+  };
+
+  const cheapestStore = storeTotals.length > 0 ? storeTotals[0] : null;
+  const checkoutStoreDetails = checkoutStore || cheapestStore;
+  const checkoutStoreColor = checkoutStoreDetails ? (storeColors[checkoutStoreDetails.store as keyof typeof storeColors] || '#3b82f6') : '#3b82f6';
+
+  // Early return for empty cart - but all hooks are called above
+  if (isCartEmpty) {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-4xl mx-auto px-4 py-8">
@@ -311,58 +377,20 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           
           <Card className="text-center py-12">
             <CardContent>
-              <p className="text-gray-600 mb-4">Your cart is empty</p>
-              <Button onClick={() => navigate('/')}>
-                Start Shopping
-              </Button>
+              <div className="space-y-4">
+                <div className="text-6xl">🛒</div>
+                <h2 className="text-xl font-semibold text-gray-800">Nothing in cart</h2>
+                <p className="text-gray-600 mb-4">Your cart is empty. Start adding some items!</p>
+                <Button onClick={() => navigate('/')} className="mt-4">
+                  Start Shopping
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </div>
       </div>
     );
   }
-
-  const getUserFirstName = () => {
-    if (!userProfile?.full_name) return '';
-    return userProfile.full_name.split(' ')[0];
-  };
-
-  const cheapestStore = storeTotals[0]; // First one is cheapest due to sorting
-  const checkoutStoreDetails = checkoutStore || cheapestStore;
-  const checkoutStoreColor = checkoutStoreDetails ? (storeColors[checkoutStoreDetails.store as keyof typeof storeColors] || '#3b82f6') : '#3b82f6';
-  
-  const sortedStoresForPopover = useMemo(() => {
-    if (!cheapestStore || storeTotals.length === 0) return [];
-    
-    const storeMap = new Map(storeTotals.map(s => [s.storeKey, {...s, icons: new Set<string>()}]));
-
-    if (cheapestStore) {
-      storeMap.get(cheapestStore.storeKey)?.icons.add('money');
-    }
-
-    if (aiRecommendedStore) {
-        storeMap.get(aiRecommendedStore.storeKey)?.icons.add('sparkles');
-    }
-
-    const getScore = (storeKey: string) => {
-        const isCheapest = storeKey === cheapestStore?.storeKey;
-        const isAI = storeKey === aiRecommendedStore?.storeKey;
-        if (isCheapest && isAI) return 3;
-        if (isCheapest) return 2;
-        if (isAI) return 1;
-        return 0;
-    };
-
-    const sorted = Array.from(storeMap.values()).sort((a, b) => {
-        const scoreA = getScore(a.storeKey);
-        const scoreB = getScore(b.storeKey);
-        if (scoreA !== scoreB) return scoreB - scoreA;
-        return parseFloat(a.total) - parseFloat(b.total);
-    });
-
-    return sorted.map(s => ({...s, icons: Array.from(s.icons) as ('money'|'sparkles')[]}));
-
-  }, [storeTotals, cheapestStore, aiRecommendedStore]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -396,9 +424,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
                   <div className="flex-1 pr-4">
-                    <CardTitle>Cart Items ({cart.length})</CardTitle>
+                    <CardTitle>Cart Items ({safeCart.length})</CardTitle>
                     {/* Health Score Tip - with proper wrapping and moved down */}
-                    {cart.length > 0 && (
+                    {safeCart.length > 0 && (
                       <p className="text-xs text-gray-400 mt-4 pr-40">
                         Add healthy foods to increase your cart's health score! (AI generated assessment)
                       </p>
@@ -408,7 +436,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </CardHeader>
 
               {/* Health Score Container - Top Right Corner with equal spacing */}
-              {cart.length > 0 && (
+              {safeCart.length > 0 && (
                 <div className="absolute top-6 right-6 z-10">
                   <div className={`bg-gradient-to-r ${getHealthScoreGradient(healthScore)} rounded-lg px-4 py-3 shadow-lg ${getHealthScoreGlow(healthScore)} transform hover:scale-105 transition-all duration-300`}>
                     <div className="text-center text-white min-w-[120px]">
@@ -436,7 +464,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                       <div>
                         <h3 className="font-medium">{item.name}</h3>
                         <p className="text-sm text-gray-600">{item.unit}</p>
-                        <Badge variant="secondary">{item.category.name}</Badge>
+                        <Badge variant="secondary">{item.category?.name || 'Uncategorized'}</Badge>
                       </div>
                     </div>
                     
@@ -563,7 +591,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                         shoppingType,
                         cheapestStore: cheapestStore?.store,
                         orderTotal: parseFloat(cheapestStore?.total || '0'),
-                        itemCount: cart.length
+                        itemCount: safeCart.length
                       }
                     })
                   }
@@ -587,12 +615,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                           shoppingType,
                           cheapestStore: checkoutStoreDetails?.store,
                           orderTotal: parseFloat(checkoutStoreDetails?.total || '0'),
-                          itemCount: cart.length
+                          itemCount: safeCart.length
                         }
                       })
                     }
                   >
-                    Continue with {checkoutStoreDetails?.store}
+                    Continue with {checkoutStoreDetails?.store || 'Store'}
                   </Button>
                   <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                     <PopoverTrigger asChild>
@@ -641,23 +669,27 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
         </div>
 
         {/* Price Comparison Component */}
-        <div className="mt-8">
-          <PriceComparison 
-            storeTotals={storeTotals} 
-            cart={cart}
-            onUpdateCart={onUpdateCart}
-            onSubstitutionCountsChange={setSubstitutionCounts}
-          />
-        </div>
+        {storeTotals.length > 0 && (
+          <div className="mt-8">
+            <PriceComparison 
+              storeTotals={storeTotals} 
+              cart={safeCart}
+              onUpdateCart={onUpdateCart}
+              onSubstitutionCountsChange={setSubstitutionCounts}
+            />
+          </div>
+        )}
 
         {/* Intelligent Recommendation */}
-        <div className="mt-8">
-          <IntelligentRecommendation 
-            storeTotals={storeTotals}
-            shoppingType={shoppingType}
-            onRecommendation={setAiRecommendedStore}
-          />
-        </div>
+        {storeTotals.length > 0 && (
+          <div className="mt-8">
+            <IntelligentRecommendation 
+              storeTotals={storeTotals}
+              shoppingType={shoppingType}
+              onRecommendation={setAiRecommendedStore}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
