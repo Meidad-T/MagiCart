@@ -1,5 +1,5 @@
 
-import { ShoppingCart, User, LogOut } from "lucide-react";
+import { ShoppingCart, User, LogOut, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -28,6 +28,10 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
 
   const handleSignIn = () => {
     navigate('/auth');
+  };
+
+  const handleShoppingPlansClick = () => {
+    navigate('/shopping-plans');
   };
 
   return (
@@ -61,6 +65,18 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
 
           {/* Right side actions */}
           <div className="flex items-center space-x-2">
+            {/* Shopping Plans Button - only show if user is authenticated */}
+            {user && (
+              <Button 
+                variant="ghost" 
+                className="text-white hover:bg-white/10 rounded-full w-10 h-10"
+                onClick={handleShoppingPlansClick}
+                title="Shopping Plans"
+              >
+                <Calendar className="h-5 w-5" />
+              </Button>
+            )}
+
             {/* User Menu */}
             {user ? (
               <DropdownMenu>

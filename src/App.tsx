@@ -11,6 +11,7 @@ import Cart from "./pages/Cart";
 import HealthRecommendations from "./pages/HealthRecommendations";
 import CheckoutDetails from "./pages/CheckoutDetails";
 import OrderSummary from "./pages/OrderSummary";
+import ShoppingPlans from "./pages/ShoppingPlans";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const App = () => {
             <Route path="/health-recommendations" element={<HealthRecommendations cart={cart} onUpdateCart={updateCart} />} />
             <Route path="/checkout-details" element={<CheckoutDetails />} />
             <Route path="/order-summary" element={<OrderSummary />} />
+            <Route path="/shopping-plans" element={<ShoppingPlans cart={cart} onUpdateCart={updateCart} />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
