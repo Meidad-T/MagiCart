@@ -149,6 +149,13 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     return "from-red-500 to-red-600";
   };
 
+  const getHealthScoreGlow = (score: number) => {
+    if (score >= 85) return "shadow-green-500/20";
+    if (score >= 70) return "shadow-yellow-500/20";
+    if (score >= 50) return "shadow-orange-500/20";
+    return "shadow-red-500/30";
+  };
+
   const calculateStoreTotals = () => {
     const stores = ['walmart', 'heb', 'aldi', 'target', 'kroger', 'sams'];
     const storeNames = {
@@ -346,7 +353,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                 </div>
                 {/* Health Score Tip */}
                 {cart.length > 0 && (
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-400 max-w-md flex-wrap">
                     Add healthy foods to increase your cart's health score! (AI generated assessment)
                   </p>
                 )}
@@ -354,18 +361,21 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
               {/* Health Score Container - Top Right Corner */}
               {cart.length > 0 && (
-                <div className="absolute top-4 right-4 z-10">
-                  <div className={`bg-gradient-to-r ${getHealthScoreGradient(healthScore)} rounded-xl p-4 shadow-lg transform hover:scale-105 transition-all duration-300`}>
-                    <div className="text-center text-white">
-                      <p className="text-xs font-medium opacity-90 mb-1">Health Score</p>
-                      <ConfettiText trigger={confettiTrigger}>
-                        <div className="text-3xl font-bold mb-1 animate-pulse">
-                          {healthScore}
-                        </div>
-                      </ConfettiText>
-                      <p className="text-xs opacity-80">{getHealthScoreLabel(healthScore)}</p>
+                <div className="absolute top-6 right-6 z-10">
+                  <div className={`bg-gradient-to-r ${getHealthScoreGradient(healthScore)} rounded-lg px-4 py-3 shadow-lg ${getHealthScoreGlow(healthScore)} transform hover:scale-105 transition-all duration-300`}>
+                    <div className="flex items-center justify-between text-white min-w-[140px]">
+                      <div className="text-left">
+                        <p className="text-xs font-medium opacity-90 mb-1">Health Score</p>
+                        <ConfettiText trigger={confettiTrigger}>
+                          <div className="text-2xl font-bold">
+                            {healthScore}
+                          </div>
+                        </ConfettiText>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs opacity-80 font-medium">{getHealthScoreLabel(healthScore)}</p>
+                      </div>
                     </div>
-                    <div className="absolute inset-0 bg-white opacity-10 rounded-xl animate-pulse"></div>
                   </div>
                 </div>
               )}
