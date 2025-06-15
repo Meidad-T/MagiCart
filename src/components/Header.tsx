@@ -92,7 +92,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             >
               <ShoppingCart className="h-5 w-5" />
               {cart.length > 0 && (
-                <Badge className="absolute -top-1 -right-1 bg-navy-800 text-white min-w-5 h-5 flex items-center justify-center text-xs p-1">
+                <Badge className="absolute -top-1 -right-1 bg-orange-500 text-white min-w-5 h-5 flex items-center justify-center text-xs p-1">
                   {cart.reduce((sum, item) => sum + item.quantity, 0)}
                 </Badge>
               )}
