@@ -82,7 +82,7 @@ export const useProducts = () => {
             
             // Drinks - better bottle/container images
             '3 Liter Coke Bottle': 'https://live.staticflickr.com/7318/13933195050_6016499339.jpg',
-            '3 Liter Sprite Bottle': 'https://thumbs.dreamstime.com/b/bottles-mountain-mtn-dew-soda-beverage-drinks-shelf-store-380152595.jpg',
+            '3 Liter Mountain Dew Bottle': 'https://thumbs.dreamstime.com/b/bottles-mountain-mtn-dew-soda-beverage-drinks-shelf-store-380152595.jpg',
             '3 Liter Dr Pepper Bottle': 'https://c2.staticflickr.com/4/3215/2978925649_d7ca56738f_b.jpg',
             'Bottled water 1 Gallon': 'https://th.bing.com/th/id/R.30251710d09b6bad7d87e3f3468ae5f2?rik=A4MsrMnhAi%2btMQ&riu=http%3a%2f%2fboxingcoachmike.com%2fwp-content%2fuploads%2f2010%2f12%2ffesting.jpg&ehk=sjtB9pTD46UBtTp2MIb40eyR8ODrcwF1CZdDZ8NFGLQ%3d&risl=&pid=ImgRaw&r=0',
             
