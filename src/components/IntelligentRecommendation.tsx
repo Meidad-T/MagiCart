@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, Star, TrendingUp, Shield, Clock } from "lucide-react";
+import { AIChatDialog } from "./AIChatDialog";
 
 interface StoreTotalData {
   store: string;
@@ -206,6 +207,15 @@ export const IntelligentRecommendation = ({
                   <TrendingUp className="h-4 w-4 text-purple-500" />
                   <span className="text-gray-600">Service: {recommendation.metrics.service}★</span>
                 </div>
+              </div>
+
+              {/* Chat with AI Button */}
+              <div className="flex justify-end pt-3 border-t border-blue-100">
+                <AIChatDialog 
+                  recommendation={recommendation}
+                  storeTotals={storeTotals}
+                  shoppingType={shoppingType}
+                />
               </div>
             </div>
           </div>
