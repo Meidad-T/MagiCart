@@ -91,13 +91,13 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             {storesToShow.map((store, index) => (
               <div
                 key={`${store.name}-${index}`}
-                className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center"
+                className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center p-0.5"
                 title={`Available at ${store.name.charAt(0).toUpperCase() + store.name.slice(1)} - $${store.price.toFixed(2)}`}
               >
                 <img
                   src={store.logo}
                   alt={`${store.name} logo`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain rounded-full"
                 />
               </div>
             ))}
@@ -136,11 +136,11 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                     className="flex flex-col items-center space-y-1 p-1 rounded-lg hover:bg-gray-50 transition-colors"
                     title={`${store.name.charAt(0).toUpperCase() + store.name.slice(1)} - $${store.price.toFixed(2)}`}
                   >
-                    <div className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
+                    <div className="w-6 h-6 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center p-0.5">
                       <img
                         src={store.logo}
                         alt={`${store.name} logo`}
-                        className="w-full h-full object-contain p-0.5"
+                        className="w-full h-full object-contain rounded-full"
                       />
                     </div>
                     <span className="text-xs font-medium text-green-600">${store.price.toFixed(2)}</span>
