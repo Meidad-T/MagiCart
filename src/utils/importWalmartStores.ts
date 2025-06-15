@@ -1,21 +1,20 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-// This will be populated once you provide the Walmart JSON data
-export async function importWalmartStores(walmartData?: any[]) {
+// Import the Walmart stores data
+import walmartStoresData from '../../walmart-stores.json';
+
+export async function importWalmartStores() {
   console.log('Starting Walmart store import...');
   
-  if (!walmartData || !Array.isArray(walmartData)) {
-    console.error('No Walmart data provided or data is not an array');
-    return { success: false, error: 'Invalid Walmart data provided' };
+  if (!walmartStoresData || !Array.isArray(walmartStoresData)) {
+    console.error('No Walmart data found or data is not an array');
+    return { success: false, error: 'Invalid Walmart data' };
   }
 
-  const stores = walmartData.map((store, index) => {
-    // This mapping will depend on the structure of your Walmart JSON
-    // Common fields might include: id, name, address, city, state, zip, lat, lng, phone
-    
+  const stores = walmartStoresData.map((store, index) => {
     // Skip if missing required data
-    if (!store.address || !store.city || !store.zip) {
+    if (!store.address || !store.city) {
       console.log(`Skipping Walmart store ${index}: missing address data`);
       return null;
     }
@@ -23,17 +22,17 @@ export async function importWalmartStores(walmartData?: any[]) {
     return {
       chain: 'WALMART',
       name: store.name || `Walmart ${store.city}`,
-      store_number: store.id || store.storeNumber || null,
-      location_id: store.locationId || null,
+      store_number: store.id?.toString() || store.storeNumber?.toString() || null,
+      location_id: store.locationId?.toString() || null,
       address_line1: store.address || store.streetAddress,
       address_line2: store.address2 || null,
       city: store.city,
       state: store.state || store.stateCode,
-      zip_code: store.zip || store.zipCode,
+      zip_code: store.zipCode || store.zip,
       phone: store.phone || null,
-      latitude: store.lat || store.latitude || null,
-      longitude: store.lng || store.longitude || null,
-      geolocation: (store.lat && store.lng) ? `(${store.lat},${store.lng})` : null,
+      latitude: parseFloat(store.latitude) || parseFloat(store.lat) || null,
+      longitude: parseFloat(store.longitude) || parseFloat(store.lng) || null,
+      geolocation: (store.latitude && store.longitude) ? `(${store.latitude},${store.longitude})` : null,
       hours: store.hours || null,
       departments: store.departments || null
     };

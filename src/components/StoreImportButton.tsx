@@ -24,8 +24,8 @@ export const StoreImportButton = () => {
   const handleWalmartImport = async () => {
     setIsImporting(true);
     try {
-      // For now, this is a placeholder since we don't have the Walmart JSON data yet
-      toast.info('Walmart import feature ready. Please provide the JSON data to enable import.');
+      const result = await importWalmartStores();
+      toast.success(`Successfully imported ${result.count} Walmart stores!`);
     } catch (error) {
       console.error('Walmart Import failed:', error);
       toast.error('Failed to import Walmart stores. Check console for details.');
@@ -49,7 +49,7 @@ export const StoreImportButton = () => {
         disabled={isImporting}
         variant="outline"
       >
-        Import Walmart Stores
+        {isImporting ? 'Importing...' : 'Import Walmart Stores'}
       </Button>
     </div>
   );
