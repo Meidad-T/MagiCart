@@ -85,29 +85,35 @@ export default function ShoppingPlanForm({ cart, orderData, onPlanCreated }: Sho
 
     setLoading(true);
     try {
-      // Instead of using mockCartItems, map cart to extract all fields needed for saving
+      // Deep map cart items for saving in Supabase
       const planItems = (cart || []).map((item) => ({
         id: item.id,
         name: item.name,
         image_url: item.image_url,
         quantity: item.quantity,
-        // Add all major store prices: these field names match ProductWithPrices
-        walmart_price: item.walmart_price,
-        heb_price: item.heb_price,
-        aldi_price: item.aldi_price,
-        target_price: item.target_price,
-        kroger_price: item.kroger_price,
-        sams_price: item.sams_price,
-        prices: item.prices, // Preserve all prices if present
-        description: item.description,
-        unit: item.unit,
-        category_id: item.category_id,
-        // ... add fields as needed from the main product/carts structure
+        prices: item.prices || {
+          Walmart: item.walmart_price ?? 0,
+          "H-E-B": item.heb_price ?? 0,
+          Aldi: item.aldi_price ?? 0,
+          Target: item.target_price ?? 0,
+          Kroger: item.kroger_price ?? 0,
+          "Sam's Club": item.sams_price ?? 0,
+        },
+        walmart_price: item.walmart_price ?? 0,
+        heb_price: item.heb_price ?? 0,
+        aldi_price: item.aldi_price ?? 0,
+        target_price: item.target_price ?? 0,
+        kroger_price: item.kroger_price ?? 0,
+        sams_price: item.sams_price ?? 0,
+        description: item.description ?? "",
+        unit: item.unit ?? "",
+        category_id: item.category_id ?? "",
+        // Add any other fields you need from ProductWithPrices here!
       }));
 
       const planData = {
         name: planName.trim(),
-        items: planItems,
+        items: planItems, // 💡 Save the real cart items array
         frequency,
         custom_frequency_days: frequency === 'custom' ? parseInt(customDays) || 30 : null,
         store_name: orderData.storeName,

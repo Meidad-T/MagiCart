@@ -46,56 +46,60 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   };
 
   const handleAddPlanToCart = (plan: ShoppingPlan) => {
-    // Convert plan items to cart format and add to cart
+    // Use Array.isArray to confirm proper structure
     const planItems = Array.isArray(plan.items) ? plan.items : [];
-    
-    planItems.forEach((planItem: any) => {
-      // Carefully preserve all detailed fields for cart
-      const cartItem: ProductWithPrices & { quantity: number } = {
-        id: planItem.id,
-        name: planItem.name,
-        description: planItem.description || '',
-        image_url: planItem.image_url,
-        unit: planItem.unit,
-        category_id: planItem.category_id,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        category: {
-          id: planItem.category_id || '',
-          name: 'General',
-          created_at: new Date().toISOString()
-        },
-        prices: planItem.prices || {
-          Walmart: planItem.walmart_price || 0,
-          "H-E-B": planItem.heb_price || 0,
-          Aldi: planItem.aldi_price || 0,
-          Target: planItem.target_price || 0,
-          Kroger: planItem.kroger_price || 0,
-          "Sam's Club": planItem.sams_price || 0,
-        },
-        walmart_price: planItem.walmart_price || 0,
-        heb_price: planItem.heb_price || 0,
-        aldi_price: planItem.aldi_price || 0,
-        target_price: planItem.target_price || 0,
-        kroger_price: planItem.kroger_price || 0,
-        sams_price: planItem.sams_price || 0,
-        quantity: planItem.quantity || 1
-      };
+    if (!planItems.length) {
+      toast({
+        title: "No items in plan",
+        description: `This shopping plan doesn't contain any items.`,
+        variant: "destructive",
+      });
+      return;
+    }
 
-      // Check if item already exists in cart
-      const existingItem = cart.find(item => item.id === cartItem.id);
-      if (existingItem) {
-        // Update quantity
-        onUpdateCart(cart.map(item =>
-          item.id === cartItem.id
-            ? { ...item, quantity: item.quantity + cartItem.quantity }
-            : item
-        ));
+    // Add each plan item, while preserving all data for the cart
+    let newCart = [...cart];
+    planItems.forEach((planItem: any) => {
+      // Check if this item is already in cart
+      const existing = newCart.find((i) => i.id === planItem.id);
+      if (existing) {
+        // If already in cart, add its quantity
+        existing.quantity += planItem.quantity || 1;
       } else {
-        // Add new item
-        onUpdateCart([...cart, cartItem]);
+        newCart.push({
+          id: planItem.id,
+          name: planItem.name,
+          description: planItem.description ?? "",
+          image_url: planItem.image_url,
+          unit: planItem.unit ?? "",
+          category_id: planItem.category_id ?? "",
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+          category: {
+            id: planItem.category_id ?? "",
+            name: "General",
+            created_at: new Date().toISOString(),
+          },
+          prices: planItem.prices || {
+            Walmart: planItem.walmart_price ?? 0,
+            "H-E-B": planItem.heb_price ?? 0,
+            Aldi: planItem.aldi_price ?? 0,
+            Target: planItem.target_price ?? 0,
+            Kroger: planItem.kroger_price ?? 0,
+            "Sam's Club": planItem.sams_price ?? 0,
+          },
+          walmart_price: planItem.walmart_price ?? 0,
+          heb_price: planItem.heb_price ?? 0,
+          aldi_price: planItem.aldi_price ?? 0,
+          target_price: planItem.target_price ?? 0,
+          kroger_price: planItem.kroger_price ?? 0,
+          sams_price: planItem.sams_price ?? 0,
+          quantity: planItem.quantity || 1,
+        });
       }
     });
+
+    onUpdateCart(newCart);
 
     toast({
       title: "Plan added to cart!",
@@ -313,3 +317,4 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
 };
 
 export default ShoppingPlans;
+
