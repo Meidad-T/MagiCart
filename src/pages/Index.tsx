@@ -1,4 +1,3 @@
-
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,6 +8,7 @@ import { useProducts } from "@/hooks/useProducts";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
+import HeroBanner from "@/components/HeroBanner";
 
 interface IndexProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -45,6 +45,14 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 
   const handleCartClick = () => {
     navigate('/cart');
+  };
+
+  const handleExploreClick = () => {
+    // Scroll to product feed section
+    const productFeed = document.getElementById('product-feed');
+    if (productFeed) {
+      productFeed.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   if (productsLoading) {
@@ -95,11 +103,16 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
         user={user}
       />
 
+      {/* Hero Banner */}
+      <HeroBanner onExploreClick={handleExploreClick} />
+
       {/* Product Feed */}
-      <ProductFeed 
-        items={items}
-        onAddToCart={addToCart}
-      />
+      <div id="product-feed">
+        <ProductFeed 
+          items={items}
+          onAddToCart={addToCart}
+        />
+      </div>
 
       {/* Enhanced Cart summary at bottom if there are items */}
       {cart.length > 0 && (
