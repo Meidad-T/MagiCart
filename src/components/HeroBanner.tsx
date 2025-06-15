@@ -48,9 +48,17 @@ const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
                 Compare prices instantly from Walmart, Target, HEB, Aldi, Kroger, and Sam's Club. 
                 Save money on every grocery trip with our intelligent price comparison.
               </p>
+
+              {/* Healthy Choices - moved here with better styling */}
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-100 to-emerald-100 px-4 py-2 rounded-full border border-green-200">
+                <span className="text-2xl">🥗</span>
+                <span className="text-lg font-semibold text-green-700">
+                  Healthy Choices Available
+                </span>
+              </div>
             </div>
 
-            {/* Action Buttons and Text */}
+            {/* Action Button */}
             <div className="flex flex-col sm:flex-row gap-4 items-start">
               <Button 
                 size="lg" 
@@ -60,10 +68,6 @@ const HeroBanner = ({ onExploreClick }: HeroBannerProps) => {
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Explore Best Deals
               </Button>
-              
-              <div className="text-lg text-green-600 font-semibold mt-2">
-                🥗 Healthy Choices Available
-              </div>
             </div>
 
             {/* Stats */}

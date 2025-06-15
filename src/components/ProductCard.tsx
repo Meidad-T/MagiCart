@@ -49,7 +49,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
     });
     if (item.target_price > 0) stores.push({ 
       name: 'target', 
-      logo: 'https://corporate.target.com/getmedia/e8be5e84-10ca-4b98-9b6c-eb3ee8cd6d1b/Target_Bullseye-Logo_Red.png',
+      logo: 'https://logos-world.net/wp-content/uploads/2020/04/Target-Logo.png',
       price: item.target_price
     });
     if (item.kroger_price > 0) stores.push({ 
@@ -115,36 +115,37 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Dropdown for all stores */}
+          {/* Dropdown for all stores - improved styling */}
           {showAllStores && (
-            <div className="absolute top-10 right-2 bg-white rounded-lg shadow-lg border border-gray-200 p-3 z-10 min-w-48">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-semibold text-gray-700">All Stores</span>
+            <div className="absolute top-10 right-4 bg-white rounded-lg shadow-xl border border-gray-200 p-4 z-20 min-w-56 max-w-64">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-sm font-semibold text-gray-700">All Available Stores</span>
                 <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowAllStores(false);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  <ChevronDown className="h-3 w-3 rotate-180" />
+                  <ChevronDown className="h-4 w-4 rotate-180" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-3">
                 {availableStores.map((store, index) => (
                   <div
                     key={`${store.name}-dropdown-${index}`}
-                    className="flex flex-col items-center space-y-1"
+                    className="flex flex-col items-center space-y-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                     title={`${store.name.charAt(0).toUpperCase() + store.name.slice(1)} - $${store.price.toFixed(2)}`}
                   >
-                    <div className="w-8 h-8 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
+                    <div className="w-10 h-10 rounded-full bg-white shadow-sm border border-gray-200 overflow-hidden flex items-center justify-center">
                       <img
                         src={store.logo}
                         alt={`${store.name} logo`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain p-1"
                       />
                     </div>
                     <span className="text-xs font-medium text-green-600">${store.price.toFixed(2)}</span>
+                    <span className="text-xs text-gray-500 capitalize">{store.name}</span>
                   </div>
                 ))}
               </div>
