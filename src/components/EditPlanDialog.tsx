@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import type { ShoppingPlan } from "@/types/database";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { useProducts } from "@/hooks/useProducts";
 
 interface EditPlanDialogProps {
   plan: ShoppingPlan;
@@ -28,6 +30,7 @@ interface PlanItemInDialog {
 
 export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDialogProps) {
   const { updatePlan } = useShoppingPlans();
+  const { products } = useProducts();
   const [planName, setPlanName] = useState("");
   const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>('none');
   const [customDays, setCustomDays] = useState<string>('30');
@@ -36,16 +39,19 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
-    if (plan) {
+    if (plan && products.length > 0) {
       setPlanName(plan.name);
       setFrequency(plan.frequency);
       setCustomDays(String(plan.custom_frequency_days || 30));
 
       if (Array.isArray(plan.items)) {
         const itemsWithPrices = plan.items.map((item: any) => {
-          const storePrice = item.prices?.[plan.store_name] ?? 0;
+          const fullProductInfo = products.find(p => p.id === item.id);
+          const storePrice = fullProductInfo?.prices?.[plan.store_name] ?? 0;
           return {
             ...item,
+            name: fullProductInfo?.name || item.name,
+            image_url: fullProductInfo?.image_url,
             price: storePrice,
           };
         });
@@ -54,7 +60,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
         setPlanItems([]);
       }
     }
-  }, [plan]);
+  }, [plan, products]);
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity <= 0) {
