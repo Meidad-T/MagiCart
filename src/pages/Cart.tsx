@@ -11,6 +11,7 @@ import type { ProductWithPrices } from "@/types/database";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { PriceComparison } from "@/components/PriceComparison";
 import { IntelligentRecommendation } from "@/components/IntelligentRecommendation";
+import ConfettiText from "@/components/ConfettiText";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -477,11 +478,13 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
               </CardContent>
             </Card>
 
-            {/* Health Score Display */}
+            {/* Health Score Display with Confetti */}
             {cart.length > 0 && (
               <div className="text-center">
                 <p className="text-sm text-gray-600 mb-1">Cart's Health Score</p>
-                <p className={`text-6xl font-bold ${getHealthScoreColor(healthScore)}`}>{healthScore}</p>
+                <ConfettiText trigger={healthScore === 100}>
+                  <p className={`text-6xl font-bold ${getHealthScoreColor(healthScore)}`}>{healthScore}</p>
+                </ConfettiText>
                 <p className="text-sm text-gray-500 mt-1">Add healthy foods to increase your cart's health score!</p>
                 <p className="text-xs text-gray-400 mt-1">AI generated health assessment</p>
               </div>
