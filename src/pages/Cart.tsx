@@ -581,7 +581,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   </Button>
                   <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" size="icon" className="flex-shrink-0">
+                      <Button variant="outline" size="icon" className="flex-shrink-0 bg-blue-100 text-blue-700 hover:bg-blue-200">
                         <Info className="h-4 w-4" />
                       </Button>
                     </PopoverTrigger>
@@ -599,7 +599,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                                 }}
                             >
                                 <div className="flex items-center gap-2">
-                                  <div className="flex items-center w-6">
+                                  <div className="flex items-center w-10 gap-1">
                                     {store.icons.includes('money') && <CircleDollarSign className="h-4 w-4 text-green-500" />}
                                     {store.icons.includes('sparkles') && <Sparkles className="h-4 w-4 text-yellow-500" />}
                                   </div>
