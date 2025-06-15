@@ -376,7 +376,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                 </div>
               )}
 
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-4 pt-20">
                 {itemsToShow.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
