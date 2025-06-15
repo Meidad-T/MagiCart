@@ -334,53 +334,49 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           {/* Cart Items */}
           <div className="md:col-span-2 space-y-4">
             <Card className="relative">
-              <CardHeader>
+              <CardHeader className="pb-2">
                 <div className="flex justify-between items-start">
-                  <div>
+                  <div className="flex-1 pr-4">
                     <CardTitle>Cart Items ({cart.length})</CardTitle>
+                    {/* Health Score Tip - with proper wrapping */}
+                    {cart.length > 0 && (
+                      <p className="text-xs text-gray-400 mt-2 pr-40">
+                        Add healthy foods to increase your cart's health score! (AI generated assessment)
+                      </p>
+                    )}
                   </div>
                   {/* Expand Button at Top - shows when more than 4 items and currently collapsed */}
                   {shouldShowExpandButton && !cartExpanded && (
                     <Button
                       variant="ghost"
                       onClick={() => setCartExpanded(true)}
-                      className="text-gray-600 hover:text-gray-800"
+                      className="text-gray-600 hover:text-gray-800 flex-shrink-0"
                     >
                       <ChevronDown className="h-4 w-4 mr-2" />
                       Show {hiddenItemsCount} More
                     </Button>
                   )}
                 </div>
-                {/* Health Score Tip */}
-                {cart.length > 0 && (
-                  <p className="text-xs text-gray-400 max-w-md flex-wrap">
-                    Add healthy foods to increase your cart's health score! (AI generated assessment)
-                  </p>
-                )}
               </CardHeader>
 
-              {/* Health Score Container - Top Right Corner */}
+              {/* Health Score Container - Top Right Corner with equal spacing */}
               {cart.length > 0 && (
                 <div className="absolute top-6 right-6 z-10">
                   <div className={`bg-gradient-to-r ${getHealthScoreGradient(healthScore)} rounded-lg px-4 py-3 shadow-lg ${getHealthScoreGlow(healthScore)} transform hover:scale-105 transition-all duration-300`}>
-                    <div className="flex items-center justify-between text-white min-w-[140px]">
-                      <div className="text-left">
-                        <p className="text-xs font-medium opacity-90 mb-1">Health Score</p>
-                        <ConfettiText trigger={confettiTrigger}>
-                          <div className="text-2xl font-bold">
-                            {healthScore}
-                          </div>
-                        </ConfettiText>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs opacity-80 font-medium">{getHealthScoreLabel(healthScore)}</p>
-                      </div>
+                    <div className="text-center text-white min-w-[120px]">
+                      <p className="text-xs font-medium opacity-90 mb-2">Health Score</p>
+                      <ConfettiText trigger={confettiTrigger}>
+                        <div className="text-2xl font-bold mb-2">
+                          {healthScore}
+                        </div>
+                      </ConfettiText>
+                      <p className="text-sm opacity-90 font-semibold">{getHealthScoreLabel(healthScore)}</p>
                     </div>
                   </div>
                 </div>
               )}
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 pt-4">
                 {itemsToShow.map((item) => (
                   <div key={item.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div className="flex items-center space-x-4">
