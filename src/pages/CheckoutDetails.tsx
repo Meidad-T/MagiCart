@@ -29,7 +29,7 @@ interface LocationState {
 }
 
 type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
-type StoreWithDistance = StoreLocation & { distance: number };
+type StoreWithDistance = StoreLocation & { distance: number; logo_url?: string };
 
 export default function CheckoutDetails() {
   const navigate = useNavigate();

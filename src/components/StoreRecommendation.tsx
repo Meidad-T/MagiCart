@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, MapPin, Tag } from "lucide-react";
@@ -5,8 +6,9 @@ import { Database } from "@/integrations/supabase/types";
 import { cn } from "@/lib/utils";
 import { Image } from "lucide-react";
 
+// Extend StoreWithDistance to include logo_url alongside existing properties
 type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
-type StoreWithDistance = StoreLocation & { distance: number };
+type StoreWithDistance = StoreLocation & { distance: number; logo_url?: string }; // <-- FIXED
 
 interface StoreRecommendationProps {
   store: StoreWithDistance;
@@ -82,3 +84,4 @@ export const StoreRecommendation = ({ store, onModify, otherStoresCount, onClick
     </Card>
   );
 };
+
