@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,26 +120,6 @@ export default function CheckoutDetails() {
       }
     });
   };
-
-  // If coming from order summary and all details are already filled, skip to order summary
-  if (fromOrderSummary && canProceed) {
-    const storeAddress = `${storeStreet}, ${storeCity}, ${storeState} ${storeZip}`;
-    
-    navigate("/order-summary", {
-      state: {
-        shoppingType,
-        storeName: cheapestStore,
-        storeAddress: shoppingType === "delivery" ? undefined : storeAddress,
-        deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
-        pickupTime,
-        orderTotal,
-        itemCount
-      },
-      replace: true
-    });
-    
-    return <div className="p-10 text-center text-gray-700">Loading…</div>;
-  }
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
