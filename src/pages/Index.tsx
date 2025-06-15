@@ -10,6 +10,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import type { ProductWithPrices } from "@/types/database";
 import HeroBanner from "@/components/HeroBanner";
+import { HomeAIChatDialog } from "@/components/HomeAIChatDialog";
+import { useState } from "react";
 
 interface IndexProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
@@ -20,6 +22,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
   const { data: items = [], isLoading: productsLoading, error } = useProducts();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [showToast, setShowToast] = useState(false);
 
   const addToCart = (item: ProductWithPrices) => {
     const existingItem = cart.find(cartItem => cartItem.id === item.id);
@@ -33,6 +36,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
       onUpdateCart([...cart, { ...item, quantity: 1 }]);
     }
     
+    setShowToast(true);
     const toastInstance = toast({
       title: "Added to cart!",
       description: `${item.name} has been added to your cart`,
@@ -41,6 +45,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
     // Dismiss the toast after 2 seconds
     setTimeout(() => {
       toastInstance.dismiss();
+      setShowToast(false);
     }, 2000);
   };
 
@@ -60,6 +65,10 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
         behavior: 'smooth' 
       });
     }
+  };
+
+  const handleHealthRecommendationsClick = () => {
+    navigate('/health-recommendations');
   };
 
   if (productsLoading) {
@@ -113,6 +122,35 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
       {/* Hero Banner */}
       <HeroBanner onExploreClick={handleExploreClick} />
 
+      {/* Health Recommendations Section */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-6 border border-green-200">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex-1">
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                Personalized Health Recommendations
+              </h3>
+              <p className="text-gray-600 leading-relaxed">
+                Get AI-powered suggestions for healthier alternatives based on your dietary 
+                preferences, allergies, and health goals. Let our smart assistant help you 
+                make better choices for your wellness journey.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button 
+                onClick={handleHealthRecommendationsClick}
+                className="bg-green-600 hover:bg-green-700 text-white whitespace-nowrap"
+              >
+                <span className="break-words">
+                  Get AI Health Recommendations
+                </span>
+              </Button>
+              <HomeAIChatDialog cart={cart} />
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Product Feed */}
       <div id="product-feed">
         <ProductFeed 
@@ -123,7 +161,11 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 
       {/* Enhanced Cart summary at bottom if there are items */}
       {cart.length > 0 && (
-        <div className="fixed bottom-6 right-6 z-50">
+        <div 
+          className={`fixed right-6 z-50 transition-all duration-300 ease-in-out ${
+            showToast ? 'bottom-28' : 'bottom-6'
+          }`}
+        >
           <Card className="shadow-xl border-0 bg-white/95 backdrop-blur-sm">
             <CardContent className="p-4">
               <div className="flex items-center gap-4">
