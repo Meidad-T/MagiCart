@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,31 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
-  const [rateLimitMessage, setRateLimitMessage] = useState('');
+  const [rateLimitEndTime, setRateLimitEndTime] = useState<number | null>(null);
+  const [countdown, setCountdown] = useState<number>(0);
+
+  // Real-time countdown effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (rateLimitEndTime) {
+      interval = setInterval(() => {
+        const now = Date.now();
+        const remaining = Math.max(0, Math.ceil((rateLimitEndTime - now) / 1000));
+        
+        setCountdown(remaining);
+        
+        if (remaining <= 0) {
+          setRateLimitEndTime(null);
+          setCountdown(0);
+        }
+      }, 1000);
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [rateLimitEndTime]);
 
   const checkRateLimit = (): boolean => {
     const now = Date.now();
@@ -69,14 +93,10 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
     // Check if we've hit the limit
     if (recentMessages.length >= 4) {
       const oldestRecentMessage = Math.min(...recentMessages);
-      const timeUntilReset = Math.ceil((oldestRecentMessage + 60000 - now) / 1000);
+      const endTime = oldestRecentMessage + 60000;
       
-      setRateLimitMessage(`Rate limit reached. Please wait ${timeUntilReset} seconds before sending another message.`);
-      
-      // Clear the message after the wait time
-      setTimeout(() => {
-        setRateLimitMessage('');
-      }, timeUntilReset * 1000);
+      setRateLimitEndTime(endTime);
+      setCountdown(Math.ceil((endTime - now) / 1000));
       
       return false;
     }
@@ -148,7 +168,7 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
     }
   };
 
-  const isRateLimited = rateLimitMessage !== '';
+  const isRateLimited = rateLimitEndTime !== null && countdown > 0;
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -238,7 +258,9 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
                   </div>
                 </div>
                 <div className="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 shadow-sm">
-                  <p className="text-sm text-orange-800">{rateLimitMessage}</p>
+                  <p className="text-sm text-orange-800">
+                    Rate limit reached. Please wait {countdown} second{countdown !== 1 ? 's' : ''} before sending another message.
+                  </p>
                 </div>
               </div>
             )}
