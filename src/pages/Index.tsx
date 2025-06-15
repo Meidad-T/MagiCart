@@ -1,5 +1,4 @@
-
-import { Loader, ShoppingCart } from "lucide-react";
+import { Loader, ShoppingCart, Star } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/hooks/use-toast";
@@ -137,11 +136,12 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
               </p>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
-              {/* Button now opens green health AI chat dialog */}
+              {/* Removed the separate "Chat with AI" button for clarity, now only one green health button */}
               <Button 
                 onClick={() => setHealthChatOpen(true)}
-                className="bg-green-600 hover:bg-green-700 text-white whitespace-normal text-center leading-tight"
+                className="bg-green-600 hover:bg-green-700 text-white whitespace-normal text-center leading-tight flex items-center gap-2"
               >
+                <Star className="h-4 w-4 text-white" />
                 Get AI Health Recommendations
               </Button>
               <HomeAIChatDialog 
@@ -204,4 +204,3 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 };
 
 export default Index;
-
