@@ -187,7 +187,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
             storeFee = subtotal >= 50 ? 0 : 4.99;
             break;
           case 'heb':
-            storeFee = 0; // Free pickup
+            storeFee = 0; // Free curbside pickup
             break;
           // Aldi, Target, Kroger have no pickup fees mentioned
         }
@@ -452,7 +452,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                     <RadioGroupItem value="pickup" id="pickup" />
                     <Label htmlFor="pickup" className="flex items-center cursor-pointer">
                       <Store className="h-4 w-4 mr-2" />
-                      Store Pickup
+                      Curbside Pick-Up
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">

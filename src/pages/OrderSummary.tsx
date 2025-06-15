@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -66,7 +65,9 @@ export default function OrderSummary() {
           <div className="bg-gray-50 rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-medium">Order Type:</span>
-              <span className="capitalize">{shoppingType}</span>
+              <span className="capitalize">
+                {shoppingType === 'pickup' ? 'Curbside Pick-Up' : shoppingType}
+              </span>
             </div>
             
             <div className="flex items-center justify-between">
@@ -77,7 +78,7 @@ export default function OrderSummary() {
             <div className="flex items-start justify-between">
               <span className="font-medium flex items-center">
                 <MapPin className="h-4 w-4 mr-1" />
-                {shoppingType === 'delivery' ? 'Delivery to:' : 'Store Address:'}
+                {shoppingType === 'delivery' ? 'Delivery to:' : shoppingType === 'pickup' ? 'Pick-up at:' : 'Store Address:'}
               </span>
               <span className="text-right">
                 {shoppingType === 'delivery' ? deliveryAddress : storeAddress}
@@ -88,7 +89,7 @@ export default function OrderSummary() {
               <div className="flex items-center justify-between">
                 <span className="font-medium flex items-center">
                   <Clock className="h-4 w-4 mr-1" />
-                  Pickup Time:
+                  {shoppingType === 'pickup' ? 'Pick-up Time:' : 'Pickup Time:'}
                 </span>
                 <span>{pickupTime}</span>
               </div>

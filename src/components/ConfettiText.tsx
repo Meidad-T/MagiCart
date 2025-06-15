@@ -28,16 +28,15 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
     // Get the container dimensions for relative positioning
     const rect = textRef.current.getBoundingClientRect();
     const containerWidth = rect.width;
-    const containerHeight = rect.height;
 
-    // Create confetti particles positioned relative to the container center
+    // Create confetti particles positioned to span the full width of the container
     const newParticles = Array.from({ length: 24 }, (_, i) => ({
       id: i,
-      x: containerWidth / 2 + (Math.random() * 80 - 40), // Spread around center
-      y: -20 - Math.random() * 20, // Start above the container
+      x: Math.random() * containerWidth, // Spread across full container width
+      y: 0, // Start at the very top of the container
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
-      velocityX: (Math.random() - 0.5) * 4,
+      velocityX: (Math.random() - 0.5) * 3,
       velocityY: Math.random() * 2 + 1,
       size: Math.random() * 4 + 3
     }));
