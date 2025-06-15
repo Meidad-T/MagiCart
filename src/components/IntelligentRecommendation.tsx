@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+
+import { useState, useEffect, useRef, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Star, TrendingUp, Shield, Clock, MapPin } from "lucide-react";
@@ -36,9 +37,21 @@ export const IntelligentRecommendation = ({
   const [isMinimized, setIsMinimized] = useState(false);
   const [updatedLocation, setUpdatedLocation] = useState<StoreLocationWithDistance | null>(null);
 
+  const cartIsEmpty = useMemo(() => {
+    if (!storeTotals || storeTotals.length === 0) return true;
+    const subtotalSum = storeTotals.reduce((acc, store) => acc + parseFloat(store.subtotal), 0);
+    return subtotalSum === 0;
+  }, [storeTotals]);
+
   useEffect(() => {
+    if (cartIsEmpty) {
+      setRecommendation(null);
+      hasSetRecommendation.current = false;
+      return;
+    }
+    
     // Only calculate recommendation if we haven't set one yet
-    if (storeTotals.length === 0 || hasSetRecommendation.current) return;
+    if (hasSetRecommendation.current) return;
 
     const storeReviewData = {
       'H-E-B': {
@@ -191,7 +204,7 @@ export const IntelligentRecommendation = ({
 
     // Mark that we've set the recommendation - never change it again
     hasSetRecommendation.current = true;
-  }, [storeTotals, shoppingType, onRecommendation]);
+  }, [storeTotals, shoppingType, onRecommendation, cartIsEmpty]);
 
   const handleLocationSelect = (location: StoreLocationWithDistance) => {
     onSelectLocation(location);
@@ -222,7 +235,7 @@ export const IntelligentRecommendation = ({
     );
   }
 
-  if (!recommendation || storeTotals.length === 0) return null;
+  if (!recommendation || cartIsEmpty) return null;
 
   return (
     <Card className="border-blue-200 bg-blue-50">
