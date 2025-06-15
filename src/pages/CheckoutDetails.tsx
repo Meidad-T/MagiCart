@@ -215,11 +215,11 @@ export default function CheckoutDetails() {
               })
               .filter((s): s is StoreWithDistance => s !== null);
 
-            // De-duplicate stores based on address to avoid showing same location twice
+            // De-duplicate stores based on their unique ID to avoid showing same location twice
             const uniqueStoresMap = new Map<string, StoreWithDistance>();
             storesWithDistance.forEach(store => {
-              if (store.address_line1 && !uniqueStoresMap.has(store.address_line1)) {
-                uniqueStoresMap.set(store.address_line1, store);
+              if (store.id && !uniqueStoresMap.has(store.id)) {
+                uniqueStoresMap.set(store.id, store);
               }
             });
             const uniqueStores = Array.from(uniqueStoresMap.values());
