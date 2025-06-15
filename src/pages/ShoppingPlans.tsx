@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +20,7 @@ interface ShoppingPlansProps {
 }
 
 const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
-  const { plans, loading, deletePlan } = useShoppingPlans();
+  const { plans, loading, deletePlan, refreshPlans } = useShoppingPlans();
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingPlan, setEditingPlan] = useState<ShoppingPlan | null>(null);
@@ -324,6 +325,7 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
           plan={editingPlan}
           open={!!editingPlan}
           onOpenChange={(open) => !open && setEditingPlan(null)}
+          onPlanUpdated={refreshPlans} // <-- NEW: trigger refresh on update
         />
       )}
     </div>

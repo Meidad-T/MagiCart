@@ -16,6 +16,7 @@ interface EditPlanDialogProps {
   plan: ShoppingPlan;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onPlanUpdated?: () => void; // NEW PROP
 }
 
 interface PlanItemInDialog {
@@ -27,7 +28,7 @@ interface PlanItemInDialog {
   [key: string]: any;
 }
 
-export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDialogProps) {
+export default function EditPlanDialog({ plan, open, onOpenChange, onPlanUpdated }: EditPlanDialogProps) {
   const { updatePlan } = useShoppingPlans();
   const { data: products } = useProducts();
   const [planName, setPlanName] = useState("");
@@ -81,7 +82,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
   const handleCustomDaysChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // Allow empty string or numbers only
     setCustomDays(value);
   };
 
@@ -97,8 +97,12 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
 
     setLoading(true);
     try {
-      // Before saving, strip the temporary `price` property from each item.
-      const itemsToSave = planItems.map(({ price, ...restOfItem }) => restOfItem);
+      // Remove UI-only props; keep id, quantity, and all needed item details
+      const itemsToSave = planItems.map(({ price, image_url, name, ...restOfItem }) => ({
+        ...restOfItem,
+        quantity: restOfItem.quantity,
+        // retain other item-specific keys, but keep it clean for storage
+      }));
 
       const updates = {
         name: planName.trim(),
@@ -110,11 +114,13 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
       };
 
       await updatePlan(plan.id, updates);
-      
+
       toast({
         title: "Plan updated!",
         description: `Your plan "${planName}" has been updated successfully.`,
       });
+
+      if (onPlanUpdated) onPlanUpdated(); // TRIGGER REFRESH
 
       onOpenChange(false);
     } catch (error) {
@@ -142,11 +148,9 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               }}
             />
           )}
-          
           <div className="flex-1">
             <h4 className="font-medium">{item.name}</h4>
           </div>
-          
           <div className="flex items-center gap-2">
             <Button
               size="sm"
@@ -155,9 +159,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
             >
               <Minus className="h-3 w-3" />
             </Button>
-            
             <span className="w-12 text-center">{item.quantity}</span>
-            
             <Button
               size="sm"
               variant="outline"
@@ -165,7 +167,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
             >
               <Plus className="h-3 w-3" />
             </Button>
-            
             <Button
               size="sm"
               variant="destructive"
@@ -185,9 +186,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
         <DialogHeader>
           <DialogTitle>Edit Shopping Plan</DialogTitle>
         </DialogHeader>
-
         <div className="space-y-6">
-          {/* Plan Name */}
           <div>
             <Label htmlFor="plan-name">Plan Name</Label>
             <Input
@@ -198,13 +197,10 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               placeholder="e.g., Weekly Groceries"
             />
           </div>
-
-          {/* Cart Items */}
           <div>
             <Label className="text-base font-medium">Items in Plan</Label>
             <div className="space-y-3 mt-2">
               {planItems.slice(0, 3).map(renderItemCard)}
-
               {planItems.length > 3 && (
                 <Collapsible open={isExpanded} onOpenChange={setIsExpanded} className="w-full">
                   <CollapsibleContent className="space-y-3">
@@ -220,14 +216,11 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
                   </div>
                 </Collapsible>
               )}
-              
               {planItems.length === 0 && (
                 <p className="text-gray-500 text-center py-4">No items in this plan.</p>
               )}
             </div>
           </div>
-
-          {/* Purchase Frequency */}
           <div>
             <Label htmlFor="frequency">Purchase Frequency</Label>
             <Select value={frequency} onValueChange={(value: any) => setFrequency(value)}>
@@ -246,7 +239,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               You will be notified by email when it's time to reorder
             </p>
           </div>
-
           {frequency === 'custom' && (
             <div>
               <Label htmlFor="custom-days">Custom Frequency (Days)</Label>
@@ -260,8 +252,6 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
               />
             </div>
           )}
-
-          {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button 
               variant="outline" 
