@@ -74,11 +74,10 @@ export const useProducts = () => {
             'Brown Rice': 'https://images.pexels.com/photos/4110257/pexels-photo-4110257.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
             'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
-            // White Sugar as a white sugar box SVG image
-            'White Sugar': 'data:image/svg+xml;utf8,<svg width="400" height="300" xmlns="http://www.w3.org/2000/svg"><rect x="120" y="90" width="160" height="120" rx="20" fill="white" stroke="gray" stroke-width="4"/><rect x="140" y="180" width="120" height="30" fill="#ececec"/><text x="200" y="155" font-size="28" font-family="Arial" fill="gray" text-anchor="middle">SUGAR</text></svg>',
-            'Brown Sugar': 'https://pixabay.com/photos/brown-sugar-sugar-food-sugar-cubes-5847979/',
-            'Peanut Butter 16 ounce': 'https://www.pexels.com/photo/close-up-photo-of-creamy-peanut-butter-6659881/',
-            'Grape Jelly 18 ounce': 'https://www.pexels.com/photo/jar-with-red-jam-on-white-sauer-1051849/',
+            'White Sugar': 'https://th.bing.com/th/id/OIP.QaXdIgB1MHqDal5OxpCPlwHaHa?r=0&rs=1&pid=ImgDetMain',
+            'Brown Sugar': 'https://i5.walmartimages.com/asr/b106322c-8a05-4c7b-b23b-235b4b1dc793.3fd719d6b0d015b1feccaa675763a657.jpeg',
+            'Peanut Butter 16 ounce': 'https://live.staticflickr.com/3850/14360041550_45d7bf9975.jpg',
+            'Grape Jelly 18 ounce': 'https://i5.walmartimages.com/seo/Smucker-s-Concord-Grape-Jelly-18-Ounces_d1337e48-cb1a-45fc-9f5e-405c81e2f42c.35d0f9766f1c793207a2bf8ad24c5ae4.jpeg',
             'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop&auto=format',
             
             // Drinks - better bottle/container images
