@@ -1,4 +1,3 @@
-
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -216,12 +215,11 @@ export default function CheckoutDetails() {
               })
               .filter((s): s is StoreWithDistance => s !== null);
 
-            // De-duplicate stores based on name and address to avoid showing visually identical locations
+            // De-duplicate stores based on address to avoid showing same location twice
             const uniqueStoresMap = new Map<string, StoreWithDistance>();
             storesWithDistance.forEach(store => {
-              const storeKey = `${store.name}|${store.address_line1}`;
-              if (store.address_line1 && !uniqueStoresMap.has(storeKey)) {
-                uniqueStoresMap.set(storeKey, store);
+              if (store.address_line1 && !uniqueStoresMap.has(store.address_line1)) {
+                uniqueStoresMap.set(store.address_line1, store);
               }
             });
             const uniqueStores = Array.from(uniqueStoresMap.values());
@@ -290,8 +288,6 @@ export default function CheckoutDetails() {
       }
     });
   };
-
-  const otherStores = selectedStore ? nearbyStores.filter(s => s.id !== selectedStore.id) : [];
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
@@ -472,15 +468,15 @@ export default function CheckoutDetails() {
                             setIsChoosingAlternateStore(true);
                           }
                         }}
-                        otherStoresCount={otherStores.length}
+                        otherStoresCount={nearbyStores.length - 1}
                       />
 
                       {isChoosingAlternateStore && (
                         <div className="animate-fade-in space-y-2 pt-4">
                           <h4 className="font-medium text-gray-800">Other nearby locations</h4>
                           {(showAllStores 
-                            ? otherStores
-                            : otherStores.slice(0, 2)
+                            ? nearbyStores.filter(s => s.id !== selectedStore.id) 
+                            : nearbyStores.filter(s => s.id !== selectedStore.id).slice(0, 2)
                           ).map(store => (
                             <div
                               key={store.id}
@@ -494,13 +490,13 @@ export default function CheckoutDetails() {
                           ))}
                           
                           {/* Logic for "Show more" button for alternate stores */}
-                          {otherStores.length > 2 && !showAllStores && (
+                          {nearbyStores.filter(s => s.id !== selectedStore.id).length > 2 && !showAllStores && (
                             <Button 
                               variant="link" 
                               className="p-0 h-auto text-blue-600" 
                               onClick={() => setShowAllStores(true)}
                             >
-                              Show {otherStores.length - 2} more stores...
+                              Show {nearbyStores.filter(s => s.id !== selectedStore.id).length - 2} more stores...
                             </Button>
                           )}
                         </div>
@@ -553,7 +549,6 @@ export default function CheckoutDetails() {
                     storeLocation={storeLoc}
                     storeName={actualStoreName}
                     storeLogoUrl={selectedStore?.logo_url}
-                    routeOptimization={routeOptimization}
                   />
                   <p className="text-xs text-gray-400 text-center mt-1">
                     <span role="img" aria-label="info">🗺️</span> {routeOptimization 

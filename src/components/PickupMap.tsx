@@ -1,3 +1,4 @@
+
 import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF, Polyline } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -6,12 +7,10 @@ import mapStyle from "./mapStyle.json";
 import { supabase } from "@/integrations/supabase/client";
 
 type PickupMapProps = {
-  start: [number, number] | null;
-  dest: [number, number] | null;
-  storeLocation?: [number, number] | null;
+  start: [number, number] | null; // [lat, lng] - work or home location
+  dest: [number, number] | null;  // [lat, lng] - home location
+  storeLocation?: [number, number] | null; // [lat, lng] - store location
   storeName?: string;
-  routeOptimization: boolean;
-  storeLogoUrl?: string;
 };
 
 // Helper to create a data URI from a React component (for map markers)
@@ -29,29 +28,18 @@ const getSupabaseLogoUrl = (logo_url?: string) => {
   return `https://xuwfaljqzvjbxhhrjara.supabase.co/storage/v1/object/public/store-logos/${logo_url}`;
 };
 
-const getStoreColor = (storeName?: string): string => {
-    if (!storeName) return '#cc0000'; // Fallback red
-    const lowerCaseName = storeName.toLowerCase();
-    if (lowerCaseName.includes('kroger')) return '#00549f';
-    if (lowerCaseName.includes('h-e-b') || lowerCaseName.includes('heb')) return '#e51937';
-    if (lowerCaseName.includes('target')) return '#cc0000';
-    if (lowerCaseName.includes("sam's club")) return '#0071ce';
-    if (lowerCaseName.includes('aldi')) return '#f8971d';
-    return '#cc0000';
-};
-
-const getStoreIconUrl = (logo_url?: string, storeName?: string) => {
+const getStoreIconUrl = (logo_url?: string) => {
   const maybeLogo = getSupabaseLogoUrl(logo_url);
   if (maybeLogo) {
     return maybeLogo;
   }
-  const storeColor = getStoreColor(storeName);
-  return createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill={storeColor} />);
+  // Fallback to a red map pin icon as requested.
+  return createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#cc0000" />);
 };
 
 const GOOGLE_MAPS_LIBRARIES: ("places" | "geometry" | "drawing" | "visualization")[] = ["places"];
 
-const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, storeLogoUrl, routeOptimization }: PickupMapProps & { apiKey: string }) => {
+const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }: PickupMapProps & { apiKey: string, storeLogoUrl?: string }) => {
   const [directionsResult, setDirectionsResult] = useState<google.maps.DirectionsResult | null>(null);
   const [simplifiedPath, setSimplifiedPath] = useState<google.maps.LatLng[]>([]);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -72,9 +60,12 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
   );
 
   // Memoize icons to prevent re-creating them on each render
-  const startPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#8e44ad" />), []); // Purple for starting point
-  const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []); // Green for home
-  const storeIconUrl = useMemo(() => getStoreIconUrl(storeLogoUrl, storeName), [storeLogoUrl, storeName]);
+  const workPinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#007aff" />), []);
+  const homePinUrl = useMemo(() => createLucideIcon(<MapPin size={48} color="white" strokeWidth={1.5} fill="#34c759" />), []);
+  const storeIconUrl = useMemo(() => getStoreIconUrl(storeLogoUrl), [storeLogoUrl]);
+
+  const startIconUrl = isSameStartDest ? homePinUrl : workPinUrl;
+  const destIconUrl = homePinUrl;
 
   const onLoad = useCallback((mapInstance: google.maps.Map) => {
     setMap(mapInstance);
@@ -197,7 +188,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           <MarkerF 
             position={{ lat: start[0], lng: start[1] }} 
             icon={{ 
-              url: routeOptimization ? startPinUrl : homePinUrl,
+              url: startIconUrl,
               scaledSize: new window.google.maps.Size(48, 48)
             }} 
           />
@@ -207,7 +198,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
           <MarkerF 
             position={{ lat: dest[0], lng: dest[1] }} 
             icon={{ 
-              url: homePinUrl,
+              url: destIconUrl,
               scaledSize: new window.google.maps.Size(48, 48)
             }} 
           />
@@ -226,30 +217,17 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
       <div className="absolute bottom-2 left-2 bg-white/80 p-2 rounded-lg shadow-md backdrop-blur-sm text-xs">
         <h4 className="font-bold mb-1 text-gray-800">Legend</h4>
         <ul className="space-y-1">
-          {routeOptimization ? (
-              <>
-                  {start && (
-                      <li className="flex items-center">
-                          <img src={startPinUrl} alt="Starting point" className="w-5 h-5 mr-1.5" />
-                          <span className="text-gray-700">Starting point</span>
-                      </li>
-                  )}
-                  {dest && (
-                      <li className="flex items-center">
-                          <img src={homePinUrl} alt="Home" className="w-5 h-5 mr-1.5" />
-                          <span className="text-gray-700">Destination (Home)</span>
-                      </li>
-                  )}
-              </>
-          ) : (
-              <>
-                  {start && (
-                      <li className="flex items-center">
-                          <img src={homePinUrl} alt="Home" className="w-5 h-5 mr-1.5" />
-                          <span className="text-gray-700">Home</span>
-                      </li>
-                  )}
-              </>
+          {!isSameStartDest && start && (
+            <li className="flex items-center">
+              <img src={startIconUrl} alt="Start Location" className="w-5 h-5 mr-1.5" />
+              <span className="text-gray-700">Work</span>
+            </li>
+          )}
+          {dest && (
+             <li className="flex items-center">
+              <img src={destIconUrl} alt="Destination" className="w-5 h-5 mr-1.5" />
+              <span className="text-gray-700">{isSameStartDest ? 'Work & Home' : 'Home'}</span>
+            </li>
           )}
           {storeLocation && (
             <li className="flex items-center">
@@ -264,7 +242,7 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
 }
 
 // Exported PickupMap with logo support
-export default function PickupMap(props: PickupMapProps) {
+export default function PickupMap({ start, dest, storeLocation, storeName, storeLogoUrl }: PickupMapProps & { storeLogoUrl?: string }) {
   const [apiKey, setApiKey] = useState<string | null>(null);
 
   useEffect(() => {
@@ -291,5 +269,5 @@ export default function PickupMap(props: PickupMapProps) {
     );
   }
 
-  return <PickupMapContent {...props} apiKey={apiKey} />;
+  return <PickupMapContent {...{ start, dest, storeLocation, storeName, apiKey, storeLogoUrl }} />;
 }
