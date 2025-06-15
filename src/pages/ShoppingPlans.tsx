@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -7,6 +7,7 @@ import { useShoppingPlans } from "@/hooks/useShoppingPlans";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import Header from "@/components/Header";
 import EditPlanDialog from "@/components/EditPlanDialog";
 import type { ProductWithPrices } from "@/types/database";
@@ -22,9 +23,38 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [editingPlan, setEditingPlan] = useState<ShoppingPlan | null>(null);
+  const [storeLogos, setStoreLogos] = useState<Record<string, string>>({});
 
   // Mock items data for the header search (in a real app, this would come from a global state or API)
   const items: ProductWithPrices[] = [];
+
+  // Fetch store logos from database
+  useEffect(() => {
+    const fetchStoreLogos = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('stores')
+          .select('name, logo_url');
+        
+        if (error) {
+          console.error('Error fetching store logos:', error);
+          return;
+        }
+
+        const logoMap: Record<string, string> = {};
+        data?.forEach((store) => {
+          if (store.logo_url) {
+            logoMap[store.name] = store.logo_url;
+          }
+        });
+        setStoreLogos(logoMap);
+      } catch (error) {
+        console.error('Error fetching store logos:', error);
+      }
+    };
+
+    fetchStoreLogos();
+  }, []);
 
   const addToCart = (item: ProductWithPrices) => {
     // Handle adding items to cart from header search
@@ -106,7 +136,13 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
   };
 
   const getStoreInfo = (storeName: string) => {
-    // Store logos and display names
+    // First check if we have a logo from the database
+    const dbLogo = storeLogos[storeName];
+    if (dbLogo) {
+      return { logo: dbLogo, displayName: storeName };
+    }
+
+    // Fallback to hardcoded logos for stores not in database
     const stores = {
       'Walmart': { logo: '/lovable-uploads/626c14cb-fdb3-4472-8f02-7f33de90f3e0.png', displayName: 'Walmart' },
       'H-E-B': { logo: '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png', displayName: 'H-E-B' },
@@ -206,7 +242,7 @@ const ShoppingPlans = ({ cart, onUpdateCart }: ShoppingPlansProps) => {
                 <Card key={plan.id} className="hover:shadow-md transition-shadow">
                   <CardHeader className="pb-4">
                     <div className="flex items-center gap-3 mb-2">
-                      {storeInfo.logo.startsWith('/') ? (
+                      {storeInfo.logo.startsWith('/') || storeInfo.logo.startsWith('http') ? (
                         <img src={storeInfo.logo} alt={storeInfo.displayName} className="w-8 h-8 object-contain" />
                       ) : (
                         <span className="text-2xl">{storeInfo.logo}</span>
