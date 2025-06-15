@@ -25,21 +25,21 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
   useEffect(() => {
     if (!trigger || !textRef.current) return;
 
-    // Get the actual position of the text element relative to the viewport
+    // Get the container dimensions for relative positioning
     const rect = textRef.current.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2;
-    const centerY = rect.top + rect.height / 2;
+    const containerWidth = rect.width;
+    const containerHeight = rect.height;
 
-    // Create confetti particles positioned relative to the health score
+    // Create confetti particles positioned relative to the container center
     const newParticles = Array.from({ length: 24 }, (_, i) => ({
       id: i,
-      x: centerX + (Math.random() * 100 - 50), // Smaller spread around text center
-      y: centerY - 30 - Math.random() * 30, // Start just above the text
+      x: containerWidth / 2 + (Math.random() * 80 - 40), // Spread around center
+      y: -20 - Math.random() * 20, // Start above the container
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
-      velocityX: (Math.random() - 0.5) * 4, // Less horizontal movement
-      velocityY: Math.random() * 2 + 1, // Controlled downward movement
-      size: Math.random() * 4 + 3 // Smaller particles (3-7px)
+      velocityX: (Math.random() - 0.5) * 4,
+      velocityY: Math.random() * 2 + 1,
+      size: Math.random() * 4 + 3
     }));
 
     setParticles(newParticles);
@@ -53,10 +53,10 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
   }, [trigger]);
 
   return (
-    <div className={`relative ${className}`} ref={textRef}>
+    <div className={`relative overflow-visible ${className}`} ref={textRef}>
       {children}
       {particles.length > 0 && (
-        <div className="fixed inset-0 pointer-events-none z-50">
+        <div className="absolute inset-0 pointer-events-none overflow-visible" style={{ zIndex: 9999 }}>
           {particles.map((particle) => (
             <div
               key={particle.id}
@@ -84,7 +84,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
             opacity: 1;
           }
           100% {
-            transform: translateY(200px) rotate(360deg) scale(0.8);
+            transform: translateY(150px) rotate(360deg) scale(0.8);
             opacity: 0;
           }
         }
