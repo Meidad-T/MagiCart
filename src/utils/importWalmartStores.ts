@@ -12,29 +12,29 @@ export async function importWalmartStores() {
     return { success: false, error: 'Invalid Walmart data' };
   }
 
-  const stores = walmartStoresData.map((store, index) => {
+  const stores = walmartStoresData.map((store: any, index) => {
     // Skip if missing required data
-    if (!store.address || !store.city) {
+    if (!store.address) {
       console.log(`Skipping Walmart store ${index}: missing address data`);
       return null;
     }
 
     return {
       chain: 'WALMART',
-      name: store.name || `Walmart ${store.city}`,
-      store_number: store.id?.toString() || store.storeNumber?.toString() || null,
-      location_id: store.locationId?.toString() || null,
-      address_line1: store.address || store.streetAddress,
-      address_line2: store.address2 || null,
-      city: store.city,
-      state: store.state || store.stateCode,
-      zip_code: store.zipCode || store.zip,
-      phone: store.phone || null,
-      latitude: parseFloat(store.latitude) || parseFloat(store.lat) || null,
-      longitude: parseFloat(store.longitude) || parseFloat(store.lng) || null,
-      geolocation: (store.latitude && store.longitude) ? `(${store.latitude},${store.longitude})` : null,
-      hours: store.hours || null,
-      departments: store.departments || null
+      name: `Walmart Store ${store.store_id}`,
+      store_number: store.store_id || null,
+      location_id: store.store_id || null,
+      address_line1: store.address,
+      address_line2: null,
+      city: null, // Not available in the current data structure
+      state: null, // Not available in the current data structure
+      zip_code: store.postal_code || null,
+      phone: null, // Not available in the current data structure
+      latitude: null, // Not available in the current data structure
+      longitude: null, // Not available in the current data structure
+      geolocation: null,
+      hours: null, // Not available in the current data structure
+      departments: null // Not available in the current data structure
     };
   }).filter(store => store !== null);
 
