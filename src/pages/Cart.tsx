@@ -123,7 +123,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
 
   // Auto-collapse when cart items reduce below the expand threshold
   useEffect(() => {
-    if (cart.length <= 4 && cartExpanded) {
+    if (cart.length <= 3 && cartExpanded) {
       setCartExpanded(false);
     }
   }, [cart.length, cartExpanded]);
@@ -263,10 +263,10 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     'Aldi': '#ff6900'
   };
 
-  // Fixed logic: Always show max 4 items when collapsed, regardless of total count
-  const shouldShowExpandButton = cart.length > 4;
-  const itemsToShow = cartExpanded ? cart : cart.slice(0, 4);
-  const hiddenItemsCount = cart.length - 4;
+  // Fixed logic: Always show max 3 items when collapsed, regardless of total count
+  const shouldShowExpandButton = cart.length > 3;
+  const itemsToShow = cartExpanded ? cart : cart.slice(0, 3);
+  const hiddenItemsCount = cart.length - 3;
 
   if (cart.length === 0) {
     return (
@@ -345,17 +345,6 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                       </p>
                     )}
                   </div>
-                  {/* Expand Button at Top - shows when more than 4 items and currently collapsed */}
-                  {shouldShowExpandButton && !cartExpanded && (
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCartExpanded(true)}
-                      className="text-gray-600 hover:text-gray-800 flex-shrink-0"
-                    >
-                      <ChevronDown className="h-4 w-4 mr-2" />
-                      Show {hiddenItemsCount} More
-                    </Button>
-                  )}
                 </div>
               </CardHeader>
 
@@ -422,17 +411,28 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   </div>
                 ))}
 
-                {/* Collapse Button at Bottom - shows when expanded and more than 4 items */}
-                {shouldShowExpandButton && cartExpanded && (
-                  <div className="text-center pt-4">
-                    <Button
-                      variant="ghost"
-                      onClick={() => setCartExpanded(false)}
-                      className="text-gray-600 hover:text-gray-800"
-                    >
-                      <ChevronUp className="h-4 w-4 mr-2" />
-                      Show Less
-                    </Button>
+                {/* Expand/Collapse Button at Bottom */}
+                {shouldShowExpandButton && (
+                  <div className="text-center pt-4 border-t">
+                    {!cartExpanded ? (
+                      <Button
+                        variant="ghost"
+                        onClick={() => setCartExpanded(true)}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        <ChevronDown className="h-4 w-4 mr-2" />
+                        Show {hiddenItemsCount} More Items
+                      </Button>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        onClick={() => setCartExpanded(false)}
+                        className="text-gray-600 hover:text-gray-800"
+                      >
+                        <ChevronUp className="h-4 w-4 mr-2" />
+                        Show Less
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>

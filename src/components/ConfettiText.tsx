@@ -38,7 +38,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
       rotation: Math.random() * 360,
       velocityX: (Math.random() - 0.5) * 3,
       velocityY: Math.random() * 2 + 1,
-      size: Math.random() * 4 + 3
+      size: Math.random() * 8 + 6 // Increased from 4 + 3 to 8 + 6
     }));
 
     setParticles(newParticles);

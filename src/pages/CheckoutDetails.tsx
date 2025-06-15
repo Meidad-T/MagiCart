@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import PickupMap from "@/components/PickupMap";
 import { supabase } from "@/integrations/supabase/client";
 import StoreHoursAlert, { validateStoreHours } from "@/components/StoreHoursAlert";
@@ -36,6 +37,12 @@ export default function CheckoutDetails() {
 
   // Form fields - pre-populate if coming from order summary
   const [deliveryAddress, setDeliveryAddress] = useState(state?.deliveryAddress || "");
+  
+  // Route optimization toggle
+  const [routeOptimization, setRouteOptimization] = useState(false);
+  
+  // Single address field for when route optimization is off
+  const [singleAddress, setSingleAddress] = useState("");
   
   // Work address fields
   const [workStreet, setWorkStreet] = useState("");
@@ -152,9 +159,11 @@ export default function CheckoutDetails() {
 
   const canProceed = shoppingType === "delivery"
     ? !!deliveryAddress
-    : !!(workStreet && workCity && workState && workZip && 
-         homeStreet && homeCity && homeState && homeZip && pickupTime &&
-         storeHoursValidation.canProceed);
+    : routeOptimization 
+      ? !!(workStreet && workCity && workState && workZip && 
+           homeStreet && homeCity && homeState && homeZip && pickupTime &&
+           storeHoursValidation.canProceed)
+      : !!(singleAddress && pickupTime && storeHoursValidation.canProceed);
 
   const handlePlaceOrder = () => {
     const workAddress = `${workStreet}, ${workCity}, ${workState} ${workZip}`;
@@ -164,8 +173,9 @@ export default function CheckoutDetails() {
       state: {
         shoppingType,
         storeName: cheapestStore,
-        workAddress: shoppingType === "delivery" ? undefined : workAddress,
-        homeAddress: shoppingType === "delivery" ? undefined : homeAddress,
+        workAddress: shoppingType === "delivery" ? undefined : (routeOptimization ? workAddress : undefined),
+        homeAddress: shoppingType === "delivery" ? undefined : (routeOptimization ? homeAddress : undefined),
+        storeAddress: shoppingType === "delivery" ? undefined : (!routeOptimization ? singleAddress : undefined),
         deliveryAddress: shoppingType === "delivery" ? deliveryAddress : undefined,
         pickupTime,
         orderTotal,
@@ -182,7 +192,7 @@ export default function CheckoutDetails() {
             {shoppingType === "delivery"
               ? "Delivery Details"
               : shoppingType === "pickup"
-              ? "Store Pickup Details"
+              ? "Curbside Pick-Up Details"
               : "In-Store Shopping Details"}
           </CardTitle>
         </CardHeader>
@@ -206,74 +216,110 @@ export default function CheckoutDetails() {
             </>
           ) : (
             <>
-              {/* Starting Location Section */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="work-street">Starting Location</Label>
-                  <p className="text-sm text-gray-600 mb-2">Enter your starting point (e.g., work, university, gym) for route optimization</p>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
-                  <Input
-                    id="work-street"
-                    placeholder="Starting Location Street Address"
-                    value={workStreet}
-                    onChange={e => setWorkStreet(e.target.value)}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      placeholder="City"
-                      value={workCity}
-                      onChange={e => setWorkCity(e.target.value)}
-                    />
-                    <Input
-                      placeholder="State"
-                      value={workState}
-                      onChange={e => setWorkState(e.target.value)}
-                    />
+              {/* Route Optimization Toggle */}
+              <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <Label htmlFor="route-optimization" className="text-blue-800 font-medium">
+                      Route Optimization
+                    </Label>
+                    <p className="text-sm text-blue-600">
+                      Integrate shopping into your daily life by optimizing your route
+                    </p>
                   </div>
-                  <Input
-                    placeholder="ZIP Code"
-                    value={workZip}
-                    onChange={e => setWorkZip(e.target.value)}
+                  <Switch
+                    id="route-optimization"
+                    checked={routeOptimization}
+                    onCheckedChange={setRouteOptimization}
                   />
                 </div>
               </div>
 
-              {/* Home Address Section */}
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="home-street">Destination (Home)</Label>
-                  <p className="text-sm text-gray-600 mb-2">Enter your home location for route optimization</p>
-                </div>
-                <div className="grid grid-cols-1 gap-4">
+              {!routeOptimization ? (
+                /* Single Address Field */
+                <div className="space-y-4">
+                  <Label htmlFor="single-address">Your Address</Label>
                   <Input
-                    id="home-street"
-                    placeholder="Home Street Address"
-                    value={homeStreet}
-                    onChange={e => setHomeStreet(e.target.value)}
+                    id="single-address"
+                    placeholder="Enter your address"
+                    value={singleAddress}
+                    onChange={e => setSingleAddress(e.target.value)}
                   />
-                  <div className="grid grid-cols-2 gap-4">
-                    <Input
-                      placeholder="City"
-                      value={homeCity}
-                      onChange={e => setHomeCity(e.target.value)}
-                    />
-                    <Input
-                      placeholder="State"
-                      value={homeState}
-                      onChange={e => setHomeState(e.target.value)}
-                    />
+                </div>
+              ) : (
+                <>
+                  {/* Starting Location Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="work-street">Starting Location</Label>
+                      <p className="text-sm text-gray-600 mb-2">Enter your starting point (e.g., work, university, gym) for route optimization</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      <Input
+                        id="work-street"
+                        placeholder="Starting Location Street Address"
+                        value={workStreet}
+                        onChange={e => setWorkStreet(e.target.value)}
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          placeholder="City"
+                          value={workCity}
+                          onChange={e => setWorkCity(e.target.value)}
+                        />
+                        <Input
+                          placeholder="State"
+                          value={workState}
+                          onChange={e => setWorkState(e.target.value)}
+                        />
+                      </div>
+                      <Input
+                        placeholder="ZIP Code"
+                        value={workZip}
+                        onChange={e => setWorkZip(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <Input
-                    placeholder="ZIP Code"
-                    value={homeZip}
-                    onChange={e => setHomeZip(e.target.value)}
-                  />
-                </div>
-              </div>
+
+                  {/* Home Address Section */}
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="home-street">Destination (Home)</Label>
+                      <p className="text-sm text-gray-600 mb-2">Enter your home location for route optimization</p>
+                    </div>
+                    <div className="grid grid-cols-1 gap-4">
+                      <Input
+                        id="home-street"
+                        placeholder="Home Street Address"
+                        value={homeStreet}
+                        onChange={e => setHomeStreet(e.target.value)}
+                      />
+                      <div className="grid grid-cols-2 gap-4">
+                        <Input
+                          placeholder="City"
+                          value={homeCity}
+                          onChange={e => setHomeCity(e.target.value)}
+                        />
+                        <Input
+                          placeholder="State"
+                          value={homeState}
+                          onChange={e => setHomeState(e.target.value)}
+                        />
+                      </div>
+                      <Input
+                        placeholder="ZIP Code"
+                        value={homeZip}
+                        onChange={e => setHomeZip(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
               
               <div className="pt-4">
-                <Label htmlFor="pickup-time">Pickup Time</Label>
+                <Label htmlFor="pickup-time">
+                  {shoppingType === "pickup" ? "Pick-up Time" : "Pickup Time"}
+                </Label>
                 <Input
                   id="pickup-time"
                   type="time"
@@ -290,7 +336,9 @@ export default function CheckoutDetails() {
               )}
               
               <div className="pt-4">
-                <Label htmlFor="pickup-notes">Pickup Notes (optional)</Label>
+                <Label htmlFor="pickup-notes">
+                  {shoppingType === "pickup" ? "Pick-up Notes (optional)" : "Pickup Notes (optional)"}
+                </Label>
                 <Textarea
                   id="pickup-notes"
                   placeholder="Anything to help the store staff?"
@@ -299,18 +347,20 @@ export default function CheckoutDetails() {
                 />
               </div>
               
-              {/* Route optimization map */}
-              <div>
-                <PickupMap 
-                  start={workLoc} 
-                  dest={homeLoc} 
-                  storeLocation={storeLoc}
-                  storeName={actualStoreName}
-                />
-                <p className="text-xs text-gray-400 text-center mt-1">
-                  <span role="img" aria-label="info">🗺️</span> Optimized route: Starting Location → {actualStoreName} (recommended store) → Home
-                </p>
-              </div>
+              {/* Route optimization map - only show when toggle is on */}
+              {routeOptimization && (
+                <div>
+                  <PickupMap 
+                    start={workLoc} 
+                    dest={homeLoc} 
+                    storeLocation={storeLoc}
+                    storeName={actualStoreName}
+                  />
+                  <p className="text-xs text-gray-400 text-center mt-1">
+                    <span role="img" aria-label="info">🗺️</span> Optimized route: Starting Location → {actualStoreName} (recommended store) → Home
+                  </p>
+                </div>
+              )}
             </>
           )}
 
