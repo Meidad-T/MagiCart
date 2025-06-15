@@ -65,7 +65,7 @@ export interface ShoppingPlan {
   id: string;
   user_id: string;
   name: string;
-  items: any[];
+  items: any; // Changed from any[] to any to match Supabase Json type
   frequency: 'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom';
   custom_frequency_days?: number;
   store_name: string;

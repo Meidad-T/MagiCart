@@ -20,7 +20,7 @@ interface ShoppingPlanFormProps {
     orderTotal: number;
     itemCount: number;
   };
-  onPlanCreated?: (plan: ShoppingPlan) => void;
+  onPlanCreated?: (plan: any) => void; // Changed from ShoppingPlan to any to handle Supabase response
 }
 
 export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingPlanFormProps) {
@@ -46,7 +46,7 @@ export default function ShoppingPlanForm({ orderData, onPlanCreated }: ShoppingP
     try {
       const planData = {
         name: planName.trim(),
-        items: [], // In a real app, this would contain the cart items
+        items: [], // Empty array for now - in a real app, this would contain the cart items
         frequency,
         custom_frequency_days: frequency === 'custom' ? customDays : null,
         store_name: orderData.storeName,

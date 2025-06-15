@@ -27,7 +27,13 @@ export const useShoppingPlans = () => {
         return;
       }
 
-      setPlans(data || []);
+      // Transform the data to match our interface
+      const transformedData = (data || []).map(plan => ({
+        ...plan,
+        items: Array.isArray(plan.items) ? plan.items : []
+      })) as ShoppingPlan[];
+
+      setPlans(transformedData);
     } catch (error) {
       console.error('Error fetching shopping plans:', error);
     } finally {
