@@ -49,7 +49,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
     });
     if (item.target_price > 0) stores.push({ 
       name: 'target', 
-      logo: 'https://logos-world.net/wp-content/uploads/2020/04/Target-Logo.png',
+      logo: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png',
       price: item.target_price
     });
     if (item.kroger_price > 0) stores.push({ 
@@ -115,9 +115,9 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Dropdown for all stores - compact version without heading */}
+          {/* Dropdown for all stores - compact version without store names */}
           {showAllStores && (
-            <div className="absolute top-12 right-4 left-4 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50">
+            <div className="absolute top-12 right-6 left-6 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 mb-2">
               <div className="flex justify-end mb-1">
                 <button 
                   onClick={(e) => {
@@ -129,7 +129,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   <ChevronDown className="h-3 w-3 rotate-180" />
                 </button>
               </div>
-              <div className="grid grid-cols-3 gap-1">
+              <div className="grid grid-cols-4 gap-1">
                 {availableStores.map((store, index) => (
                   <div
                     key={`${store.name}-dropdown-${index}`}
@@ -144,7 +144,6 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                       />
                     </div>
                     <span className="text-xs font-medium text-green-600">${store.price.toFixed(2)}</span>
-                    <span className="text-xs text-gray-500 capitalize text-center">{store.name}</span>
                   </div>
                 ))}
               </div>
