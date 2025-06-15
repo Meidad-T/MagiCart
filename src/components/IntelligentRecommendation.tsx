@@ -261,16 +261,6 @@ export const IntelligentRecommendation = ({
               {/* Continue with recommended store button */}
               <div className="flex justify-between items-center pt-3 border-t border-blue-100">
                 <div className="flex items-center gap-2">
-                  <Button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                    onClick={() => {
-                      // In a real app, this would handle continuing with the recommended store
-                      console.log('Continuing with', recommendation.store.store);
-                    }}
-                  >
-                    Continue with {recommendation.store.store}
-                  </Button>
-                  
                   <AIChatDialog 
                     recommendation={recommendation}
                     storeTotals={storeTotals}
