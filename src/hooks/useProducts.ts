@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ProductWithPrices, Product, Category, Store, ProductPrice } from "@/types/database";
@@ -51,7 +50,7 @@ export const useProducts = () => {
             'Eggs 12 count': 'https://images.unsplash.com/photo-1506976785307-8732e854ad03?w=400&h=300&fit=crop&auto=format',
             'Mozzarella Cheese 8 oz': 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=400&h=300&fit=crop&auto=format',
             'Chedder Cheese 8 oz': 'https://images.unsplash.com/photo-1552767059-ce182ead6c1b?w=400&h=300&fit=crop&auto=format',
-            'Salted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=300&fit=crop&auto=format',
+            'Salted Butter': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSp1qF0hUFnTlqfJDQc1Q6lFE3sQzQ7cQF1QA&s',
             'Unsalted Butter': 'https://images.unsplash.com/photo-1589985270826-4b7bb135bc9d?w=400&h=300&fit=crop&auto=format',
             
             // Produce
@@ -67,7 +66,7 @@ export const useProducts = () => {
             'White Bread Loaf': 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=400&h=300&fit=crop&auto=format',
             
             // Meat
-            'Bacon': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format', // Strips of bacon cooked and appetizing
+            'Bacon': 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop&auto=format',
             
             // Pantry
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
