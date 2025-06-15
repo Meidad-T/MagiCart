@@ -276,12 +276,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   };
 
   const storeLogos: { [key: string]: string } = {
-    'H-E-B': '/lovable-uploads/4e5632ea-f067-443b-b9a9-f6406dfbb683.png',
-    'Walmart': '/lovable-uploads/81065ad7-a689-4ec6-aa59-520f3ed2aa9c.png',
-    'Target': '/lovable-uploads/9b4bb088-c2c8-4cdf-90f7-bd262770965e.png',
-    'Kroger': '/lovable-uploads/626c14cb-fdb3-4472-8f02-7f33de90f3e0.png',
-    "Sam's Club": '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png',
-    'Aldi': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Aldi_Nord_logo.svg/1200px-Aldi_Nord_logo.svg.png'
+    'H-E-B': 'https://i.pinimg.com/736x/82/21/0a/82210a6b7169e420956284f80a2f71d0.jpg',
+    'Walmart': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTUSA49zzU6Xh1gUBZdrOVKb6wL0A_Y1zrlmw&s',
+    'Target': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtCnXrPfrnBYZU7Vh1km8eJIehxLGbFYgmpA&s',
+    'Kroger': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSacwkiztC747C6ZcQVa5_g0iSbq7O0sNEaoQ&s',
+    "Sam's Club": 'https://brandlogos.net/wp-content/uploads/2012/11/sams-club-vector-logo.png',
+    'Aldi': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTWykpVvw51CCXNUut3oNfgsJ1T7u9RQBK0bQ&s'
   };
 
   // Fixed logic: Always show max 3 items when collapsed, regardless of total count
@@ -611,14 +611,12 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                                   <div className="flex items-center gap-2">
                                     <img src={storeLogos[store.store as keyof typeof storeLogos]} alt={`${store.store} logo`} className="h-5 w-5 object-contain" />
                                     <span className="font-medium text-sm">{store.store}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
                                     <div className="flex items-center gap-1">
                                       {store.icons.includes('money') && <CircleDollarSign className="h-4 w-4 text-green-500" />}
                                       {store.icons.includes('sparkles') && <Sparkles className="h-4 w-4 text-yellow-500" />}
                                     </div>
-                                    <span className="text-sm text-gray-600 w-12 text-right">${store.total}</span>
                                   </div>
+                                  <span className="text-sm text-gray-600">${store.total}</span>
                                 </div>
                             </Button>
                             ))}
