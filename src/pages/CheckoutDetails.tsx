@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -29,7 +30,7 @@ interface LocationState {
 }
 
 type StoreLocation = Database['public']['Tables']['store_locations']['Row'];
-type StoreWithDistance = StoreLocation & { distance: number };
+type StoreWithDistance = StoreLocation & { distance: number; logo_url?: string };
 
 export default function CheckoutDetails() {
   const navigate = useNavigate();
@@ -187,6 +188,20 @@ export default function CheckoutDetails() {
           }
 
           if (data && data.stores && data.stores.length > 0) {
+            // Fetch store logos to match with locations
+            const { data: storesWithLogos } = await supabase
+              .from('stores')
+              .select('name, logo_url');
+
+            const logoMap = new Map<string, string | null>();
+            if (storesWithLogos) {
+              for (const s of storesWithLogos) {
+                if (s.name && s.logo_url) {
+                  logoMap.set(s.name, s.logo_url);
+                }
+              }
+            }
+
             const userLat = userLoc[0];
             const userLon = userLoc[1];
 
@@ -194,17 +209,19 @@ export default function CheckoutDetails() {
               .map((store: StoreLocation) => {
                 if (store.latitude && store.longitude) {
                   const distance = getDistance(userLat, userLon, store.latitude, store.longitude);
-                  return { ...store, distance };
+                  const logo_url = logoMap.get(store.chain) || undefined;
+                  return { ...store, distance, logo_url };
                 }
                 return null;
               })
               .filter((s): s is StoreWithDistance => s !== null);
 
-            // De-duplicate stores based on address to avoid showing same location twice
+            // De-duplicate stores based on name and address to avoid showing visually identical locations
             const uniqueStoresMap = new Map<string, StoreWithDistance>();
             storesWithDistance.forEach(store => {
-              if (store.address_line1 && !uniqueStoresMap.has(store.address_line1)) {
-                uniqueStoresMap.set(store.address_line1, store);
+              const storeKey = `${store.name}|${store.address_line1}`;
+              if (store.address_line1 && !uniqueStoresMap.has(storeKey)) {
+                uniqueStoresMap.set(storeKey, store);
               }
             });
             const uniqueStores = Array.from(uniqueStoresMap.values());
@@ -273,6 +290,8 @@ export default function CheckoutDetails() {
       }
     });
   };
+
+  const otherStores = selectedStore ? nearbyStores.filter(s => s.id !== selectedStore.id) : [];
 
   return (
     <div className="min-h-screen py-8 bg-gray-50 flex flex-col items-center">
@@ -442,19 +461,26 @@ export default function CheckoutDetails() {
                     <div className="space-y-4">
                       <StoreRecommendation
                         store={selectedStore}
+                        onClick={() => handleSelectStore(selectedStore)}
                         onModify={() => {
-                          setShowAllStores(false); // Reset 'show all' view
-                          setIsChoosingAlternateStore(true);
+                          if (isChoosingAlternateStore) {
+                            // If the picker is open, close it.
+                            setIsChoosingAlternateStore(false);
+                          } else {
+                            // If the picker is closed, open it and reset the 'show all' view.
+                            setShowAllStores(false);
+                            setIsChoosingAlternateStore(true);
+                          }
                         }}
-                        otherStoresCount={nearbyStores.length - 1}
+                        otherStoresCount={otherStores.length}
                       />
 
                       {isChoosingAlternateStore && (
                         <div className="animate-fade-in space-y-2 pt-4">
                           <h4 className="font-medium text-gray-800">Other nearby locations</h4>
                           {(showAllStores 
-                            ? nearbyStores.filter(s => s.id !== selectedStore.id) 
-                            : nearbyStores.filter(s => s.id !== selectedStore.id).slice(0, 2)
+                            ? otherStores
+                            : otherStores.slice(0, 2)
                           ).map(store => (
                             <div
                               key={store.id}
@@ -468,13 +494,13 @@ export default function CheckoutDetails() {
                           ))}
                           
                           {/* Logic for "Show more" button for alternate stores */}
-                          {nearbyStores.filter(s => s.id !== selectedStore.id).length > 2 && !showAllStores && (
+                          {otherStores.length > 2 && !showAllStores && (
                             <Button 
                               variant="link" 
                               className="p-0 h-auto text-blue-600" 
                               onClick={() => setShowAllStores(true)}
                             >
-                              Show {nearbyStores.filter(s => s.id !== selectedStore.id).length - 2} more stores...
+                              Show {otherStores.length - 2} more stores...
                             </Button>
                           )}
                         </div>
@@ -526,6 +552,8 @@ export default function CheckoutDetails() {
                     dest={routeOptimization ? homeLoc : singleLoc} 
                     storeLocation={storeLoc}
                     storeName={actualStoreName}
+                    storeLogoUrl={selectedStore?.logo_url}
+                    routeOptimization={routeOptimization}
                   />
                   <p className="text-xs text-gray-400 text-center mt-1">
                     <span role="img" aria-label="info">🗺️</span> {routeOptimization 
