@@ -182,9 +182,17 @@ export default function OrderSummary() {
           {/* Shopping Plan Form - Only show for authenticated users */}
           {user && (
             <ShoppingPlanForm 
-              orderData={orderData}
-              onPlanCreated={(plan) => {
-                console.log('Plan created:', plan);
+              cart={[]}  // TODO: Replace with actual cart data as needed
+              storeName={storeName}
+              storeAddress={storeAddress}
+              shoppingType={shoppingType}
+              deliveryAddress={deliveryAddress}
+              pickupTime={pickupTime}
+              open={false} // TODO: Control this with state if you want to show as dialog
+              onOpenChange={() => {}} // No-op for now; set if you want to open/close dialog
+              onPlanSaved={() => {
+                // You can add your code here e.g. show a message if needed
+                console.log("Plan saved!");
               }}
             />
           )}
