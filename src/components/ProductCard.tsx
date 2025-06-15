@@ -1,9 +1,8 @@
-
 import { ShoppingCart, ChevronDown } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { ProductWithPrices } from "@/types/database";
 
 interface ProductCardProps {
@@ -13,6 +12,30 @@ interface ProductCardProps {
 
 const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const [showAllStores, setShowAllStores] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside or scrolling
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowAllStores(false);
+      }
+    };
+
+    const handleScroll = () => {
+      setShowAllStores(false);
+    };
+
+    if (showAllStores) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, true);
+      
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        window.removeEventListener('scroll', handleScroll, true);
+      };
+    }
+  }, [showAllStores]);
 
   // Find the best price for each item
   const getBestPrice = (item: ProductWithPrices) => {
@@ -115,9 +138,12 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
             )}
           </div>
 
-          {/* Dropdown for all stores - compact version without store names */}
+          {/* Dropdown for all stores */}
           {showAllStores && (
-            <div className="absolute top-12 right-6 left-6 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 mb-2">
+            <div 
+              ref={dropdownRef}
+              className="absolute top-10 right-2 bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-50 min-w-24"
+            >
               <div className="flex justify-end mb-1">
                 <button 
                   onClick={(e) => {
@@ -129,7 +155,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   <ChevronDown className="h-3 w-3 rotate-180" />
                 </button>
               </div>
-              <div className="grid grid-cols-4 gap-1">
+              <div className="grid grid-cols-3 gap-2">
                 {availableStores.map((store, index) => (
                   <div
                     key={`${store.name}-dropdown-${index}`}
