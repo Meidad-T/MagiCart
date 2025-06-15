@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { MessageCircle, Send, Bot, User, Sparkles } from "lucide-react";
+import { MessageCircle, Send, Bot, User, Sparkles, Clock } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface StoreTotalData {
@@ -53,9 +53,44 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
   ]);
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [messageTimestamps, setMessageTimestamps] = useState<number[]>([]);
+  const [rateLimitMessage, setRateLimitMessage] = useState('');
+
+  const checkRateLimit = (): boolean => {
+    const now = Date.now();
+    const oneMinuteAgo = now - 60000; // 60 seconds ago
+    
+    // Filter out timestamps older than 1 minute
+    const recentMessages = messageTimestamps.filter(timestamp => timestamp > oneMinuteAgo);
+    
+    // Update the timestamps array
+    setMessageTimestamps(recentMessages);
+    
+    // Check if we've hit the limit
+    if (recentMessages.length >= 4) {
+      const oldestRecentMessage = Math.min(...recentMessages);
+      const timeUntilReset = Math.ceil((oldestRecentMessage + 60000 - now) / 1000);
+      
+      setRateLimitMessage(`Rate limit reached. Please wait ${timeUntilReset} seconds before sending another message.`);
+      
+      // Clear the message after the wait time
+      setTimeout(() => {
+        setRateLimitMessage('');
+      }, timeUntilReset * 1000);
+      
+      return false;
+    }
+    
+    return true;
+  };
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || isLoading) return;
+
+    // Check rate limit
+    if (!checkRateLimit()) {
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -67,6 +102,9 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
     setMessages(prev => [...prev, userMessage]);
     setInputMessage('');
     setIsLoading(true);
+
+    // Add this message timestamp to our tracking
+    setMessageTimestamps(prev => [...prev, Date.now()]);
 
     try {
       // Call Supabase Edge Function for secure AI response
@@ -109,6 +147,8 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
       handleSendMessage();
     }
   };
+
+  const isRateLimited = rateLimitMessage !== '';
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -189,6 +229,19 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
                 </div>
               </div>
             )}
+
+            {isRateLimited && (
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0 mt-1">
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-orange-500 shadow-sm">
+                    <Clock className="h-4 w-4 text-white" />
+                  </div>
+                </div>
+                <div className="bg-orange-50 border border-orange-200 rounded-2xl px-4 py-3 shadow-sm">
+                  <p className="text-sm text-orange-800">{rateLimitMessage}</p>
+                </div>
+              </div>
+            )}
           </div>
         </ScrollArea>
         
@@ -198,12 +251,12 @@ export const AIChatDialog = ({ recommendation, storeTotals, shoppingType }: AICh
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask me about this recommendation..."
-            disabled={isLoading}
+            disabled={isLoading || isRateLimited}
             className="flex-1 border-gray-200 focus:border-blue-400 focus:ring-blue-400/20 rounded-xl"
           />
           <Button 
             onClick={handleSendMessage} 
-            disabled={!inputMessage.trim() || isLoading}
+            disabled={!inputMessage.trim() || isLoading || isRateLimited}
             size="sm"
             className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white rounded-xl px-4 shadow-sm transition-all duration-200"
           >
