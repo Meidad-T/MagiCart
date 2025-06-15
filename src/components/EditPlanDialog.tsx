@@ -30,7 +30,7 @@ interface PlanItemInDialog {
 
 export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDialogProps) {
   const { updatePlan } = useShoppingPlans();
-  const { products } = useProducts();
+  const { data: products } = useProducts();
   const [planName, setPlanName] = useState("");
   const [frequency, setFrequency] = useState<'none' | 'monthly' | 'weekly' | 'bi-weekly' | 'custom'>('none');
   const [customDays, setCustomDays] = useState<string>('30');
@@ -39,7 +39,7 @@ export default function EditPlanDialog({ plan, open, onOpenChange }: EditPlanDia
   const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
-    if (plan && products.length > 0) {
+    if (plan && products && products.length > 0) {
       setPlanName(plan.name);
       setFrequency(plan.frequency);
       setCustomDays(String(plan.custom_frequency_days || 30));
