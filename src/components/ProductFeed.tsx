@@ -23,7 +23,7 @@ interface ProductFeedProps {
 }
 
 const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
-  const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "name">("name");
+  const [sortBy, setSortBy] = useState<"price-asc" | "price-desc">("price-asc");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Get unique categories with proper capitalization
@@ -45,12 +45,8 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
       );
     }
 
-    // Sort items
+    // Sort items by price only
     const sorted = [...filtered].sort((a, b) => {
-      if (sortBy === "name") {
-        return a.name.localeCompare(b.name);
-      }
-      
       const getBestPrice = (item: ProductWithPrices) => {
         const prices = [
           item.walmart_price,
@@ -110,14 +106,11 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
           <DropdownMenu>
             <DropdownMenuTrigger className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-md bg-white hover:bg-gray-50 transition-colors">
               <span className="text-sm font-medium">
-                Sort {sortBy === "price-asc" ? "↑" : sortBy === "price-desc" ? "↓" : ""}
+                Sort {sortBy === "price-asc" ? "↑" : "↓"}
               </span>
               <ChevronDown className="h-4 w-4" />
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem onClick={() => setSortBy("name")}>
-                Name
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setSortBy("price-asc")}>
                 Price: Low to High
               </DropdownMenuItem>

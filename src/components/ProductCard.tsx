@@ -14,6 +14,7 @@ interface ProductCardProps {
 const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
   const [showAllStores, setShowAllStores] = useState(false);
   const [imageLoadStates, setImageLoadStates] = useState<{[key: string]: boolean}>({});
+  const [productImageError, setProductImageError] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside or scrolling
@@ -74,7 +75,7 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
     });
     if (item.target_price > 0) stores.push({ 
       name: 'target', 
-      logo: '/lovable-uploads/35666c20-41be-4ef8-86aa-a37780ca99aa.png',
+      logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtCnXrPfrnBYZU7Vh1km8eJIehxLGbFYgmpA&s',
       price: item.target_price
     });
     if (item.kroger_price > 0) stores.push({ 
@@ -99,16 +100,28 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
     setImageLoadStates(prev => ({ ...prev, [storeKey]: true }));
   };
 
+  const handleProductImageError = () => {
+    setProductImageError(true);
+  };
+
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200 relative overflow-visible">
       <CardContent className="p-0">
         {/* Product Image */}
         <div className="relative overflow-hidden rounded-t-lg">
-          <img 
-            src={item.image_url}
-            alt={item.name}
-            className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
-          />
+          {!productImageError ? (
+            <img 
+              src={item.image_url}
+              alt={item.name}
+              className="w-full h-48 object-cover rounded-t-lg group-hover:scale-105 transition-transform duration-200"
+              onError={handleProductImageError}
+              loading="lazy"
+            />
+          ) : (
+            <div className="w-full h-48 bg-gray-200 rounded-t-lg flex items-center justify-center">
+              <span className="text-gray-500 text-sm">Image not available</span>
+            </div>
+          )}
           <Badge 
             variant="secondary" 
             className="absolute top-2 left-2 bg-white/90 text-gray-700 backdrop-blur-sm"
@@ -130,6 +143,10 @@ const ProductCard = ({ item, onAddToCart }: ProductCardProps) => {
                   className="w-full h-full object-contain rounded-full"
                   onLoad={() => handleImageLoad(`${store.name}-${index}`)}
                   loading="eager"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
                 />
               </div>
             ))}
