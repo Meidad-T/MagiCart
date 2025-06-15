@@ -1,3 +1,4 @@
+
 import { GoogleMap, DirectionsRenderer, useLoadScript, MarkerF, Polyline } from "@react-google-maps/api";
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -245,8 +246,8 @@ const PickupMapContent = ({ start, dest, storeLocation, storeName, apiKey, store
               <>
                   {start && (
                       <li className="flex items-center">
-                          <img src={homePinUrl} alt="Home" className="w-5 h-5 mr-1.5" />
-                          <span className="text-gray-700">Home</span>
+                          <img src={homePinUrl} alt="Starting point" className="w-5 h-5 mr-1.5" />
+                          <span className="text-gray-700">Starting point</span>
                       </li>
                   )}
               </>
