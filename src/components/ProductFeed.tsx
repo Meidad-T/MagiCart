@@ -1,7 +1,7 @@
 
 import ProductCard from "./ProductCard";
 import type { ProductWithPrices } from "@/types/database";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { ChevronDown, Filter } from "lucide-react";
 import {
   DropdownMenu,
@@ -25,6 +25,34 @@ interface ProductFeedProps {
 const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc">("price-asc");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  const [isVisible, setIsVisible] = useState(false);
+  const headerRef = useRef<HTMLDivElement>(null);
+
+  // Intersection Observer for header animation
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.unobserve(entry.target);
+        }
+      },
+      {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      }
+    );
+
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
+
+    return () => {
+      if (headerRef.current) {
+        observer.unobserve(headerRef.current);
+      }
+    };
+  }, []);
 
   // Get unique categories with proper capitalization
   const categories = useMemo(() => {
@@ -76,7 +104,14 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8 flex justify-between items-center">
+      <div 
+        ref={headerRef}
+        className={`mb-8 flex justify-between items-center transform transition-all duration-700 ease-out ${
+          isVisible 
+            ? 'translate-y-0 opacity-100' 
+            : 'translate-y-4 opacity-0'
+        }`}
+      >
         <div>
           <h2 className="text-3xl font-bold text-gray-900 mb-2">All Products</h2>
           <p className="text-gray-600">Compare prices across all stores and find the best deals</p>
@@ -133,7 +168,7 @@ const ProductFeed = ({ items, onAddToCart }: ProductFeedProps) => {
       </div>
       
       {filteredAndSortedItems.length === 0 && (
-        <div className="text-center py-12">
+        <div className="text-center py-12 animate-in fade-in-0 duration-500">
           <p className="text-gray-500 text-lg">No products found matching your filters.</p>
         </div>
       )}
