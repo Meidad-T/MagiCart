@@ -1,5 +1,5 @@
-import { useState, useEffect } from "react";
-import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import { ArrowLeft, MapPin, Clock, Store, User, ChevronDown, ChevronUp, Sparkles, Info, CircleDollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -12,10 +12,19 @@ import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { PriceComparison } from "@/components/PriceComparison";
 import { IntelligentRecommendation } from "@/components/IntelligentRecommendation";
 import ConfettiText from "@/components/ConfettiText";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface CartPageProps {
   cart: Array<ProductWithPrices & { quantity: number }>;
   onUpdateCart: (updatedCart: Array<ProductWithPrices & { quantity: number }>) => void;
+}
+
+interface StoreTotalData {
+  store: string;
+  storeKey: string;
+  subtotal: string;
+  taxesAndFees: string;
+  total: string;
 }
 
 const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
@@ -27,6 +36,9 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   const [substitutionCounts, setSubstitutionCounts] = useState<Record<string, number>>({});
   const [confettiTrigger, setConfettiTrigger] = useState(false);
   const [previousHealthScore, setPreviousHealthScore] = useState(0);
+  const [aiRecommendedStore, setAiRecommendedStore] = useState<StoreTotalData | null>(null);
+  const [checkoutStore, setCheckoutStore] = useState<StoreTotalData | null>(null);
+  const [popoverOpen, setPopoverOpen] = useState(false);
 
   // Scroll to top when component mounts
   useEffect(() => {
@@ -303,7 +315,39 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
   };
 
   const cheapestStore = storeTotals[0]; // First one is cheapest due to sorting
-  const cheapestStoreColor = storeColors[cheapestStore?.store as keyof typeof storeColors] || '#3b82f6';
+  const checkoutStoreDetails = checkoutStore || cheapestStore;
+  const checkoutStoreColor = checkoutStoreDetails ? (storeColors[checkoutStoreDetails.store as keyof typeof storeColors] || '#3b82f6') : '#3b82f6';
+  
+  const sortedStoresForPopover = useMemo(() => {
+    if (!cheapestStore || storeTotals.length === 0) return [];
+    
+    const storeMap = new Map(storeTotals.map(s => [s.storeKey, {...s, icons: new Set<string>()}]));
+
+    storeMap.get(cheapestStore.storeKey)?.icons.add('money');
+
+    if (aiRecommendedStore) {
+        storeMap.get(aiRecommendedStore.storeKey)?.icons.add('sparkles');
+    }
+
+    const getScore = (storeKey: string) => {
+        const isCheapest = storeKey === cheapestStore.storeKey;
+        const isAI = storeKey === aiRecommendedStore?.storeKey;
+        if (isCheapest && isAI) return 3;
+        if (isCheapest) return 2;
+        if (isAI) return 1;
+        return 0;
+    };
+
+    const sorted = Array.from(storeMap.values()).sort((a, b) => {
+        const scoreA = getScore(a.storeKey);
+        const scoreB = getScore(b.storeKey);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+        return parseFloat(a.total) - parseFloat(b.total);
+    });
+
+    return sorted.map(s => ({...s, icons: Array.from(s.icons) as ('money'|'sparkles')[]}));
+
+  }, [storeTotals, cheapestStore, aiRecommendedStore]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -517,25 +561,60 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   Discover affordable and health additions
                 </p>
                 
-                <Button
-                  className="w-full text-white"
-                  style={{ backgroundColor: cheapestStoreColor }}
-                  onClick={() =>
-                    navigate("/checkout-details", {
-                      state: { 
-                        shoppingType,
-                        cheapestStore: cheapestStore?.store,
-                        orderTotal: parseFloat(cheapestStore?.total || '0'),
-                        itemCount: cart.length
-                      }
-                    })
-                  }
-                >
-                  Continue with {cheapestStore?.store}
-                </Button>
-                {cheapestStore && (
+                <div className="flex items-center gap-2">
+                  <Button
+                    className="flex-grow text-white"
+                    style={{ backgroundColor: checkoutStoreColor }}
+                    disabled={!checkoutStoreDetails}
+                    onClick={() =>
+                      navigate("/checkout-details", {
+                        state: { 
+                          shoppingType,
+                          cheapestStore: checkoutStoreDetails?.store,
+                          orderTotal: parseFloat(checkoutStoreDetails?.total || '0'),
+                          itemCount: cart.length
+                        }
+                      })
+                    }
+                  >
+                    Continue with {checkoutStoreDetails?.store}
+                  </Button>
+                  <Popover open={popoverOpen} onOpenChange={setPopoverOpen}>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="icon" className="flex-shrink-0">
+                        <Info className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-64" align="end">
+                        <div className="grid gap-1 p-1">
+                            <p className="font-semibold text-sm px-2 py-1">Choose a store</p>
+                            {sortedStoresForPopover.map((store) => (
+                            <Button
+                                key={store.storeKey}
+                                variant="ghost"
+                                className="justify-between h-auto py-2"
+                                onClick={() => {
+                                  setCheckoutStore(store);
+                                  setPopoverOpen(false);
+                                }}
+                            >
+                                <div className="flex items-center gap-2">
+                                  <div className="flex items-center w-6">
+                                    {store.icons.includes('money') && <CircleDollarSign className="h-4 w-4 text-green-500" />}
+                                    {store.icons.includes('sparkles') && <Sparkles className="h-4 w-4 text-yellow-500" />}
+                                  </div>
+                                  <span>{store.store}</span>
+                                </div>
+                                <span className="ml-auto text-xs text-gray-500">${store.total}</span>
+                            </Button>
+                            ))}
+                        </div>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                {checkoutStoreDetails && (
                   <p className="text-sm text-gray-600 text-center">
-                    Best price: ${cheapestStore.total}
+                    Selected price: ${checkoutStoreDetails.total}
                   </p>
                 )}
               </CardContent>
@@ -558,6 +637,7 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
           <IntelligentRecommendation 
             storeTotals={storeTotals}
             shoppingType={shoppingType}
+            onRecommendation={setAiRecommendedStore}
           />
         </div>
       </div>

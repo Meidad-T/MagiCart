@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -22,6 +21,7 @@ interface IntelligentRecommendationProps {
   shoppingType: 'pickup' | 'delivery' | 'instore';
   otherLocations?: StoreLocationWithDistance[];
   onSelectLocation?: (location: StoreLocationWithDistance) => void;
+  onRecommendation?: (store: StoreTotalData) => void;
 }
 
 export const IntelligentRecommendation = ({
@@ -29,6 +29,7 @@ export const IntelligentRecommendation = ({
   shoppingType,
   otherLocations = [],
   onSelectLocation = () => {},
+  onRecommendation,
 }: IntelligentRecommendationProps) => {
   const [recommendation, setRecommendation] = useState<any>(null);
   const hasSetRecommendation = useRef(false);
@@ -167,9 +168,13 @@ export const IntelligentRecommendation = ({
       isCheapest
     });
 
+    if (onRecommendation) {
+      onRecommendation(bestStore.store);
+    }
+
     // Mark that we've set the recommendation - never change it again
     hasSetRecommendation.current = true;
-  }, [storeTotals, shoppingType]);
+  }, [storeTotals, shoppingType, onRecommendation]);
 
   const handleLocationSelect = (location: StoreLocationWithDistance) => {
     onSelectLocation(location);
