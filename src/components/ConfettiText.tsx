@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ConfettiTextProps {
   children: React.ReactNode;
@@ -8,6 +8,7 @@ interface ConfettiTextProps {
 }
 
 const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) => {
+  const textRef = useRef<HTMLDivElement>(null);
   const [particles, setParticles] = useState<Array<{
     id: number;
     x: number;
@@ -22,13 +23,18 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
   const colors = ['#ff0000', '#ff8800', '#ffff00', '#00ff00', '#0099ff', '#6600ff', '#ff00ff'];
 
   useEffect(() => {
-    if (!trigger) return;
+    if (!trigger || !textRef.current) return;
+
+    // Get the actual position of the text element
+    const rect = textRef.current.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
 
     // Create more confetti particles with bigger spread
     const newParticles = Array.from({ length: 24 }, (_, i) => ({
       id: i,
-      x: Math.random() * 200 - 100, // Wider spread around center
-      y: -50 - Math.random() * 50, // Start above the text
+      x: centerX + (Math.random() * 200 - 100), // Wider spread around text center
+      y: centerY - 50 - Math.random() * 50, // Start above the text
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
       velocityX: (Math.random() - 0.5) * 6, // More horizontal movement
@@ -47,7 +53,7 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
   }, [trigger]);
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative ${className}`} ref={textRef}>
       {children}
       {particles.length > 0 && (
         <div className="fixed inset-0 pointer-events-none z-50">
@@ -56,15 +62,16 @@ const ConfettiText = ({ children, trigger, className = '' }: ConfettiTextProps) 
               key={particle.id}
               className="absolute"
               style={{
-                left: `calc(50% + ${particle.x}px)`,
-                top: `calc(50% + ${particle.y}px)`,
+                left: `${particle.x}px`,
+                top: `${particle.y}px`,
                 width: `${particle.size}px`,
                 height: `${particle.size}px`,
                 backgroundColor: particle.color,
                 transform: `rotate(${particle.rotation}deg)`,
                 animation: `confetti-fall 4s ease-out forwards`,
                 animationDelay: `${Math.random() * 0.5}s`,
-                borderRadius: '2px'
+                borderRadius: '2px',
+                willChange: 'transform, opacity' // Optimize for animations
               }}
             />
           ))}
