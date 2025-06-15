@@ -73,18 +73,18 @@ export const useProducts = () => {
             'White Rice': 'https://images.unsplash.com/photo-1586201375761-83865001e31c?w=400&h=300&fit=crop&auto=format',
             'Brown Rice': 'https://images.pexels.com/photos/4110257/pexels-photo-4110257.jpeg?auto=compress&cs=tinysrgb&w=400&h=300&fit=crop',
             'Pasta': 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=400&h=300&fit=crop&auto=format',
-            'Flour': 'https://images.unsplash.com/photo-1574323347407-f5e1ad6d020b?w=400&h=300&fit=crop&auto=format',
+            'Flour': 'https://www.gannett-cdn.com/presto/2020/04/27/USAT/e88332ed-9706-454f-b95c-a3cc7afba395-flour.jpg?crop=2111,1188,x9,y0&width=1600&height=800&fit=bounds',
             'White Sugar': 'https://th.bing.com/th/id/OIP.QaXdIgB1MHqDal5OxpCPlwHaHa?r=0&rs=1&pid=ImgDetMain',
             'Brown Sugar': 'https://i5.walmartimages.com/asr/b106322c-8a05-4c7b-b23b-235b4b1dc793.3fd719d6b0d015b1feccaa675763a657.jpeg',
             'Peanut Butter 16 ounce': 'https://live.staticflickr.com/3850/14360041550_45d7bf9975.jpg',
             'Grape Jelly 18 ounce': 'https://i5.walmartimages.com/seo/Smucker-s-Concord-Grape-Jelly-18-Ounces_d1337e48-cb1a-45fc-9f5e-405c81e2f42c.35d0f9766f1c793207a2bf8ad24c5ae4.jpeg',
-            'Strawberry Jelly 18 ounce': 'https://images.unsplash.com/photo-1549298916-b41d501d3772?w=400&h=300&fit=crop&auto=format',
+            'Strawberry Jelly 18 ounce': 'https://images.freshop.com/00051500022153/c21b6392b526cd13b19583c4319807b6_large.png',
             
             // Drinks - better bottle/container images
-            '3 Liter Coke Bottle': 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?w=400&h=300&fit=crop&auto=format',
-            '3 Liter Sprite Bottle': 'https://images.unsplash.com/photo-1594971475674-6a97f8fe8c2d?w=400&h=300&fit=crop&auto=format',
-            '3 Liter Dr Pepper Bottle': 'https://images.unsplash.com/photo-1610889556528-9a770e32642f?w=400&h=300&fit=crop&auto=format',
-            'Bottled water 1 Gallon': 'https://images.unsplash.com/photo-1622618338451-9b6b1b5e58a2?w=400&h=300&fit=crop&auto=format',
+            '3 Liter Coke Bottle': 'https://live.staticflickr.com/7318/13933195050_6016499339.jpg',
+            '3 Liter Sprite Bottle': 'https://www.foodista.com/sites/default/files/styles/featured/public/field/image/12.jpg',
+            '3 Liter Dr Pepper Bottle': 'https://c2.staticflickr.com/4/3215/2978925649_d7ca56738f_b.jpg',
+            'Bottled water 1 Gallon': 'https://th.bing.com/th/id/R.30251710d09b6bad7d87e3f3468ae5f2?rik=A4MsrMnhAi%2btMQ&riu=http%3a%2f%2fboxingcoachmike.com%2fwp-content%2fuploads%2f2010%2f12%2ffesting.jpg&ehk=sjtB9pTD46UBtTp2MIb40eyR8ODrcwF1CZdDZ8NFGLQ%3d&risl=&pid=ImgRaw&r=0',
             
             // Chips - actual chip bag images
             'Dortios Cool Ranch 14.5 Oz Bag': 'https://images.unsplash.com/photo-1613743983303-b3e89f8a2b80?w=400&h=300&fit=crop&auto=format',
