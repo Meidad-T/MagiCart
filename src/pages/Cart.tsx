@@ -116,6 +116,13 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     setPreviousHealthScore(healthScore);
   }, [healthScore, previousHealthScore]);
 
+  // Auto-collapse when cart items reduce below the expand threshold
+  useEffect(() => {
+    if (cart.length <= 4 && cartExpanded) {
+      setCartExpanded(false);
+    }
+  }, [cart.length, cartExpanded]);
+
   const getHealthScoreColor = (score: number) => {
     if (score >= 85) return "text-green-600";
     if (score >= 70) return "text-yellow-500";
@@ -237,9 +244,10 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
     'Aldi': '#ff6900'
   };
 
-  // Determine which items to show - changed from 8 to 5
-  const shouldCollapse = cart.length > 5;
-  const itemsToShow = shouldCollapse && !cartExpanded ? cart.slice(0, 4) : cart;
+  // Fixed logic: Always show max 4 items when collapsed, regardless of total count
+  const shouldShowExpandButton = cart.length > 4;
+  const itemsToShow = cartExpanded ? cart : cart.slice(0, 4);
+  const hiddenItemsCount = cart.length - 4;
 
   if (cart.length === 0) {
     return (
@@ -312,15 +320,15 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   <div>
                     <CardTitle>Cart Items ({cart.length})</CardTitle>
                   </div>
-                  {/* Expand Button at Top - now shows for 5+ items */}
-                  {shouldCollapse && !cartExpanded && (
+                  {/* Expand Button at Top - shows when more than 4 items and currently collapsed */}
+                  {shouldShowExpandButton && !cartExpanded && (
                     <Button
                       variant="ghost"
                       onClick={() => setCartExpanded(true)}
                       className="text-gray-600 hover:text-gray-800"
                     >
                       <ChevronDown className="h-4 w-4 mr-2" />
-                      Show {cart.length - 4} More
+                      Show {hiddenItemsCount} More
                     </Button>
                   )}
                 </div>
@@ -371,8 +379,8 @@ const Cart = ({ cart, onUpdateCart }: CartPageProps) => {
                   </div>
                 ))}
 
-                {/* Collapse Button at Bottom */}
-                {shouldCollapse && cartExpanded && (
+                {/* Collapse Button at Bottom - shows when expanded and more than 4 items */}
+                {shouldShowExpandButton && cartExpanded && (
                   <div className="text-center pt-4">
                     <Button
                       variant="ghost"
