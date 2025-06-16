@@ -69,7 +69,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {user && (
               <Button 
                 variant="ghost" 
-                className="text-white hover:bg-white/10 rounded-full w-10 h-10"
+                className="text-white hover:bg-white/10 hover:text-blue-200 rounded-full w-10 h-10"
                 onClick={handleShoppingPlansClick}
                 title="Shopping Plans"
               >
@@ -81,7 +81,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative text-white hover:bg-white/10 rounded-full w-10 h-10">
+                  <Button variant="ghost" className="relative text-white hover:bg-white/10 hover:text-blue-200 rounded-full w-10 h-10">
                     <User className="h-5 w-5" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -104,7 +104,7 @@ const Header = ({ items, cart, onAddToCart, onCartClick, user }: HeaderProps) =>
             {/* Cart Button */}
             <Button 
               variant="ghost" 
-              className="relative text-white hover:bg-white/10 rounded-full w-10 h-10"
+              className="relative text-white hover:bg-white/10 hover:text-blue-200 rounded-full w-10 h-10"
               onClick={onCartClick}
             >
               <ShoppingCart className="h-5 w-5" />
