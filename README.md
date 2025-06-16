@@ -27,6 +27,27 @@ There's a common misconception that eating healthy is a luxury only the wealthy 
 📱 **Mobile Friendly** - Responsive design that works on all devices  
 💰 **Budget Tracking** - See your total savings and make informed decisions
 
+## AI Integration & Intelligence
+
+MagiCart leverages advanced AI technology to provide personalized shopping experiences:
+
+### 🧠 Google Gemini API Integration
+Our built-in AI assistant powered by Google Gemini provides:
+- **Personalized Health & Nutrition Advice** - Get tailored recommendations based on what's in your cart
+- **Smart Store Selection** - Receive recommendations for store selection based on nearby locations, prices, and current deals
+- **Meal Planning Assistance** - Plan meals based on dietary needs, allergies, and personal preferences in real-time
+- **Budget Optimization** - AI analyzes your shopping patterns to suggest cost-effective alternatives
+- **Nutritional Analysis** - Real-time analysis of your cart's nutritional value with improvement suggestions
+
+### 🚀 Developed with Lovable AI
+MagiCart was built using **Lovable**, an AI-powered development platform that enabled us to:
+- Rapidly prototype and iterate on complex features
+- Implement sophisticated AI integrations with minimal development overhead
+- Create a polished, production-ready application in record time
+- Focus on user experience while AI handled much of the technical implementation
+
+This combination of Google Gemini for intelligent recommendations and Lovable for rapid development allowed us to create a feature-rich application that would typically require a much larger development team and significantly more time.
+
 ## Technology Stack
 
 ### Frontend
@@ -61,7 +82,7 @@ There's a common misconception that eating healthy is a luxury only the wealthy 
 - **Recharts** - Composable charting library
 
 ### Development Tools
-- **Lovable AI** - AI-powered development platform for rapid prototyping
+- **Lovable AI** - AI-powered development platform for rapid prototyping and full-stack development
 - **ESLint** - Code linting and quality assurance
 
 ### Assets
@@ -191,7 +212,8 @@ We welcome contributions from fellow students and developers! Feel free to:
 
 Special thanks to:
 - **Texas State University** for fostering innovation and providing resources
-- **Lovable AI** for making rapid development possible
+- **Lovable AI** for revolutionizing our development process and making rapid, sophisticated application development possible
+- **Google Gemini** for providing the advanced AI capabilities that power our intelligent recommendations
 - **Supabase** for providing excellent backend services
 - **Google** for their comprehensive API ecosystem
 - **The open-source community** for the amazing tools and libraries
