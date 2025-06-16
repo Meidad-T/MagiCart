@@ -424,7 +424,7 @@ const HealthRecommendations = ({ cart, onUpdateCart }: HealthRecommendationsProp
                                 max="99"
                                 value={pendingQty}
                                 onChange={(e) => updatePendingQuantity(rec.product.name, parseInt(e.target.value) || 1)}
-                                className="w-16 h-8 text-center text-sm"
+                                className="w-16 h-8 text-center text-sm [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
                               />
                               <Button
                                 variant="outline"
