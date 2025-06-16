@@ -1,4 +1,3 @@
-
 import { Loader, ShoppingCart } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,7 +141,7 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
                 onClick={() => setHealthChatOpen(true)}
                 className="bg-green-600 hover:bg-green-700 text-white whitespace-normal text-center leading-tight"
               >
-                Get AI Health Recommendations
+                AI Health Assistant
               </Button>
               <HomeAIChatDialog 
                 cart={cart}
@@ -204,4 +203,3 @@ const Index = ({ cart, onUpdateCart }: IndexProps) => {
 };
 
 export default Index;
-
